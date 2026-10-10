@@ -615,6 +615,16 @@ body.menuopen{overflow:hidden}
   .clscene .pl.w{animation:none;fill:#fff}
   .appr .ld{animation:none;opacity:.9}
 }
+.wel{position:fixed;inset:0;z-index:400;background:#070b18;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;transition:opacity .45s}
+.wel.out{opacity:0;pointer-events:none}
+.wel-p{display:flex;flex-direction:column;gap:14px;margin-bottom:22px}
+.wel .papi .lights{background:#0d1428}
+.wel .papi .lights i{width:26px;height:26px}
+.wel-t{font-size:38px;font-weight:800;letter-spacing:-.5px;margin:0;opacity:0;animation:welin .9s ease .3s forwards}
+.wel-s{color:#a9b2cf;font-size:15px;margin:0;opacity:0;animation:welin .9s ease .6s forwards}
+.wel-b{margin-top:34px;width:100%;max-width:320px;opacity:0;animation:welin .9s ease 1.2s forwards}
+@keyframes welin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.wel-t,.wel-s,.wel-b{animation:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -3227,9 +3237,37 @@ body.menuopen{overflow:hidden}
     });
     obRender();
   }
+  function welcome(){
+    var el = document.createElement('div');
+    el.id = 'wel'; el.className = 'wel';
+    var units = '';
+    for(var u = 0; u < 3; u++){
+      var l = '';
+      for(var k = 0; k < 4; k++) l += '<i class="' + (k < 2 ? 'w' : 'r') + '" data-k="' + k + '" data-u="' + u + '"></i>';
+      units += '<div class="papi"><div class="lights">' + l + '</div></div>';
+    }
+    el.innerHTML = '<div class="wel-p" aria-hidden="true">' + units + '</div>' +
+      '<h1 class="wel-t">Short Final!</h1><p class="wel-s">Dein Weg zur Prüfung, Frage für Frage.</p>' +
+      '<button type="button" id="welGo" class="wel-b">Einrichten</button>';
+    document.body.appendChild(el);
+    setTimeout(function(){
+      var is = el.querySelectorAll('.lights i');
+      for(var j = 0; j < is.length; j++){
+        var i = is[j], k = +i.getAttribute('data-k'), u = +i.getAttribute('data-u');
+        if(k !== 1) continue;
+        i.className = 'r flip';
+        i.style.cssText = '--x:' + (u * 0.25).toFixed(2) + 's;--i:0;--fb:' + PAPI_W.bg + ';--fg:' + PAPI_W.gl + ';--tb:' + PAPI_R.bg + ';--tg:' + PAPI_R.gl;
+      }
+    }, 1500);
+    $('welGo').addEventListener('click', function(){
+      el.classList.add('out');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
+    });
+  }
   function obOpen(){
     $('onb').hidden = false;
     document.body.classList.add('obopen');
+    welcome();
     document.body.style.overflow = 'hidden';
     obRender();
   }

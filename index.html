@@ -617,9 +617,9 @@ body.menuopen{overflow:hidden}
 }
 .wel{position:fixed;inset:0;z-index:400;background:#070b18;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;transition:opacity .45s}
 .wel.out{opacity:0;pointer-events:none}
-.wel-p{display:flex;flex-direction:column;gap:14px;margin-bottom:22px}
+.wel-p{display:flex;flex-direction:column;gap:14px;margin-bottom:30px}
 .wel .papi .lights{background:#0d1428}
-.wel .papi .lights i{width:26px;height:26px}
+.wel .papi .lights i{width:32px;height:32px}.wel .papi .lights{gap:16px;padding:14px 24px}
 .wel-t{font-size:38px;font-weight:800;letter-spacing:-.5px;margin:0;opacity:0;animation:welin .9s ease .3s forwards}
 .wel-s{color:#a9b2cf;font-size:15px;margin:0;opacity:0;animation:welin .9s ease .6s forwards}
 .wel-b{margin-top:34px;width:100%;max-width:320px;opacity:0;animation:welin .9s ease 1.2s forwards}
@@ -3241,7 +3241,7 @@ body.menuopen{overflow:hidden}
     var el = document.createElement('div');
     el.id = 'wel'; el.className = 'wel';
     var units = '';
-    for(var u = 0; u < 3; u++){
+    for(var u = 0; u < 1; u++){
       var l = '';
       for(var k = 0; k < 4; k++) l += '<i class="' + (k < 2 ? 'w' : 'r') + '" data-k="' + k + '" data-u="' + u + '"></i>';
       units += '<div class="papi"><div class="lights">' + l + '</div></div>';

@@ -891,7 +891,27 @@ body.menuopen{overflow:hidden}
   function sign(n){ return (n>0?'+':n<0?'−':'±')+fmt(Math.abs(n)); }
   function $(id){ return document.getElementById(id); }
 
+  /* Abgeschlossene Tage ohne Eintrag zählen als 0 geklickte Fragen: der Stand wird fortgeschrieben (a = automatisch) */
+  function fillGaps(){
+    if(!S || !Array.isArray(S.entries) || !S.entries.length || !S.deadline) return false;
+    var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }), ch = false, i;
+    for(i = 1; i < es.length; i++){
+      if(es[i].a && es[i].n !== es[i - 1].n){ es[i].n = es[i - 1].n; ch = true; }
+    }
+    var last = es[es.length - 1], now = new Date();
+    var yest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1), end = parse(S.deadline);
+    if(end < yest) yest = end;
+    var dt = parse(last.d);
+    dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+    var guard = 0;
+    while(dt <= yest && guard++ < 400){
+      S.entries.push({d:iso(dt), n:last.n, a:1}); ch = true;
+      dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+    }
+    return ch;
+  }
   function render(){
+    if(fillGaps()) save();
     var entries = S.entries.slice().sort(function(a,b){ return a.d<b.d?-1:1; });
     var base = entries[0], last = entries[entries.length-1];
     var baseD = parse(base.d), lastD = parse(last.d), endD = parse(S.deadline);
@@ -1002,7 +1022,7 @@ body.menuopen{overflow:hidden}
       var delta = prev ? e.n - prev.n : null;
       var dd = prev ? Math.max(1, days(parse(prev.d), ed)) : null;
       var df = e.n - plan(ed);
-      html += '<tr><td>'+fd(ed)+'</td><td class="r">'+fmt(e.n)+'</td>' +
+      html += '<tr><td>'+fd(ed)+(e.a ? ' <span class="small" title="Kein Eintrag: als 0 Fragen gezählt. Du kannst nachtragen.">auto</span>' : '')+'</td><td class="r">'+fmt(e.n)+'</td>' +
         '<td class="r">'+(delta===null?'–':'+'+fmt(delta/dd)+'/T')+'</td>' +
         '<td class="r '+(df>=0?'good':'bad')+'">'+sign(df)+'</td>' +
         '<td class="r"><button class="ghost" data-del="'+e.d+'" aria-label="Löschen">✕</button></td></tr>';
@@ -1024,6 +1044,7 @@ body.menuopen{overflow:hidden}
 
   S = load();
   ensureS();
+  if(fillGaps()) save();
   $('inDate').value = iso(new Date());
 
   $('addBtn').addEventListener('click', function(){
@@ -1081,7 +1102,7 @@ body.menuopen{overflow:hidden}
             S = {
               target: d.target || DEFAULTS.target,
               deadline: d.deadline || DEFAULTS.deadline,
-              entries: d.entries.map(function(e){ return {d:String(e.d), n:Number(e.n)}; }),
+              entries: d.entries.map(function(e){ var o = {d:String(e.d), n:Number(e.n)}; if(e.a) o.a = 1; return o; }),
               subjects: d.subjects ? JSON.parse(JSON.stringify(d.subjects)) : (S.subjects || {}),
               weights: d.weights ? JSON.parse(JSON.stringify(d.weights)) : (S.weights || {}),
               exam: d.exam || S.exam,
@@ -2501,7 +2522,7 @@ body.menuopen{overflow:hidden}
     if(opt.verlauf !== false && d.verlauf.length){
       var map = {};
       S.entries.forEach(function(e){ map[e.d] = e; });
-      d.verlauf.forEach(function(e){ if(map[e.d]) map[e.d].n = e.n; else { var ne = {d:e.d, n:e.n}; S.entries.push(ne); map[e.d] = ne; } });
+      d.verlauf.forEach(function(e){ if(map[e.d]){ map[e.d].n = e.n; delete map[e.d].a; } else { var ne = {d:e.d, n:e.n}; S.entries.push(ne); map[e.d] = ne; } });
       S.entries.sort(function(a, b){ return a.d < b.d ? -1 : 1; });
       /* Kein Platzhalter-Eintrag mit 0, wenn es echte frühere Stände gibt */
       if(S.entries.length > 1) S.entries = S.entries.filter(function(e){ return !(e.n === 0 && S.entries.some(function(x){ return x.d < e.d && x.n > 0; })); });
@@ -2559,6 +2580,21 @@ body.menuopen{overflow:hidden}
     if(r.pack){ nbConfirmImport(JSON.stringify(r.pack), 'file'); return; }
     impConfirm(r.data, onDefer);
   }
+  function impExistingText(){
+    var rows = [];
+    try{
+      SUBJECTS.forEach(function(sj){
+        var x = getSub(sj.id), c = x.clicked || 0, w = x.wrong || 0, t = (x.todo === null || x.todo === undefined) ? null : x.todo;
+        var nrep = ['rep', 'last', 'sim', 'gen'].reduce(function(a, k){ return a + ((x[k] || []).length); }, 0);
+        if(c || w || t !== null || nrep) rows.push('- ' + sj.id + ': geklickt ' + c + ', falsch ' + w + ', noch offen ' + (t === null ? 'nicht eingetragen' : t) + ', Berichte ' + nrep);
+      });
+    }catch(e){}
+    var es = (S.entries || []).filter(function(e){ return e.n > 0; }).sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    var last = es.length ? es[es.length - 1] : null;
+    if(!rows.length && !last) return '';
+    return '\n\nBEREITS IN DER APP EINGETRAGEN (Stand jetzt; das darf nicht verloren gehen)\n' +
+      (last ? '- Gesamtstand: ' + last.n + ' Fragen am ' + last.d + ' (' + es.length + ' Verlaufseinträge)\n' : '') + rows.join('\n') + '\n';
+  }
   function impPromptText(){
     var subs = SUBJECTS.map(function(s){ return s.id + ' = ' + s.name; }).join('; ');
     return 'Du hilfst mir, meinen bisherigen ATPL-Lernstand in meine Lern-App „Short Final!“ zu übernehmen. Ich habe meine geklickten Fragen bisher anders festgehalten, zum Beispiel in Excel, in Notizen, auf Fotos oder in PDFs. Die Dateien hänge ich an diese Nachricht an.\n\n' +
@@ -2585,8 +2621,9 @@ body.menuopen{overflow:hidden}
       '- Fach-IDs sind ausschließlich diese: ' + subs + '. Andere Schlüssel sind ungültig.\n' +
       '- geklickt = wie viele Fragen des Fachs insgesamt durchgeklickt wurden. davon_falsch = wie viele davon falsch waren (höchstens geklickt). noch_offen = wie viele Fragen des Fachs noch nie geklickt wurden. Unbekannte Werte: null.\n' +
       '- berichte: art ist eine von rep (nur zuvor falsch beantwortete Fragen wiederholt), gen (generell wiederholt), sim (Prüfungssimulation), l100, l200, l300, l500 (die letzten 100/200/300/500 Prüfungsfragen; von muss dann 100/200/300/500 sein). richtig und von sind ganze Zahlen mit richtig <= von.\n' +
-      '- Die Datei darf höchstens 500 Berichte je Fach enthalten.\n\n' +
-      'ANLEITUNG FÜR EIN LERNPAKET (nur wenn ich in 2f) zugestimmt habe; dann gilt sie genau so, inklusive der Rückfragen dort):\n<<<\n' + nbPromptText() + '\n>>>';
+      '- Die Datei darf höchstens 500 Berichte je Fach enthalten.\n' +
+      '- WICHTIG, nichts überschreiben: Ich kann schon Einträge in der App haben (siehe Block „BEREITS IN DER APP EINGETRAGEN“, falls vorhanden; sonst frag mich danach). Die Datei überschreibt die Zahlen je Fach (geklickt, davon_falsch, noch_offen). Nimm deshalb nur Fächer auf, zu denen du wirklich Neues hast, und lass alle anderen Fächer weg. Bei einem Fach mit bereits eingetragenen Werten rechnest du Neues zu den vorhandenen Zahlen dazu oder fragst mich, was gelten soll, wenn sich Angaben widersprechen. Setze nie Werte kleiner als die vorhandenen, ohne dass ich es ausdrücklich bestätigt habe. Der Verlauf wird nur zusammengeführt; Berichte werden nur ergänzt und nie gelöscht. Frage im Zweifel nach, bevor du die Datei erstellst, und nenne mir in der Zusammenfassung, was sich gegenüber dem bisherigen Stand ändert.\n\n' +
+      'ANLEITUNG FÜR EIN LERNPAKET (nur wenn ich in 2f) zugestimmt habe; dann gilt sie genau so, inklusive der Rückfragen dort):\n<<<\n' + nbPromptText() + '\n>>>' + impExistingText();
   }
   function impOpenSheet(opt){
     opt = opt || {};
@@ -3003,6 +3040,7 @@ body.menuopen{overflow:hidden}
     cuReplay.home = false;
   }
   document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) rollDay();
     if(!document.hidden && !$('tabHome').hidden) replayHomePapi();
     if(!document.hidden && !$('tabSubj').hidden) replayRecent();
   });
@@ -3135,7 +3173,7 @@ body.menuopen{overflow:hidden}
     try{ o = JSON.parse(raw); }catch(e){ o = null; }
     var es = (o && Array.isArray(o.entries)) ? o.entries.filter(function(e){
       return e && typeof e.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && typeof e.n === 'number' && isFinite(e.n);
-    }).map(function(e){ return {d:e.d, n:e.n}; }) : [];
+    }).map(function(e){ var o = {d:e.d, n:e.n}; if(e.a) o.a = 1; return o; }) : [];
     if(!es.length){ dataMsg('Das ist kein gültiger Export.'); return; }
     function clone(v){ return JSON.parse(JSON.stringify(v)); }
     S.entries = es;
@@ -3159,7 +3197,7 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Einrichtung beim ersten Start ---------- */
   var OB_STEPS = 7;
-  var ob = {step:0, imp:null, v:{name:'', cloud:false, target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
+  var ob = {step:0, pre:true, imp:null, v:{name:'', cloud:false, target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
   function obVal(id){ var el = $(id); return el ? el.value : null; }
   function obCollect(){
     var v = ob.v, x;
@@ -3186,6 +3224,15 @@ body.menuopen{overflow:hidden}
   }
   function obRender(){
     var o = $('onb'), st = ob.step, v = ob.v;
+    if(ob.pre){
+      o.innerHTML = '<div class="obox"><div class="obtop"><span class="small">Willkommen</span></div>' +
+        '<h2>Hast du schon ein Profil?</h2><p>Wenn du Short Final! schon auf einem anderen Gerät nutzt, kannst du dich hier mit deinem GitHub-Token anmelden. Dein Stand, deine Fächer und Lernpakete werden dann geladen und du musst nichts neu einrichten.</p>' +
+        '<input type="password" id="obTok" placeholder="Token einfügen (ghp_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%">' +
+        '<div class="small" id="obLoginMsg" style="margin-top:8px;min-height:18px"></div>' +
+        '<div class="obimp" style="margin-top:6px"><button type="button" id="obLogin">Anmelden</button><button type="button" class="ghost" id="obNew">Nein, ich bin neu hier</button></div></div>';
+      o.scrollTop = 0;
+      return;
+    }
     var h = '<div class="obox"><div class="obtop"><span class="small">Schritt ' + (st + 1) + ' von ' + OB_STEPS + '</span><button class="ghost" id="obSkip">Überspringen</button></div>';
     if(st === 0){
       h += '<h2>Willkommen bei Short Final!</h2><p>Richte die App in wenigen Schritten ein, damit sie deinen Lernstand von Anfang an richtig anzeigt. Alles ist freiwillig. Mit „Überspringen“ startest du sofort mit Standardwerten. Du kannst alles später unter Einstellungen und im Tab Fächer ergänzen.</p>' +
@@ -3194,7 +3241,8 @@ body.menuopen{overflow:hidden}
       h += '<h2>Schon Fragen getrackt?</h2><p>Hast du bisher schon Fragen anders festgehalten, zum Beispiel in Notizen, in Excel oder einer anderen App? Dann kann Claude deine Unterlagen lesen, dir Rückfragen stellen und eine Datei erstellen, die deinen Lernstand hier einträgt. Auch Notizen kannst du als Lernpaket übernehmen.</p><div class="obimp">' +
            (ob.imp ? '<div class="ok">Lernstand vorgemerkt: ' + impSummary(ob.imp).replace(/<\/?ul[^>]*>/g, '') + '</div>' : '') +
            '<button type="button" id="obImp">' + (ob.imp ? 'Andere Datei importieren' : 'Ja, mit Claude importieren') + '</button>' +
-           (ob.imp ? '' : '<button type="button" class="ghost" id="obNoImp">Nein, ich fange neu an</button>') + '</div>';
+           (ob.imp ? '' : '<button type="button" class="ghost" id="obNoImp">Nein, ich fange neu an</button>') + '</div>' +
+           '<p class="small" style="margin-top:14px">Du kannst deinen bisherigen Lernstand auch später jederzeit nachtragen: Menü › Lernstand importieren. Bereits eingetragene Daten bleiben dabei erhalten.</p>';
     }else if(st === 2){
       h += '<h2>Dein Ziel</h2><p>Wie viele ATPL-Fragen willst du insgesamt geklickt haben und bis wann?</p>' +
            obField('obTarget', 'Ziel (Anzahl Fragen)', 'number', v.target, 'z. B. 20000') + obField('obDeadline', 'Bis wann?', 'date', v.deadline);
@@ -3219,7 +3267,7 @@ body.menuopen{overflow:hidden}
            '<label class="tg" style="margin-top:14px"><span>Cloud-Synchronisierung danach einrichten (alle Geräte, über GitHub)</span><input type="checkbox" class="sw" id="obCloud"' + (v.cloud ? ' checked' : '') + '></label>';
     }
     h += '<div class="obnav">' + (st > 0 ? '<button class="ghost" id="obBack" style="padding:11px 14px">Zurück</button>' : '') +
-         '<button id="obNext">' + (st === 0 ? 'Los geht’s' : (st === OB_STEPS - 1 ? 'App starten' : 'Weiter')) + '</button></div></div>';
+         ((st === 1 && !ob.imp) ? '' : '<button id="obNext">' + (st === 0 ? 'Los geht’s' : (st === OB_STEPS - 1 ? 'App starten' : 'Weiter')) + '</button>') + '</div></div>';
     o.innerHTML = h;
     o.scrollTop = 0;
   }
@@ -3263,6 +3311,25 @@ body.menuopen{overflow:hidden}
       el.classList.add('out');
       setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
     });
+  }
+  var obLoginBusy = false;
+  function obLoginDone(){
+    if(!obLoginBusy || !ob.pre) return;
+    obLoginBusy = false;
+    if(S.fresh === true){
+      tokWarnPending = tokWarnPending;
+      ob.pre = false; obRender();
+      var m = $('obox') || document;
+      return;
+    }
+    tokWarnPending = false;
+    document.body.classList.remove('obopen');
+    $('onb').hidden = true; $('onb').innerHTML = '';
+    document.body.style.overflow = '';
+    try{ localStorage.setItem(KEY + '-look-asked', '1'); }catch(e){}
+    render(); renderSubjects(); renderHome(); showTab('home'); renderGreeting();
+    var w = document.getElementById('wel'); if(w && w.parentNode) w.parentNode.removeChild(w);
+    toast('Angemeldet. Dein Stand wurde geladen.');
   }
   function obOpen(){
     $('onb').hidden = false;
@@ -3314,6 +3381,14 @@ body.menuopen{overflow:hidden}
   $('onb').addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('button') : null;
     if(!b) return;
+    if(b.id === 'obNew'){ ob.pre = false; obRender(); return; }
+    if(b.id === 'obLogin'){
+      var tk = ($('obTok').value || '').trim();
+      if(!tk){ $('obLoginMsg').textContent = 'Bitte den Token einfügen.'; return; }
+      obLoginBusy = true; $('obLoginMsg').textContent = 'Melde an …';
+      $('syncTok').value = tk; $('syncConnect').click();
+      return;
+    }
     if(b.id === 'obSkip'){ obApply(); return; }
     if(b.id === 'obImp'){ obCollect(); impOpenSheet({onDefer:obImpDefer}); return; }
     if(b.id === 'obNoImp'){ obCollect(); ob.step++; obRender(); return; }
@@ -3355,7 +3430,11 @@ body.menuopen{overflow:hidden}
   renderHome();
   cuReplay.home = false;
   tickClock();
-  setInterval(function(){ renderCountdown(); tickClock(); }, 20000);
+  setInterval(function(){ renderCountdown(); tickClock(); rollDay(); }, 20000);
+  function rollDay(){
+    if(!fillGaps()) return;
+    save(); render(); renderHome();
+  }
 
   /* ---------- Chronik, Rückgängig, Fragen hinzufügen ---------- */
   function logAdd(title, ops){
@@ -3369,7 +3448,7 @@ body.menuopen{overflow:hidden}
     var last = es[es.length - 1];
     var d = (dateISO && dateISO > last.d) ? dateISO : last.d;
     if(d === last.d){
-      S.entries.forEach(function(e){ if(e.d === d) e.n += n; });
+      S.entries.forEach(function(e){ if(e.d === d){ e.n += n; delete e.a; } });
       return {k:'total', d:d, n:n, created:false};
     }
     S.entries.push({d:d, n:last.n + n});
@@ -5007,6 +5086,11 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-16', items:[
+      {t:'Tage ohne Eintrag', x:'Ist ein Tag vorbei und du hast nichts eingetragen, zählt er als 0 geklickte Fragen und wird automatisch im Verlauf ergänzt (Markierung „auto“). Prognose und Rückstand aktualisieren sich dadurch jeden Tag. Du kannst jeden Tag jederzeit nachtragen.'},
+      {t:'Anmelden mit Profil', x:'Beim ersten Start fragt die App zuerst, ob du schon ein Profil hast. Mit deinem GitHub-Token wird dein Stand direkt geladen.', web:true},
+      {t:'Token sichern', x:'Nach dem Speichern des Tokens erinnert dich ein Hinweis, ihn sicher abzulegen, weil GitHub ihn nicht noch einmal anzeigt.', web:true}
+    ]},
     {v:'2026.10.10-15', items:[
       {t:'Neue Fragen geklickt', x:'In „Fragen Tracken“ heißt die Kategorie jetzt „Neue Fragen geklickt“. Sie zieht die Anzahl vom „Noch offen“ des Fachs ab.', tab:'home', sel:'#addQBtn'},
       {t:'Offene Fragen prüfen', x:'Einmal im Monat fragt die App, ob die noch zu klickenden Fragen stimmen: Ja, Nein (dann korrigierst du) oder Später (kommt beim nächsten Öffnen wieder).'},
@@ -5196,7 +5280,7 @@ body.menuopen{overflow:hidden}
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function(){ syncNow(false); }, 3000);
   }
-  function syncMsg(t){ var el = $('syncMsg'); if(el) el.textContent = t || ''; }
+  function syncMsg(t){ var el = $('syncMsg'); if(el) el.textContent = t || ''; var ol = $('obLoginMsg'); if(ol) ol.textContent = t || ''; }
   function syncUI(){
     var on = !!(syncCfg && syncCfg.gistId);
     $('syncOff1').hidden = on; $('syncOn1').hidden = !on;
@@ -5243,7 +5327,7 @@ body.menuopen{overflow:hidden}
     try{
       var cp = function(x){ return JSON.parse(JSON.stringify(x)); };
       S.target = d.target || S.target; S.deadline = d.deadline || S.deadline;
-      S.entries = d.entries.map(function(e){ return {d:String(e.d), n:Number(e.n)}; });
+      S.entries = d.entries.map(function(e){ var o = {d:String(e.d), n:Number(e.n)}; if(e.a) o.a = 1; return o; });
       S.subjects = d.subjects ? cp(d.subjects) : S.subjects;
       S.weights = d.weights ? cp(d.weights) : S.weights;
       S.exam = d.exam || S.exam; S.examTime = d.examTime || S.examTime;
@@ -5288,8 +5372,22 @@ body.menuopen{overflow:hidden}
       return x && (nn(x.clicked) !== null || nn(x.todo) !== null || (x.rep && x.rep.length) || (x.last && x.last.length) || (x.sim && x.sim.length) || (x.gen && x.gen.length));
     });
   }
+  var tokWarnPending = false;
+  function tokWarn(){
+    var sh = openSheet('<div class="shead"><h2>Token jetzt sichern</h2></div>' +
+      '<p class="small" style="font-size:14px;line-height:1.5;color:var(--text)">Dein Token wurde gespeichert. <b>GitHub zeigt ihn dir kein zweites Mal an.</b> Speichere ihn deshalb jetzt an einem sicheren Ort, zum Beispiel in einem Passwortmanager oder in deinen Notizen. Du brauchst ihn, um ein neues Gerät zu verbinden oder nach dem Löschen der App-Daten wieder an deinen Stand zu kommen.</p>' +
+      '<p class="small">Geht er verloren, kannst du bei GitHub einen neuen erzeugen. Dein gespeicherter Stand bleibt dabei erhalten.</p>' +
+      '<div class="row" style="margin-top:12px"><button type="button" id="tokCopy" style="flex:1">Token kopieren</button><button type="button" class="ghost" id="tokOk" style="flex:1">Verstanden</button></div><div class="small" id="tokMsg" style="margin-top:8px"></div>');
+    sh.ov.querySelector('#tokCopy').addEventListener('click', function(){
+      var ok = syncCfg && syncCfg.token && copyText(syncCfg.token);
+      sh.ov.querySelector('#tokMsg').textContent = ok ? 'Token kopiert. Jetzt sicher ablegen.' : 'Kopieren nicht möglich. Du kannst ihn später unter „Token kopieren“ holen.';
+    });
+    sh.ov.querySelector('#tokOk').addEventListener('click', function(){ sh.close(); });
+  }
   function syncDone(msg){
     syncCfg.last = Date.now(); syncStore();
+    if(obLoginBusy){ var wasW = tokWarnPending; obLoginDone(); if(!(S.fresh === true)) wasW = false; if(!wasW) tokWarnPending = false; }
+    if(tokWarnPending){ tokWarnPending = false; setTimeout(tokWarn, 250); }
     $('syncChoice').innerHTML = ''; $('syncTok').value = '';
     syncUI(); syncMsg(msg);
     if(nbHooks.syncPacks) nbHooks.syncPacks(true);
@@ -5298,6 +5396,7 @@ body.menuopen{overflow:hidden}
     var tok = $('syncTok').value.trim();
     if(!tok){ syncMsg('Bitte den Token einfügen.'); return; }
     syncCfg = {token:tok, gistId:null, last:0};
+    tokWarnPending = true;
     syncMsg('Verbinde …');
     gh('/gists?per_page=100', {auth:true}).then(function(list){
       var g = (list || []).filter(function(x){ return x.files && x.files[SYNC_FILE]; })[0];
@@ -5320,7 +5419,7 @@ body.menuopen{overflow:hidden}
         syncDone('Verbunden. Stand hochgeladen. Auf dem nächsten Gerät denselben Token einfügen.');
       });
     }).catch(function(e){
-      syncCfg = null;
+      syncCfg = null; tokWarnPending = false; obLoginBusy = false;
       syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“.' : 'Verbindung fehlgeschlagen. Bist du online?');
     });
   });

@@ -352,12 +352,56 @@ body.nbopen{overflow:hidden}
 .addq.lz{background:#f09d37;border-color:#f09d37;color:#1b1204;display:flex;flex-direction:column;align-items:center;gap:1px;padding:11px 18px;animation:lzpulse 3.4s ease-in-out infinite}
 .addq.lz b{font-size:16px;letter-spacing:.02em}
 .addq.lz span{font-size:12px;font-weight:600;opacity:.8}
-@keyframes lzpulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(240,157,55,.0)}50%{transform:scale(1.018);box-shadow:0 0 18px 2px rgba(240,157,55,.5)}}
+@keyframes lzpulse{0%,100%{box-shadow:0 0 0 0 rgba(240,157,55,0);filter:brightness(1)}50%{box-shadow:0 0 20px 3px rgba(240,157,55,.55);filter:brightness(1.07)}}
 @media (prefers-reduced-motion: reduce){.addq.lz{animation:none}}
 .nbdocs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
 .nbdoc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
 .nbdn{flex:1;min-width:120px;overflow-wrap:anywhere}
 .nbsyncbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.greet{font-size:17px;font-weight:600;line-height:1.35;margin:0 2px 12px;color:var(--text)}
+.greet .gname{color:var(--accent)}
+.statrow a{color:var(--accent);font-weight:650;margin-left:4px}
+.acct{margin:8px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.acct input{margin-top:4px}
+.achd{font-size:13px;margin:6px 0 0;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.lkh{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.lkcol{display:flex;flex-wrap:wrap;gap:10px}
+.lksw{width:38px;height:38px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line);padding:0;cursor:pointer;position:relative;display:inline-flex;align-items:center;justify-content:center}
+.lksw.on{border-color:var(--card);box-shadow:0 0 0 3px var(--text)}
+.lkcustom{background:conic-gradient(#ff4d4d,#ffd84d,#4dff7a,#4dd2ff,#7a4dff,#ff4dd8,#ff4d4d);margin:0 !important}
+.lkcustom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
+.lkcustom span{font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none}
+.lkcd{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.lkopt{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;background:var(--card2);color:var(--text);border:2px solid var(--line);border-radius:14px;padding:10px 8px;font-weight:600}
+.lkopt.on{border-color:var(--accent);background:var(--card)}
+.lkopt b{font-size:13.5px}
+.lkopt .small{font-size:11px}
+.lkpv{display:flex;align-items:center;justify-content:center;height:30px}
+.pvrow{display:inline-flex;gap:2px;align-items:center}.pvrow s{width:6px}
+.pvf{font-style:normal;font-family:var(--mono);font-weight:700;font-size:13px;background:#0b1329;color:#f3f6ff;border-radius:4px;padding:3px 4px;line-height:1}
+.pvboard{font-family:var(--mono);font-size:11px;font-weight:700;background:#0b1329;color:#ffb21e;border-radius:4px;padding:5px 7px;letter-spacing:.06em}
+.pvring{width:64px;height:24px;fill:none;stroke:var(--accent);stroke-width:3}
+.pvroute{display:block;position:relative;width:64px;height:4px;border-radius:2px;background:var(--track)}
+.pvroute i{position:absolute;left:0;top:0;bottom:0;width:55%;background:var(--accent);border-radius:2px}
+.pvroute b{position:absolute;left:55%;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--accent);margin-left:-6px}
+.pvtxt{font-weight:800;font-size:15px}
+.cdbd{margin:10px auto 2px;max-width:340px;background:#0b1329;border-radius:14px;padding:10px 14px 12px;border:1px solid #24325a;box-shadow:inset 0 0 22px rgba(255,178,30,.08)}
+.cdbd .bdr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:#ffb21e;opacity:.75;margin-bottom:6px}
+.cdbd .bdt{display:flex;align-items:baseline;justify-content:center;gap:6px;font-family:var(--mono);color:#ffb21e;text-shadow:0 0 12px rgba(255,178,30,.45)}
+.cdbd .bdt b{font-size:42px;font-weight:700;line-height:1.05}
+.cdbd .bdt i{font-style:normal;font-size:15px;opacity:.8;margin-right:6px}
+.cdrings{display:flex;justify-content:center;gap:14px;margin:10px 0 2px;flex-wrap:wrap}
+.cdrg{position:relative;width:84px;height:92px;text-align:center}
+.cdrg svg{width:84px;height:84px;display:block}
+.cdrg .bg{fill:none;stroke:var(--track);stroke-width:7}
+.cdrg .fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round}
+.cdrg b{position:absolute;left:0;right:0;top:27px;font-family:var(--mono);font-size:24px}
+.cdrg span{position:absolute;left:0;right:0;top:56px;font-size:11px;color:var(--muted)}
+.cdrt{padding:14px 10px 10px}
+.cdln{position:relative;height:6px;border-radius:3px;background:var(--track)}
+.cdln i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
+.cdln span{position:absolute;top:50%;width:0;height:0}
+.cdpl{position:absolute;left:-14px;top:-14px;width:28px;height:28px;color:var(--accent);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;background:#141a33;color:#fff;border:1px solid rgba(255,79,216,.5);padding:10px 18px;border-radius:999px;font-size:13.5px;animation:cfade .25s ease-out both;max-width:90vw;text-align:center}
 .tour{position:fixed;left:0;right:0;top:0;bottom:0;z-index:150}
 .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,8,20,.8),0 0 0 2px var(--accent),0 0 22px 2px var(--accent);transition:all .35s ease;pointer-events:none}
@@ -389,7 +433,7 @@ body.menuopen{overflow:hidden}
   .grid{grid-template-columns:repeat(4,1fr)}
   #tabHome,#tabMain{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #tabHome>*,#tabMain>*{margin:0 !important}
-  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
+  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
   #subjBox{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #subjBox>.card{margin:0}
   .sheetov{align-items:center}
@@ -479,13 +523,14 @@ body.menuopen{overflow:hidden}
     <button class="iconbtn burger" id="menuBtn" aria-label="Menü und Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
   </header>
   <div class="sub" id="sub"></div>
-  <div class="small" id="status" style="margin:-8px 0 12px"></div>
+  <div class="small statrow" style="margin:-8px 0 12px"><span id="status"></span> <a href="#" id="syncLink" hidden>Cloud-Synchronisierung einrichten</a></div>
 
   <div class="tabs"><button class="tab on" id="tabBtnHome">Heute</button><button class="tab" id="tabBtnMain">Fragen-Ziel</button><button class="tab" id="tabBtnSubj">Fächer</button></div>
 
   <div id="tabHome">
+    <div class="greet" id="greet" hidden></div>
     <div class="card cdc" id="cdCard"></div>
-    <button class="addq" id="addQBtn">Fragen hinzufügen</button>
+    <button class="addq" id="addQBtn">Fragen Tracken</button>
     <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
@@ -550,6 +595,11 @@ body.menuopen{overflow:hidden}
     </table>
   </div>
 
+  <details class="card settings" id="lookCard">
+    <summary>Individualisierung</summary>
+    <div id="lookBody"></div>
+  </details>
+
   <details class="card settings" id="settingsMain">
     <summary>Ziel und Hilfe</summary>
     <div class="row" style="margin-top:10px">
@@ -572,7 +622,9 @@ body.menuopen{overflow:hidden}
       <div class="small" id="dataMsg" style="margin-top:6px"></div>
     </details>
     <details class="card settings" id="syncCard">
-      <summary>Geräte-Abgleich (GitHub)</summary>
+      <summary>Cloud-Synchronisierung und Account</summary>
+      <div class="acct"><label>Benutzername<input id="acName" type="text" maxlength="24" placeholder="Dein Name" autocomplete="nickname" autocapitalize="words" spellcheck="false"></label><div class="small" style="margin-top:4px">Damit begrüßt dich die App auf dem Startbildschirm. Mit Cloud-Synchronisierung gilt er auf allen Geräten.</div></div>
+      <h3 class="achd">Cloud-Synchronisierung</h3>
       <div id="syncOff1">
         <div class="small" style="margin:8px 0 10px">Hält deinen Stand auf allen Geräten gleich. Er liegt in einem privaten Gist in deinem GitHub-Konto. Einrichten: 1) Token bei GitHub erzeugen (nur Berechtigung „gist“), 2) hier einfügen, 3) auf jedem Gerät wiederholen.</div>
         <a href="https://github.com/settings/tokens/new?scopes=gist&description=Short%20Final" target="_blank" rel="noopener" style="color:var(--accent);font-weight:650;font-size:13px">Token bei GitHub erstellen</a>
@@ -611,6 +663,23 @@ body.menuopen{overflow:hidden}
   var KEY = 'atpl-tracker-v1';
   var DEFAULTS = {target:20000, deadline:'', entries:[]};
   var S = null;
+  var LOOK_COLORS = [
+    ['magenta', 'Magenta', null, null],
+    ['orange', 'Orange', '#d9620a', '#ff9a3d'],
+    ['gold', 'Gold', '#b88400', '#ffd04a'],
+    ['green', 'Grün', '#1d8f3f', '#52e07b'],
+    ['teal', 'Türkis', '#0a8f86', '#3fe0d0'],
+    ['blue', 'Blau', '#1f6fe0', '#5aa2ff'],
+    ['violet', 'Violett', '#7a3fd6', '#b48cff'],
+    ['red', 'Rot', '#d12f3f', '#ff6b78']
+  ];
+  var CD_STYLES = [
+    ['flap', 'Fallblatt', 'Klassisch mit Klappziffern'],
+    ['board', 'Anzeigetafel', 'Wie am Flughafen'],
+    ['ring', 'Ringe', 'Tage, Stunden, Minuten'],
+    ['route', 'Flugroute', 'Flugzeug auf dem Weg'],
+    ['text', 'Minimal', 'Nur Tage und Uhrzeit']
+  ];
   var appStart = Date.now();
   var STANDALONE = true;
 
@@ -881,6 +950,7 @@ body.menuopen{overflow:hidden}
               ai: d.ai ? JSON.parse(JSON.stringify(d.ai)) : (S.ai || null),
               log: Array.isArray(d.log) ? JSON.parse(JSON.stringify(d.log)) : (S.log || []),
               nb: (d.nb && typeof d.nb === 'object') ? JSON.parse(JSON.stringify(d.nb)) : S.nb,
+              look: (d.look && typeof d.look === 'object') ? JSON.parse(JSON.stringify(d.look)) : S.look,
               milestone: Math.max(typeof d.milestone === 'number' ? d.milestone : 0, S.milestone || 0),
               allGreen: (typeof d.allGreen === 'boolean') ? d.allGreen : S.allGreen,
               papi: (function(){
@@ -891,6 +961,7 @@ body.menuopen{overflow:hidden}
               })()
             };
             ensureS();
+            applyLook();
             try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
             render();
             renderSubjects();
@@ -942,6 +1013,7 @@ body.menuopen{overflow:hidden}
     if(!S.subjects || typeof S.subjects !== 'object') S.subjects = {};
     if(!Array.isArray(S.log)) S.log = [];
     nbMeta();
+    lookNorm();
     if(typeof S.milestone !== 'number' || !isFinite(S.milestone)){
       var mx = 0;
       (S.entries || []).forEach(function(e){ if(e && e.n > mx) mx = e.n; });
@@ -960,7 +1032,7 @@ body.menuopen{overflow:hidden}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null
     }));
   }
   function nn(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
@@ -2042,6 +2114,9 @@ body.menuopen{overflow:hidden}
     var ex = examDate(), now = new Date(), ms = ex - now;
     if(ms <= 0){ cdMode = 'text'; renderCountdownStatic(); return; }
     var tm = Math.floor(ms / 60000), d = Math.floor(tm / 1440), hh = Math.floor(tm / 60) % 24, mm = tm % 60;
+    var sty = (S.look && S.look.cd) || 'flap';
+    if(sty === 'text'){ cdMode = 'text'; renderCountdownStatic(); return; }
+    if(sty === 'board' || sty === 'ring' || sty === 'route'){ cdMode = 'v-' + sty; el.innerHTML = cdVariant(sty, d, hh, mm, ex, now, ms); return; }
     var ds = String(d); if(ds.length < 2) ds = '0' + ds;
     if(cdMode !== 'flap' || cdDigits !== ds.length){
       el.innerHTML = buildFlaps(ds.length);
@@ -2349,6 +2424,7 @@ body.menuopen{overflow:hidden}
     if(typeof o.examTime === 'string' && o.examTime) S.examTime = o.examTime;
     S.ai = (o.ai && typeof o.ai === 'object') ? clone(o.ai) : null;
     if(o.nb && typeof o.nb === 'object') S.nb = clone(o.nb);
+    if(o.look && typeof o.look === 'object'){ S.look = clone(o.look); applyLook(); }
     if(typeof o.milestone === 'number') S.milestone = o.milestone; else delete S.milestone;
     S.papi = (o.papi && typeof o.papi === 'object') ? clone(o.papi) : null;
     if(typeof o.allGreen === 'boolean') S.allGreen = o.allGreen; else delete S.allGreen;
@@ -2360,7 +2436,7 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Einrichtung beim ersten Start ---------- */
   var OB_STEPS = 6;
-  var ob = {step:0, v:{target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
+  var ob = {step:0, v:{name:'', cloud:false, target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
   function obVal(id){ var el = $(id); return el ? el.value : null; }
   function obCollect(){
     var v = ob.v, x;
@@ -2369,6 +2445,8 @@ body.menuopen{overflow:hidden}
     if((x = obVal('obExam')) !== null) v.exam = x;
     if((x = obVal('obExamTime')) !== null) v.examTime = x;
     if((x = obVal('obStand')) !== null) v.stand = x;
+    if((x = obVal('obName')) !== null) v.name = x;
+    if($('obCloud')) v.cloud = $('obCloud').checked;
     SUBJECTS.forEach(function(sj, i){
       var c = $('obC' + i), w = $('obW' + i), t = $('obT' + i);
       if(c && w && t) v.subj[sj.id] = {c:c.value, w:w.value, t:t.value};
@@ -2387,7 +2465,8 @@ body.menuopen{overflow:hidden}
     var o = $('onb'), st = ob.step, v = ob.v;
     var h = '<div class="obox"><div class="obtop"><span class="small">Schritt ' + (st + 1) + ' von ' + OB_STEPS + '</span><button class="ghost" id="obSkip">Überspringen</button></div>';
     if(st === 0){
-      h += '<h2>Willkommen bei Short Final!</h2><p>Richte die App in wenigen Schritten ein, damit sie deinen Lernstand von Anfang an richtig anzeigt. Alles ist freiwillig. Mit „Überspringen“ startest du sofort mit Standardwerten. Du kannst alles später unter Einstellungen und im Tab Fächer ergänzen.</p>';
+      h += '<h2>Willkommen bei Short Final!</h2><p>Richte die App in wenigen Schritten ein, damit sie deinen Lernstand von Anfang an richtig anzeigt. Alles ist freiwillig. Mit „Überspringen“ startest du sofort mit Standardwerten. Du kannst alles später unter Einstellungen und im Tab Fächer ergänzen.</p>' +
+           obField('obName', 'Wie sollen wir dich nennen? (optional)', 'text', v.name, 'Dein Name') + '<div class="small" style="margin-top:6px">Damit begrüßt dich die App auf dem Startbildschirm.</div>';
     }else if(st === 1){
       h += '<h2>Dein Ziel</h2><p>Wie viele ATPL-Fragen willst du insgesamt geklickt haben und bis wann?</p>' +
            obField('obTarget', 'Ziel (Anzahl Fragen)', 'number', v.target, 'z. B. 20000') + obField('obDeadline', 'Bis wann?', 'date', v.deadline);
@@ -2408,7 +2487,8 @@ body.menuopen{overflow:hidden}
       var tg = readInt(v.target) || 20000, stand = readInt(v.stand), nf = 0;
       SUBJECTS.forEach(function(sj){ var sv = v.subj[sj.id]; if(sv && (readInt(sv.c) !== null || readInt(sv.t) !== null)) nf++; });
       h += '<h2>Alles bereit</h2><p>So startet deine App. Du kannst alles später ändern.</p><div class="obsum">Ziel: <b>' + fmt(tg) + '</b> Fragen bis <b>' + fd(parse(v.deadline || addDaysISO(60))) + '</b><br>' +
-           'Prüfung: <b>' + fd(parse(v.exam || v.deadline || addDaysISO(60))) + '</b><br>Stand: <b>' + fmt(stand === null ? 0 : stand) + '</b> Fragen<br>Fächer mit Zahlen: <b>' + nf + ' / ' + SUBJECTS.length + '</b></div>';
+           'Prüfung: <b>' + fd(parse(v.exam || v.deadline || addDaysISO(60))) + '</b><br>Stand: <b>' + fmt(stand === null ? 0 : stand) + '</b> Fragen<br>Fächer mit Zahlen: <b>' + nf + ' / ' + SUBJECTS.length + '</b>' + (nameClean(v.name) ? '<br>Name: <b>' + esc(nameClean(v.name)) + '</b>' : '') + '</div>' +
+           '<label class="tg" style="margin-top:14px"><span>Cloud-Synchronisierung danach einrichten (alle Geräte, über GitHub)</span><input type="checkbox" class="sw" id="obCloud"' + (v.cloud ? ' checked' : '') + '></label>';
     }
     h += '<div class="obnav">' + (st > 0 ? '<button class="ghost" id="obBack" style="padding:11px 14px">Zurück</button>' : '') +
          '<button id="obNext">' + (st === 0 ? 'Los geht’s' : (st === OB_STEPS - 1 ? 'App starten' : 'Weiter')) + '</button></div></div>';
@@ -2427,6 +2507,7 @@ body.menuopen{overflow:hidden}
     var dl = v.deadline || addDaysISO(60);
     var stand = readInt(v.stand); if(stand === null) stand = 0;
     S.target = target; S.deadline = dl;
+    S.uname = nameClean(v.name);
     S.exam = v.exam || dl; S.examTime = v.examTime || '00:00';
     S.entries = [{d:today, n:stand}];
     SUBJECTS.forEach(function(sj){
@@ -2453,7 +2534,9 @@ body.menuopen{overflow:hidden}
     document.body.style.overflow = '';
     render(); renderSubjects(); renderHome();
     showTab('home');
-    setTimeout(function(){ startTour(); }, 700);
+    renderGreeting();
+    try{ localStorage.setItem(KEY + '-look-asked', '1'); }catch(e){}
+    setTimeout(function(){ showLookSheet(function(){ if(v.cloud){ obTourPending = true; openSyncSettings(); } else startTour(); }); }, 600);
   }
   $('onb').addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('button') : null;
@@ -2572,7 +2655,7 @@ body.menuopen{overflow:hidden}
       return '<button type="button" class="catb' + (c[0] === 'click' ? ' on' : '') + '" data-aqcat="' + c[0] + '">' + c[1] + '</button>';
     }).join('');
     var opts = '<option value="">Kein Fach (nur Gesamtzahl)</option>' + SUBJECTS.map(function(sj, i){ return '<option value="' + i + '">' + esc(sj.name) + '</option>'; }).join('');
-    var sh = openSheet('<div class="shead"><h2>Fragen hinzufügen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+    var sh = openSheet('<div class="shead"><h2>Fragen Tracken</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<label>Fach<select id="aqSub">' + opts + '</select></label>' +
       '<div id="aqCat" hidden><label>Was hast du gemacht?</label><div class="cats" id="aqCats">' + catBtns + '</div><div class="small" id="aqCatHint"></div></div>' +
       '<div class="f2"><label>Datum<input type="date" id="aqD" value="' + iso(new Date()) + '"></label><label>Geklickte Fragen<input type="number" id="aqN" inputmode="numeric" min="1" placeholder="Anzahl"></label></div>' +
@@ -3195,7 +3278,7 @@ body.menuopen{overflow:hidden}
           nbCopy(url);
           if(navigator.share){ try{ navigator.share({title:p.title, url:url}).catch(function(){}); }catch(e){} }
         }, function(e){
-          msg.textContent = (e && e.message === 'notoken') ? 'Dafür muss der Geräte-Abgleich mit GitHub verbunden sein (Menü oben rechts).' : 'Link konnte nicht erstellt werden. Prüfe die Verbindung und den Token.';
+          msg.textContent = (e && e.message === 'notoken') ? 'Dafür muss die Cloud-Synchronisierung mit GitHub verbunden sein (Menü oben rechts).' : 'Link konnte nicht erstellt werden. Prüfe die Verbindung und den Token.';
         });
       });
     }
@@ -3705,10 +3788,160 @@ body.menuopen{overflow:hidden}
     if(nbHooks.boot) nbHooks.boot();
   }, 0);
 
+  /* ---------- Individualisierung: App-Farben und Countdown-Anzeige ---------- */
+  function lookNorm(){
+    if(!S.look || typeof S.look !== 'object' || Array.isArray(S.look)) S.look = {};
+    var a = S.look.accent;
+    var okc = typeof a === 'string' && (/^#[0-9a-fA-F]{6}$/.test(a) || LOOK_COLORS.some(function(c){ return c[0] === a; }));
+    if(!okc) S.look.accent = 'magenta';
+    if(!CD_STYLES.some(function(c){ return c[0] === S.look.cd; })) S.look.cd = 'flap';
+    return S.look;
+  }
+  function hexRgb(h){ return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
+  function rgbHex(r){ return '#' + r.map(function(v){ v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+  function lumOf(h){ var c = hexRgb(h).map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function mixHex(h, w, k){ var c = hexRgb(h); return rgbHex(c.map(function(v){ return v + (w - v) * k; })); }
+  function lookPair(a){
+    for(var i = 0; i < LOOK_COLORS.length; i++) if(LOOK_COLORS[i][0] === a && LOOK_COLORS[i][2]) return {l:LOOK_COLORS[i][2], d:LOOK_COLORS[i][3]};
+    if(/^#[0-9a-fA-F]{6}$/.test(a)){
+      var l = a, d = a;
+      if(lumOf(l) > 0.6) l = mixHex(l, 0, 0.35);
+      if(lumOf(d) < 0.3) d = mixHex(d, 255, 0.45);
+      return {l:l, d:d};
+    }
+    return null;
+  }
+  function darkTheme(){
+    var t = document.documentElement.getAttribute('data-theme');
+    return t === 'dark' || (t !== 'light' && !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+  }
+  function applyLook(){
+    var st = document.documentElement.style, props = ['--accent', '--on-accent', '--mag', '--glow1'];
+    var a = S && S.look && S.look.accent, pair = (a && a !== 'magenta') ? lookPair(a) : null;
+    if(!pair){ props.forEach(function(p){ st.removeProperty(p); }); return; }
+    var dark = darkTheme(), col = dark ? pair.d : pair.l, rgb = hexRgb(col);
+    st.setProperty('--accent', col); st.setProperty('--mag', col);
+    st.setProperty('--on-accent', lumOf(col) > 0.38 ? '#14110a' : '#ffffff');
+    st.setProperty('--glow1', 'rgba(' + rgb.join(',') + ',' + (dark ? '.16' : '.10') + ')');
+  }
+  function lookSwatchColor(c){ return c[2] ? (darkTheme() ? c[3] : c[2]) : (darkTheme() ? '#ff4fd8' : '#c4189b'); }
+  function cdPreview(k){
+    var f = function(t){ return '<i class="pvf">' + t + '</i>'; };
+    if(k === 'flap') return '<span class="pvrow">' + f('3') + f('6') + '<s></s>' + f('0') + f('4') + '</span>';
+    if(k === 'board') return '<span class="pvboard">36 T 04 H</span>';
+    if(k === 'ring') return '<svg viewBox="0 0 64 24" class="pvring"><circle cx="12" cy="12" r="9"/><circle cx="32" cy="12" r="9"/><circle cx="52" cy="12" r="9"/></svg>';
+    if(k === 'route') return '<span class="pvroute"><i></i><b></b></span>';
+    return '<span class="pvtxt">36 Tage</span>';
+  }
+  function lookInner(){
+    lookNorm();
+    var cur = S.look.accent, h = '<h3 class="lkh">App-Farbe</h3><div class="lkcol">';
+    LOOK_COLORS.forEach(function(c){
+      h += '<button type="button" class="lksw' + (cur === c[0] ? ' on' : '') + '" data-lkacc="' + c[0] + '" style="background:' + lookSwatchColor(c) + '" aria-label="' + escA(c[1]) + '" title="' + escA(c[1]) + '"></button>';
+    });
+    var custom = /^#[0-9a-fA-F]{6}$/.test(cur);
+    h += '<label class="lksw lkcustom' + (custom ? ' on' : '') + '" title="Eigene Farbe"><input type="color" data-lkcustom="1" value="' + (custom ? cur : '#c4189b') + '" aria-label="Eigene Farbe wählen"><span>+</span></label></div>';
+    h += '<h3 class="lkh">Countdown-Anzeige</h3><div class="lkcd">';
+    CD_STYLES.forEach(function(c){
+      h += '<button type="button" class="lkopt' + (S.look.cd === c[0] ? ' on' : '') + '" data-lkcd="' + c[0] + '"><span class="lkpv">' + cdPreview(c[0]) + '</span><b>' + c[1] + '</b><span class="small">' + c[2] + '</span></button>';
+    });
+    return h + '</div>';
+  }
+  function lookRefresh(){
+    var a = $('lookBody'), b = document.getElementById('lkSheetBody');
+    if(a) a.innerHTML = lookInner();
+    if(b) b.innerHTML = lookInner();
+  }
+  function lookSet(key, val){
+    lookNorm();
+    S.look[key] = val;
+    save(); applyLook(); cdMode = null; renderCountdown(); lookRefresh();
+  }
+  document.addEventListener('click', function(ev){
+    var t = ev.target, b;
+    if(!t || !t.closest) return;
+    if((b = t.closest('[data-lkacc]'))){ lookSet('accent', b.getAttribute('data-lkacc')); return; }
+    if((b = t.closest('[data-lkcd]'))){ lookSet('cd', b.getAttribute('data-lkcd')); }
+  });
+  document.addEventListener('input', function(ev){
+    var t = ev.target;
+    if(t && t.getAttribute && t.getAttribute('data-lkcustom') && /^#[0-9a-fA-F]{6}$/.test(t.value)){
+      lookNorm(); S.look.accent = t.value.toLowerCase();
+      applyLook();
+    }
+  });
+  document.addEventListener('change', function(ev){
+    var t = ev.target;
+    if(t && t.getAttribute && t.getAttribute('data-lkcustom')){ save(); lookRefresh(); }
+  });
+  try{ new MutationObserver(applyLook).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']}); }catch(e){}
+  try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyLook); }catch(e){}
+  $('lookCard').addEventListener('toggle', function(){ if(this.open) lookRefresh(); });
+  lookRefresh();
+
+  /* Countdown-Varianten */
+  function cdSpanMs(ex){
+    var first = null;
+    (S.entries || []).forEach(function(e){ if(e && e.d && (first === null || e.d < first)) first = e.d; });
+    var s = first ? parse(first) : null;
+    if(!s || s >= ex) s = new Date(ex.getTime() - 90 * 86400000);
+    return {start:s, total:ex - s};
+  }
+  function cdRing(frac, val, label){
+    var C = 2 * Math.PI * 30, off = C * (1 - Math.max(0, Math.min(1, frac)));
+    return '<div class="cdrg"><svg viewBox="0 0 76 76" aria-hidden="true"><circle class="bg" cx="38" cy="38" r="30"/><circle class="fg" cx="38" cy="38" r="30" transform="rotate(-90 38 38)" style="stroke-dasharray:' + C.toFixed(1) + ';stroke-dashoffset:' + off.toFixed(1) + '"/></svg><b>' + val + '</b><span>' + label + '</span></div>';
+  }
+  function cdVariant(sty, d, hh, mm, ex, now, ms){
+    var when = 'bis ' + fd(ex) + ex.getFullYear() + ((S.examTime && S.examTime !== '00:00') ? ', ' + S.examTime + ' Uhr' : '');
+    var p2 = function(n){ return (n < 10 ? '0' : '') + n; };
+    var aria = d + ' Tage, ' + hh + ' Stunden, ' + mm + ' Minuten';
+    var h = '<div class="small">Countdown bis zur Prüfung</div>';
+    if(sty === 'board'){
+      h += '<div class="cdbd" role="img" aria-label="' + aria + '"><div class="bdr"><span>PRÜFUNG</span><span>' + (d > 7 ? 'ON TIME' : 'BOARDING') + '</span></div><div class="bdt"><b>' + p2(d) + '</b><i>T</i><b>' + p2(hh) + '</b><i>H</i><b>' + p2(mm) + '</b><i>M</i></div></div>';
+    }else if(sty === 'ring'){
+      var sp = cdSpanMs(ex), totalD = Math.max(d, Math.round(sp.total / 86400000));
+      h += '<div class="cdrings" role="img" aria-label="' + aria + '">' + cdRing(d / totalD, d, d === 1 ? 'Tag' : 'Tage') + cdRing(hh / 24, hh, 'Std') + cdRing(mm / 60, mm, 'Min') + '</div>';
+    }else{
+      var sp2 = cdSpanMs(ex), prog = Math.max(0, Math.min(1, (now - sp2.start) / sp2.total)), pc = (prog * 100).toFixed(1);
+      var plane = '<svg viewBox="-16 -13 32 26" class="cdpl" aria-hidden="true"><path fill="currentColor" d="M13,0 L4,-2.2 L-3,-12 L-7,-12 L-4,-2.4 L-11,-2 L-13,-5 L-16,-5 L-14,0 L-16,5 L-13,5 L-11,2 L-4,2.4 L-7,12 L-3,12 L4,2.2 Z"/></svg>';
+      h += '<div class="bigd">' + d + (d === 1 ? ' Tag' : ' Tage') + '</div><div class="cdrt" role="img" aria-label="' + aria + '"><div class="cdln"><i style="width:' + pc + '%"></i><span style="left:' + pc + '%">' + plane + '</span></div></div>' +
+        '<div style="font-size:15px;font-family:var(--mono)">' + hh + ' Std ' + p2(mm) + ' Min</div>';
+    }
+    return h + '<div class="small" style="margin-top:8px">' + when + '</div>';
+  }
+  applyLook();
+
+  /* Fragen nach Name und Aussehen (einmal nach dem Update, nach der Einrichtung) */
+  function showLookSheet(done){
+    var needName = (typeof STANDALONE !== 'undefined' && STANDALONE) && !(S.uname);
+    var sh = openSheet('<div class="shead"><h2>Mach die App zu deiner</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      (needName ? '<label>Wie sollen wir dich nennen?<input id="lkName" type="text" maxlength="24" placeholder="Dein Name" autocomplete="nickname" autocapitalize="words" spellcheck="false"></label><div class="small" style="margin-top:4px">Damit begrüßt dich die App auf dem Startbildschirm.</div>' : '') +
+      '<div id="lkSheetBody">' + lookInner() + '</div><div class="small" style="margin-top:8px">Das änderst du jederzeit im Menü unter Individualisierung.</div>' +
+      '<button type="button" id="lkDone" style="width:100%;margin-top:12px">Fertig</button>');
+    var finished = false;
+    function finish(){
+      if(finished) return;
+      finished = true;
+      var nm = sh.ov.querySelector('#lkName');
+      if(nm && typeof nameClean === 'function' && nameClean(nm.value)){ S.uname = nameClean(nm.value); if(typeof renderGreeting === 'function') renderGreeting(); }
+      save();
+      if(done) setTimeout(done, 250);
+    }
+    sh.ov.addEventListener('click', function(){ setTimeout(function(){ if(!document.body.contains(sh.ov)) finish(); }, 0); });
+    sh.ov.querySelector('#lkDone').addEventListener('click', function(){ finish(); sh.close(); });
+  }
+  function maybeLook(done){
+    var asked = null;
+    try{ asked = localStorage.getItem(KEY + '-look-asked'); }catch(e){}
+    if(asked === '1' || (S && S.fresh === true)){ if(done) done(); return; }
+    try{ localStorage.setItem(KEY + '-look-asked', '1'); }catch(e){}
+    showLookSheet(done);
+  }
+
   /* ---------- Menü ---------- */
   function buildMenu(){
     var body = $('menuBody');
-    var parts = [$('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('syncCard')];
+    var parts = [$('lookCard'), $('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('syncCard')];
     parts.forEach(function(el){ if(el && body) body.appendChild(el); });
   }
   function openMenu(){
@@ -3718,6 +3951,7 @@ body.menuopen{overflow:hidden}
   function closeMenu(){
     $('menu').hidden = true; $('menuOv').hidden = true;
     document.body.classList.remove('menuopen');
+    if(typeof obTourPending !== 'undefined' && obTourPending){ obTourPending = false; setTimeout(function(){ startTour(); }, 500); }
   }
   buildMenu();
   $('menuBtn').addEventListener('click', function(){ if($('menu').hidden) openMenu(); else closeMenu(); });
@@ -3733,7 +3967,7 @@ body.menuopen{overflow:hidden}
     return [
       {c:true, t:'Willkommen an Bord', x:'Eine kurze Tour durch Short Final!. Dauert etwa eine Minute und lässt sich jederzeit überspringen.'},
       {tab:'home', sel:'#cdCard', t:'Countdown', x:'So viel Zeit bleibt bis zur Prüfung. Den Termin änderst du im Menü oben rechts.'},
-      {tab:'home', sel:'#addQBtn', t:'Fragen hinzufügen', x:'Nach dem Lernen trägst du hier ein, wie viele Fragen du geklickt hast, optional mit Fach und Trefferquote. Mit dem Schalter erhöht sich auch die Gesamtzahl.'},
+      {tab:'home', sel:'#addQBtn', t:'Fragen Tracken', x:'Nach dem Lernen trägst du hier ein, wie viele Fragen du geklickt hast, optional mit Fach und Trefferquote. Mit dem Schalter erhöht sich auch die Gesamtzahl.'},
       {tab:'home', sel:'#nbBtn', t:'Lernzentrum', x:'Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen sie nach Fächern sortiert hier, mit Favoriten, Zuordnung zu weiteren Fächern und Abfrage.'},
       {tab:'home', sel:'#homeStats', t:'Dein Stand', x:'Stand, Vorsprung zum Plan und was heute noch fehlt. Die PAPI-Lichter zeigen, ob du auf dem Gleitpfad bist.'},
       {tab:'home', sel:'#fcCard', t:'Prognose', x:'Reicht dein Fragenziel, damit alle Fächer sicher bestehen? Wenn nicht, empfiehlt die App ein höheres Ziel.'},
@@ -3743,6 +3977,7 @@ body.menuopen{overflow:hidden}
       {tab:'subj', sel:'#sc-0 .blk', open:'#sc-0', t:'Geklickt und offen', x:'Trage ein, wie viele Fragen du geklickt hast, wie viele davon falsch waren und wie viele noch offen sind.'},
       {tab:'subj', sel:'#sc-0 [data-rfopen]', open:'#sc-0', t:'Bericht erstellen', x:'Wähle die Art (falsche Fragen, Last 100 bis 500, Simulation oder generell) und gib das Ergebnis als Richtig, Falsch oder Prozent ein.'},
       {tab:'home', sel:'#menuBtn', t:'Menü', x:'Hier oben rechts liegen alle Einstellungen: Ziel, Prüfungstermin, Gewichtung, Datensicherung und mehr.'},
+      {menu:true, sel:'#lookCard summary', t:'Individualisierung', x:'Wähle deine App-Farbe und eine von fünf Countdown-Anzeigen.'},
       {menu:true, sel:'#chronBtn', open:'#settingsMain', t:'Chronik und Tutorial', x:'Die Chronik macht Einträge rückgängig. Hier startest du auch dieses Tutorial neu.'},
       {c:true, t:'Klar zur Landung', x:'Das war’s. Viel Erfolg beim Lernen!'}
     ];
@@ -3834,11 +4069,10 @@ body.menuopen{overflow:hidden}
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-9';
+  var APP_VER = '2026.10.10-11';
   var CHANGELOG = [
-    {t:'Lernzentrum', x:'Dein Lernzentrum bündelt Notizen und Lernpakete: Filter nach Fach, Art und Schwierigkeit, Bearbeiten, Trefferquote und Ergebnis-Animation.'},
-    {t:'Pakete auf allen Geräten', x:'Mit verbundenem Geräte-Abgleich laden sich Lernpakete automatisch auf alle Geräte deines GitHub-Kontos.', web:true},
-    {t:'PDF und Originale', x:'Lege zu jedem Paket eine PDF-Zusammenfassung und deine Originalnotizen ab und rufe sie in der App ab.'}
+    {t:'Individualisierung', x:'Im Menü wählst du deine App-Farbe und eine von fünf Countdown-Anzeigen: Fallblatt, Anzeigetafel, Ringe, Flugroute oder Minimal.'},
+    {t:'Dein Name', x:'Die App fragt dich einmal nach einem Benutzernamen für die persönliche Begrüßung.', web:true}
   ];
   function changelogScene(still){
     var path = 'M-14,12 C70,10 150,50 286,78';
@@ -3865,7 +4099,7 @@ body.menuopen{overflow:hidden}
         if(closed) return;
         closed = true;
         ov.classList.add('out');
-        setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); done(); maybeTour(); }, 420);
+        setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); done(); maybeTour(); maybeLook(); }, 420);
       }
       ov.addEventListener('click', function(e){ if(e.target === ov || (e.target.closest && e.target.closest('[data-clx]'))) close(); });
     }, 5000);
@@ -3873,18 +4107,18 @@ body.menuopen{overflow:hidden}
   function maybeChangelog(){
     var seen = null;
     try{ seen = localStorage.getItem(KEY + '-ver'); }catch(e){}
-    if(seen === APP_VER) return;
+    if(seen === APP_VER){ if(!(S && S.fresh === true)) setTimeout(function(){ maybeLook(); }, 1200); return; }
     try{ localStorage.setItem(KEY + '-ver', APP_VER); }catch(e){}
     if(S && S.fresh === true) return;
     setTimeout(showChangelog, 900);
   }
 
-  /* ---------- Geräte-Abgleich über ein privates GitHub-Gist ---------- */
+  /* ---------- Cloud-Synchronisierung über ein privates GitHub-Gist ---------- */
   var SYNC_FILE = 'short-final-data.json', SYNC_LS = KEY + '-sync';
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb]); }
+  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S) return;
     var h = dataHash();
@@ -3899,6 +4133,7 @@ body.menuopen{overflow:hidden}
     $('syncOff1').hidden = on; $('syncOn1').hidden = !on;
     if(on && syncCfg.last){ syncMsg('Zuletzt abgeglichen: ' + fd(new Date(syncCfg.last)) + ' ' + hhmm(syncCfg.last) + ' Uhr'); }
     syncStatus(false);
+    if(typeof updateSyncLink === 'function') updateSyncLink();
   }
   function hhmm(ts){ var d = new Date(ts); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); }
   function syncStatus(err){
@@ -3945,11 +4180,14 @@ body.menuopen{overflow:hidden}
       S.exam = d.exam || S.exam; S.examTime = d.examTime || S.examTime;
       S.log = Array.isArray(d.log) ? cp(d.log) : [];
       if(d.nb && typeof d.nb === 'object') S.nb = cp(d.nb);
+      if(typeof d.uname === 'string') S.uname = d.uname;
+      if(d.look && typeof d.look === 'object') S.look = cp(d.look);
       if(d.ai) S.ai = cp(d.ai);
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
       S.updatedAt = d.updatedAt || Date.now();
       delete S.fresh;
       ensureS();
+      applyLook();
       syncHash = dataHash();
       save();
       render(); renderSubjects(); renderHome();
@@ -4021,7 +4259,7 @@ body.menuopen{overflow:hidden}
   $('syncCopy').addEventListener('click', function(){
     if(!syncCfg || !syncCfg.token) return;
     var ok = copyText(syncCfg.token);
-    syncMsg(ok ? 'Token kopiert. Füge ihn auf dem anderen Gerät unter „Geräte-Abgleich“ ein.' : 'Kopieren nicht möglich.');
+    syncMsg(ok ? 'Token kopiert. Füge ihn auf dem anderen Gerät unter „Cloud-Synchronisierung und Account“ ein.' : 'Kopieren nicht möglich.');
   });
   $('syncPaste').addEventListener('click', function(){
     if(navigator.clipboard && navigator.clipboard.readText){
@@ -4190,6 +4428,75 @@ body.menuopen{overflow:hidden}
   };
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && nbHooks.syncPacks) nbHooks.syncPacks(false); });
   setTimeout(function(){ nbHooks.syncPacks(false); }, 2500);
+
+  /* ---------- Benutzername und Begrüßung (nur GitHub-Version) ---------- */
+  var obTourPending = false;
+  var GREET_TIME = {
+    morning:['Guten Morgen','Guten Morgen und willkommen an Bord','Frühschicht im Cockpit','Morgenstund hat Gold im Mund','Sonnenaufgang, klare Sicht und ein frischer Kaffee','Early Bird im Anflug','Guten Morgen, das Wetter ist CAVOK','Die Sonne ist auf, die Checkliste auch','Pre-Flight-Check erledigt, Kaffee auch','Moin, die Piste ist frei','Aufgestanden, angeschnallt, startklar','Der frühe Vogel fliegt als Erster','Die Triebwerke sind warm, guten Morgen','Ein neuer Tag, ein neuer Flugplan','Erster Funkspruch des Tages: Guten Morgen'],
+    forenoon:['Schönen Vormittag','Der Steigflug läuft','Der Vormittag gehört dem Steigflug','Reiseflughöhe fast erreicht','Vormittags-Briefing: heute wird gelernt','Rückenwind am Vormittag','Fokus an, Autopilot aus','Der Tag hebt ab','Gute Sicht und freie Bahn','Klarer Himmel, klarer Kopf'],
+    noon:['Guten Mittag','Mittagspause am Gate','Zeit für einen Tankstopp','Mittagshoch, bleib auf Kurs','Halbzeit der Flugetappe','Mahlzeit','Reiseflughöhe erreicht','Kurzer Boxenstopp, dann Weiterflug','Die Sonne steht im Zenit','Kurs halten, bald ist Tankstopp'],
+    afternoon:['Schönen Nachmittag','Guten Nachmittag','Nachmittagsflug bei bestem Wetter','Weiter geht’s im Reiseflug','Die Thermik trägt dich','Der Gleitpfad ist stabil','Nachmittags-Check: alles im grünen Bereich','Noch ein paar Meilen bis zum Feierabend','Kurs halten, Höhe halten','Cleared to continue','Gute Thermik heute','Aufwind gefunden'],
+    evening:['Guten Abend','Schönen Abend','Abendrunde im Landeanflug','Goldene Stunde, perfekt zum Landen','Abendlicht und Rückenwind','Feierabend im Anflug','Die Landebahn leuchtet','Letzter Anflug für heute','Abendstimmung auf dem Vorfeld','Sonnenuntergang über der Piste','Die Abendluft ist ruhig'],
+    night:['Gute Nacht','Noch wach? Nachtflugzulassung vorhanden','Nachtschicht im Cockpit','Die Sterne sind dein Flugplan','Sternenklare Nacht, ruhiger Flug','Lichter an, Instrumente an','Auch Piloten brauchen Schlaf','Nachtflug mit PAPI-Lichtern','Mitternachts-Briefing','Ruhige Luft da oben','Nachts ist der Funk besonders still']
+  };
+  var GREET_DAY = [
+    ['Schönen Sonntag','Sonntagsflug bei ruhiger Luft','Sonntag: Zeit zum Auftanken','Ruhiger Sonntag im Reiseflug','Sonntag mit klarer Sicht'],
+    ['Montag: Startfreigabe für die neue Woche','Montag, neuer Flugplan und volle Tanks','Wochenstart, Triebwerke an','Montag: Checkliste durch, ab in die Woche','Neue Woche, neue Flughöhe'],
+    ['Dienstag, Reiseflug erreicht','Dienstag: Steigflug läuft','Guten Dienstag, Kurs halten','Dienstag: Fokus und Funkdisziplin','Dienstags läuft’s rund im Cockpit'],
+    ['Mittwoch, Halbzeit der Woche','Bergfest: Reiseflughöhe erreicht','Mittwoch: halbe Strecke, volle Konzentration','Mitte der Woche, Mitte der Strecke','Mittwoch: die Hälfte ist geflogen'],
+    ['Donnerstag: der Endanflug aufs Wochenende beginnt','Donnerstag: Gleitpfad stabil','Donnerstag, noch einmal Vollgas','Donnerstag: Landeklappen für den Endspurt','Fast geschafft, Donnerstag-Anflug'],
+    ['Freitag: Landeanflug aufs Wochenende','Happy Friday, Landeklappen raus','Freitag, Wochenende in Sicht','Fast Feierabend: Freitag im Endanflug','Freitag, noch ein sauberer Anflug'],
+    ['Schönes Wochenende','Samstag, bestes Flugwetter','Samstag: der Flugplatz ruft','Samstag, freie Fahrt','Wochenend-Flug: gute Thermik']
+  ];
+  function nameClean(x){ return String(x || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24); }
+  function greetBucket(d){
+    var h = d.getHours();
+    return h >= 5 && h < 10 ? 'morning' : h >= 10 && h < 12 ? 'forenoon' : h >= 12 && h < 14 ? 'noon' : h >= 14 && h < 18 ? 'afternoon' : h >= 18 && h < 22 ? 'evening' : 'night';
+  }
+  var greetKey = '', greetText = '';
+  function greetPick(){
+    var d = new Date(), b = greetBucket(d), useDay = Math.random() < 0.45;
+    var pool = useDay ? GREET_DAY[d.getDay()] : GREET_TIME[b], last = null;
+    try{ last = localStorage.getItem(KEY + '-greet'); }catch(e){}
+    var cand = pool.filter(function(x){ return x !== last; });
+    var t = cand[Math.floor(Math.random() * cand.length)] || pool[0];
+    try{ localStorage.setItem(KEY + '-greet', t); }catch(e){}
+    return t;
+  }
+  function renderGreeting(){
+    var el = $('greet');
+    if(!el) return;
+    var nm = nameClean(S && S.uname);
+    if(!nm || (S && S.fresh === true)){ el.hidden = true; el.textContent = ''; return; }
+    var key = greetBucket(new Date()) + '|' + new Date().getDay();
+    if(!greetText || key !== greetKey){ greetKey = key; greetText = greetPick(); }
+    el.textContent = '';
+    var a = document.createElement('span'); a.className = 'gtx'; a.textContent = greetText + ', ';
+    var b = document.createElement('b'); b.className = 'gname'; b.textContent = nm + '!';
+    el.appendChild(a); el.appendChild(b);
+    el.hidden = false;
+  }
+  function openSyncSettings(){
+    openMenu();
+    var c = $('syncCard');
+    if(c){
+      c.open = true;
+      setTimeout(function(){ try{ c.scrollIntoView({block:'start', behavior:'smooth'}); }catch(e){} var t = $('syncTok'); if(t && !t.closest('[hidden]')) try{ t.focus({preventScroll:true}); }catch(e){} }, 350);
+    }
+  }
+  function updateSyncLink(){
+    var l = $('syncLink');
+    if(l) l.hidden = !!(syncCfg && syncCfg.gistId);
+  }
+  $('syncLink').addEventListener('click', function(e){ e.preventDefault(); openSyncSettings(); });
+  $('acName').value = (S && S.uname) || '';
+  $('acName').addEventListener('input', function(){
+    S.uname = nameClean($('acName').value);
+    save(); renderGreeting();
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) renderGreeting(); });
+  updateSyncLink();
+  renderGreeting();
 
   maybeChangelog();
   connect(0);

@@ -281,6 +281,38 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .tnav{display:flex;gap:8px;align-items:center}
 .tnav .sk{margin-right:auto;background:transparent;border:0;color:#aab3d6;padding:6px 4px;font-size:13px;font-weight:600}
 .tnav button.ghost{color:#c9d0ee;border-color:rgba(255,255,255,.25)}
+/* Menü */
+.burger svg line{stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.menuov{position:fixed;left:0;right:0;top:0;bottom:0;z-index:109;background:rgba(5,8,20,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:cfade .25s ease-out both}
+.menu{position:fixed;right:0;top:0;bottom:0;width:min(92vw,440px);z-index:110;background:var(--bg);border-left:1px solid var(--line);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(28px + env(safe-area-inset-bottom,0px));box-shadow:-14px 0 40px rgba(0,0,0,.35);animation:menuin .28s ease-out both}
+@keyframes menuin{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.menu[hidden],.menuov[hidden]{display:none}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mhead h2{margin:0;font-size:18px}
+body.menuopen{overflow:hidden}
+/* Tablet und Laptop */
+@media (min-width:760px){
+  main{max-width:900px;padding-left:22px;padding-right:22px}
+  .tabs{width:min(100%,900px)}
+  .top h1{font-size:28px}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  #tabHome,#tabMain{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  #tabHome>*,#tabMain>*{margin:0 !important}
+  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
+  #subjBox{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  #subjBox>.card{margin:0}
+  .sheetov{align-items:center}
+  .sheet{border-radius:22px;max-height:86vh}
+}
+@media (min-width:1100px){
+  body{font-size:16px}
+  main{max-width:1160px}
+  .tabs{width:min(100%,1160px)}
+  #tabHome{grid-template-columns:repeat(3,1fr)}
+}
+@media (min-width:1300px){
+  #subjBox{grid-template-columns:repeat(3,1fr)}
+}
 /* Meilenstein: Anflugbefeuerung */
 .celeb{position:fixed;left:0;right:0;top:0;bottom:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(5,8,20,.84);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:cfade .35s ease-out both}
 .celeb.out{opacity:0;transition:opacity .4s}
@@ -337,7 +369,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   .radar i{animation:none}
   .reveal>*{animation:none}
   .celeb{animation:none}
-  .sheet,.sheetov,.tcard,.toast{animation:none}
+  .sheet,.sheetov,.tcard,.toast,.menu,.menuov{animation:none}
   .tspot,.sw,.sw::after{transition:none}
   .clbox,.cll li,.clbtn{animation:none;opacity:1}
   .clscene .ct{animation:none;stroke-dashoffset:0}
@@ -353,6 +385,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     <h1>Short Final!</h1>
     <span class="clock" id="clock"></span>
     <button class="iconbtn" id="themeBtn" aria-label="Tag- oder Nachtmodus wechseln"></button>
+    <button class="iconbtn burger" id="menuBtn" aria-label="Menü und Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
   </header>
   <div class="sub" id="sub"></div>
   <div class="small" id="status" style="margin:-8px 0 12px"></div>
@@ -389,7 +422,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   <div id="tabMain" hidden>
   <div class="card verdict" id="verdict"><div id="verdictTxt"></div><div id="papiMain"></div></div>
 
-  <div class="card">
+  <div class="card" id="routeCard">
     <div class="barlbl"><span id="barLeft"></span><span id="barRight"></span></div>
     <div class="route">
       <span class="base"></span><i class="done" id="barFill"></i><span class="pt s"></span><span class="pt e"></span>
@@ -426,7 +459,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   </div>
 
   <details class="card settings" id="settingsMain">
-    <summary>Einstellungen</summary>
+    <summary>Ziel und Hilfe</summary>
     <div class="row" style="margin-top:10px">
       <input type="number" id="setTarget" inputmode="numeric" placeholder="Ziel (Fragen)">
       <input type="date" id="setDeadline">
@@ -474,6 +507,11 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     </details>
   </div>
 </main>
+<div class="menuov" id="menuOv" hidden></div>
+<aside class="menu" id="menu" aria-label="Menü und Einstellungen" hidden>
+  <div class="mhead"><h2>Einstellungen</h2><button class="ghost" id="menuX" aria-label="Menü schließen">✕</button></div>
+  <div id="menuBody"></div>
+</aside>
 
 <script>
 (function(){
@@ -527,7 +565,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     return freshState();
   }
   var dbDoc = null;
-  function setStatus(t){ var el=document.getElementById('status'); if(el) el.textContent=t; }
+  function setStatus(t){ var el=document.getElementById('status'); if(!el) return; if(typeof syncCfg !== 'undefined' && syncCfg && syncCfg.gistId) return; el.textContent=t; }
   function save(){
     syncTouch();
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
@@ -2587,6 +2625,26 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   }
   $('chronBtn').addEventListener('click', showChronik);
 
+  /* ---------- Menü ---------- */
+  function buildMenu(){
+    var body = $('menuBody');
+    var parts = [$('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('syncCard')];
+    parts.forEach(function(el){ if(el && body) body.appendChild(el); });
+  }
+  function openMenu(){
+    $('menu').hidden = false; $('menuOv').hidden = false;
+    document.body.classList.add('menuopen');
+  }
+  function closeMenu(){
+    $('menu').hidden = true; $('menuOv').hidden = true;
+    document.body.classList.remove('menuopen');
+  }
+  buildMenu();
+  $('menuBtn').addEventListener('click', function(){ if($('menu').hidden) openMenu(); else closeMenu(); });
+  $('menuX').addEventListener('click', closeMenu);
+  $('menuOv').addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !$('menu').hidden && !tourSt) closeMenu(); });
+
   /* ---------- Tutorial ---------- */
   var TOUR_KEY = KEY + '-tour';
   var tourSt = null;
@@ -2594,7 +2652,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     var web = (typeof STANDALONE !== 'undefined' && STANDALONE);
     return [
       {c:true, t:'Willkommen an Bord', x:'Eine kurze Tour durch Short Final!. Dauert etwa eine Minute und lässt sich jederzeit überspringen.'},
-      {tab:'home', sel:'#cdCard', t:'Countdown', x:'So viel Zeit bleibt bis zur Prüfung. Den Termin änderst du weiter unten auf dieser Seite.'},
+      {tab:'home', sel:'#cdCard', t:'Countdown', x:'So viel Zeit bleibt bis zur Prüfung. Den Termin änderst du im Menü oben rechts.'},
       {tab:'home', sel:'#addQBtn', t:'Fragen hinzufügen', x:'Nach dem Lernen trägst du hier ein, wie viele Fragen du geklickt hast, optional mit Fach und Trefferquote. Mit dem Schalter erhöht sich auch die Gesamtzahl.'},
       {tab:'home', sel:'#homeStats', t:'Dein Stand', x:'Stand, Vorsprung zum Plan und was heute noch fehlt. Die PAPI-Lichter zeigen, ob du auf dem Gleitpfad bist.'},
       {tab:'home', sel:'#fcCard', t:'Prognose', x:'Reicht dein Fragenziel, damit alle Fächer sicher bestehen? Wenn nicht, empfiehlt die App ein höheres Ziel.'},
@@ -2603,11 +2661,13 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       {tab:'subj', sel:'#subjSummary', t:'Fächer', x:'Übersicht über alle Fächer mit Scores. Jedes Fach hat einen eigenen Score aus deinen Berichten.'},
       {tab:'subj', sel:'#sc-0 .blk', open:'#sc-0', t:'Geklickt und offen', x:'Trage ein, wie viele Fragen du geklickt hast, wie viele davon falsch waren und wie viele noch offen sind.'},
       {tab:'subj', sel:'#sc-0 [data-rfopen]', open:'#sc-0', t:'Bericht erstellen', x:'Wähle die Art (falsche Fragen, Last 100 bis 500, Simulation oder generell) und gib das Ergebnis als Richtig, Falsch oder Prozent ein.'},
-      {tab:'main', sel:'#chronBtn', open:'#settingsMain', t:'Chronik und Tutorial', x:'In den Einstellungen findest du die Chronik, um Einträge rückgängig zu machen, und kannst dieses Tutorial neu starten.'},
+      {tab:'home', sel:'#menuBtn', t:'Menü', x:'Hier oben rechts liegen alle Einstellungen: Ziel, Prüfungstermin, Gewichtung, Datensicherung und mehr.'},
+      {menu:true, sel:'#chronBtn', open:'#settingsMain', t:'Chronik und Tutorial', x:'Die Chronik macht Einträge rückgängig. Hier startest du auch dieses Tutorial neu.'},
       {c:true, t:'Klar zur Landung', x:'Das war’s. Viel Erfolg beim Lernen!'}
     ];
   }
   function startTour(){
+    closeMenu();
     try{ localStorage.setItem(TOUR_KEY, '1'); }catch(e){}
     if(tourSt) return;
     var ov = document.createElement('div');
@@ -2622,6 +2682,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     if(tourSt.ov.parentNode) tourSt.ov.parentNode.removeChild(tourSt.ov);
     window.removeEventListener('resize', tourReflow);
     tourSt = null;
+    closeMenu();
     showTab('home');
     try{ window.scrollTo(0, 0); }catch(e){}
   }
@@ -2633,7 +2694,8 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     while(k >= 0 && k < steps.length){
       var sp = steps[k];
       if(sp.c) break;
-      showTab(sp.tab);
+      if(sp.menu) openMenu(); else closeMenu();
+      if(sp.tab) showTab(sp.tab);
       if(sp.open){ var od = document.querySelector(sp.open); if(od) od.open = true; }
       var el = document.querySelector(sp.sel);
       if(el && el.getClientRects().length) break;
@@ -2691,10 +2753,11 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-5';
+  var APP_VER = '2026.10.10-6';
   var CHANGELOG = [
-    {t:'Geräte-Abgleich', x:'Optional: Stand über ein privates GitHub-Gist auf allen Geräten gleich halten (Einstellungen).'},
-    {t:'Kategorie bei „Fragen hinzufügen“', x:'Auch Berichte wie Last 500 oder Falsche wiederholt direkt von Heute eintragen.'}
+    {t:'Menü oben rechts', x:'Alle Einstellungen liegen jetzt im Menü: Ziel, Termin, Gewichtung, Datensicherung, Chronik und Tutorial.'},
+    {t:'iPad und Laptop', x:'Auf größeren Bildschirmen nutzt die App mehrere Spalten.'},
+    {t:'Cloud-Status', x:'Mit Geräte-Abgleich zeigt die App statt „nur auf diesem Gerät“ die letzte Synchronisierung.', web:true}
   ];
   function changelogScene(still){
     var path = 'M-14,12 C70,10 150,50 286,78';
@@ -2753,7 +2816,18 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   function syncUI(){
     var on = !!(syncCfg && syncCfg.gistId);
     $('syncOff1').hidden = on; $('syncOn1').hidden = !on;
-    if(on && syncCfg.last){ var d = new Date(syncCfg.last); syncMsg('Zuletzt abgeglichen: ' + fd(d) + ' ' + (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ' Uhr'); }
+    if(on && syncCfg.last){ syncMsg('Zuletzt abgeglichen: ' + fd(new Date(syncCfg.last)) + ' ' + hhmm(syncCfg.last) + ' Uhr'); }
+    syncStatus(false);
+  }
+  function hhmm(ts){ var d = new Date(ts); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); }
+  function syncStatus(err){
+    var st = document.getElementById('status');
+    if(!st) return;
+    if(syncCfg && syncCfg.gistId){
+      st.textContent = (err ? '⚠︎ Cloud-Synchronisierung nicht erreichbar' : '☁︎ Cloud-Synchronisierung') + (syncCfg.last ? ' · zuletzt ' + hhmm(syncCfg.last) + ' Uhr' : '');
+    }else if(/Cloud/.test(st.textContent)){
+      st.textContent = 'Nur auf diesem Gerät gespeichert';
+    }
   }
   function gh(path, opts){
     opts = opts || {};
@@ -2813,6 +2887,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       syncCfg.last = Date.now(); syncStore(); syncUI();
       if(manual) syncMsg(({'hochgeladen':'Stand hochgeladen.', 'geladen':'Neuester Stand geladen.', 'aktuell':'Alles aktuell.'})[what]);
     }).catch(function(e){
+      syncStatus(true);
       syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“. Bitte neu verbinden.' : 'Abgleich nicht möglich, vermutlich offline. Es wird später erneut versucht.');
     }).then(function(){ syncBusy = false; });
   }

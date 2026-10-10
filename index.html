@@ -2416,12 +2416,16 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 
   /* Fragen hinzufügen (Heute) */
   function showAddQ(){
-    var mode = 'ok';
+    var mode = 'ok', cat = 'click';
+    var catBtns = [['click', 'Durchgeklickt']].concat(CATS).map(function(c){
+      return '<button type="button" class="catb' + (c[0] === 'click' ? ' on' : '') + '" data-aqcat="' + c[0] + '">' + c[1] + '</button>';
+    }).join('');
     var opts = '<option value="">Kein Fach (nur Gesamtzahl)</option>' + SUBJECTS.map(function(sj, i){ return '<option value="' + i + '">' + esc(sj.name) + '</option>'; }).join('');
     var sh = openSheet('<div class="shead"><h2>Fragen hinzufügen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<label>Fach<select id="aqSub">' + opts + '</select></label>' +
+      '<div id="aqCat" hidden><label>Was hast du gemacht?</label><div class="cats" id="aqCats">' + catBtns + '</div><div class="small" id="aqCatHint"></div></div>' +
       '<div class="f2"><label>Datum<input type="date" id="aqD" value="' + iso(new Date()) + '"></label><label>Geklickte Fragen<input type="number" id="aqN" inputmode="numeric" min="1" placeholder="Anzahl"></label></div>' +
-      '<div id="aqQ" hidden><label>Wie viele davon richtig?</label><div class="seg" id="aqSeg">' + segHTML('ok', 'data-aqmode', 0) + '</div>' +
+      '<div id="aqQ" hidden><label id="aqQl">Wie viele davon richtig? (optional)</label><div class="seg" id="aqSeg">' + segHTML('ok', 'data-aqmode', 0) + '</div>' +
       '<input type="number" step="any" id="aqV" inputmode="numeric" min="0" placeholder="Optional" style="width:100%"></div>' +
       '<label class="tg"><span>Zur Gesamtzahl addieren</span><input type="checkbox" class="sw" id="aqT" checked></label>' +
       '<div class="small" id="aqHint" style="margin-top:8px"></div>' +
@@ -2432,17 +2436,39 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       var n = readInt(g('aqN').value), si = g('aqSub').value, h = '';
       if(n === null || n < 1){ g('aqHint').textContent = ''; return; }
       if(si !== ''){
-        h += SUBJECTS[+si].name + ': +' + fmt(n) + ' geklickt';
         var rs = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
-        if(rs) h += ', ' + fmt(rs.wrong) + ' falsch (' + Math.round(rs.ok / n * 100) + ' % richtig)';
-        var td = nn(getSub(SUBJECTS[+si].id).todo);
-        if(td !== null) h += ', noch offen −' + fmt(Math.min(td, n));
+        if(cat === 'click'){
+          h += SUBJECTS[+si].name + ': +' + fmt(n) + ' geklickt';
+          if(rs) h += ', ' + fmt(rs.wrong) + ' falsch (' + Math.round(rs.ok / n * 100) + ' % richtig)';
+          var td = nn(getSub(SUBJECTS[+si].id).todo);
+          if(td !== null) h += ', noch offen −' + fmt(Math.min(td, n));
+        }else{
+          h += 'Bericht ' + catLabel(cat) + ' für ' + SUBJECTS[+si].name + ': ' + (rs ? rs.ok + '/' + n + ' (' + Math.round(rs.ok / n * 100) + ' %)' : fmt(n) + ' Fragen');
+        }
         h += '. ';
       }
       if(g('aqT').checked){ var nm = homeNums(); h += 'Gesamt: ' + fmt(nm.last.n) + ' → ' + fmt(nm.last.n + n) + '.'; }
       g('aqHint').textContent = h;
     }
-    g('aqSub').addEventListener('change', function(){ g('aqQ').hidden = (g('aqSub').value === ''); preview(); });
+    function catLabel(c){ return c === 'click' ? 'Durchgeklickt' : (CATS.filter(function(x){ return x[0] === c; })[0] || [0, c])[1]; }
+    function applyCat(){
+      var isLast = /^l\d+$/.test(cat), nEl = g('aqN');
+      Array.prototype.forEach.call(g('aqCats').children, function(x){ x.classList.toggle('on', x.getAttribute('data-aqcat') === cat); });
+      if(isLast){ nEl.value = cat.slice(1); nEl.disabled = true; }
+      else{ if(nEl.disabled) nEl.value = ''; nEl.disabled = false; }
+      var hint = cat === 'click' ? 'Neue Fragen durchgeklickt: erhöht Geklickt und Falsch des Fachs und senkt „Noch offen“.' : (CATHINT[cat] || ('Die letzten ' + cat.slice(1) + ' Prüfungsfragen des Fachs. Je größer der Umfang, desto höher das Gewicht.'));
+      g('aqCatHint').textContent = hint;
+      g('aqQl').textContent = cat === 'click' ? 'Wie viele davon richtig? (optional)' : 'Ergebnis (Pflicht für Berichte)';
+      g('aqT').checked = (cat === 'click');
+      preview();
+    }
+    g('aqCats').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('[data-aqcat]') : null;
+      if(!b) return;
+      cat = b.getAttribute('data-aqcat');
+      applyCat();
+    });
+    g('aqSub').addEventListener('change', function(){ var has = (g('aqSub').value !== ''); g('aqQ').hidden = !has; g('aqCat').hidden = !has; if(!has){ cat = 'click'; applyCat(); } else applyCat(); });
     g('aqSeg').addEventListener('click', function(e){
       var b = e.target.closest ? e.target.closest('[data-aqmode]') : null;
       if(!b) return;
@@ -2458,7 +2484,15 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       if(!d || n === null || n < 1){ msg.textContent = 'Bitte Datum und Anzahl der Fragen eintragen.'; return; }
       if(si === '' && !tot){ msg.textContent = 'Wähle ein Fach oder schalte „Zur Gesamtzahl addieren“ ein.'; return; }
       var ops = [], title = 'Fragen hinzufügen: ';
-      if(si !== ''){
+      if(si !== '' && cat !== 'click'){
+        var isL = /^l\d+$/.test(cat), rs2 = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
+        if(!rs2){ msg.textContent = 'Für einen Bericht brauche ich das Ergebnis (Richtig, Falsch oder Prozent).'; return; }
+        var sj2 = SUBJECTS[+si], s2 = getSub(sj2.id);
+        var rec = isL ? {d:d, t:newT(), x:n, ok:rs2.ok} : {d:d, t:newT(), n:n, ok:rs2.ok};
+        arrOf(s2, isL ? 'last' : cat).push(rec);
+        ops.push({k:'rep', id:sj2.id, kind:isL ? 'last' : cat, t:rec.t});
+        title = 'Bericht ' + catLabel(cat) + ': ' + sj2.name + ' ' + rs2.ok + '/' + n + ' (' + Math.round(rs2.ok / n * 100) + ' %)';
+      }else if(si !== ''){
         var sj = SUBJECTS[+si], s = getSub(sj.id), pc = nn(s.clicked), pw = nn(s.wrong), pt = nn(s.todo);
         var rs = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
         s.clicked = (pc || 0) + n;
@@ -2643,7 +2677,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var APP_VER = '2026.10.10-4';
   var CHANGELOG = [
-    {t:'Fragen hinzufügen', x:'Neuer Button auf Heute: Fragen mit Fach und Trefferquote eintragen, die Gesamtzahl wächst auf Wunsch mit.'},
+    {t:'Fragen hinzufügen', x:'Neuer Button auf Heute: Fragen mit Fach, Kategorie und Ergebnis eintragen, die Gesamtzahl wächst auf Wunsch mit.'},
     {t:'Berichte flexibler', x:'Ergebnis als Richtig, Falsch oder Prozent eingeben, mit Schalter für die Gesamtzahl.'},
     {t:'Chronik', x:'In den Einstellungen: alle Einträge ansehen und rückgängig machen.'},
     {t:'Tutorial', x:'Kurze Tour durch die App, in den Einstellungen jederzeit neu startbar.'}

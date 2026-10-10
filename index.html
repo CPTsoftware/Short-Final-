@@ -190,7 +190,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .obnav{display:flex;gap:10px;margin-top:20px}
 .obnav button{flex:1}
 .obrow{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:6px;font-size:13px}
-.obrow input{padding:8px 6px}
+.obrow input,.obrow select{padding:8px 4px;width:100%;min-width:0}
 .obrow.h{color:var(--muted);font-size:11.5px}
 .obsum{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card2);font-size:14px;line-height:1.7}
 
@@ -2007,6 +2007,11 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     return '<label>' + label + '<input id="' + id + '" type="' + type + '"' + (type === 'number' ? ' inputmode="numeric" min="0"' : '') +
            ' value="' + (val === null || val === undefined ? '' : String(val).replace(/"/g, '&quot;')) + '" placeholder="' + (ph || '') + '"></label>';
   }
+  function obPct(sel){
+    var h = '<option value="">– %</option>';
+    for(var p = 100; p >= 0; p--) h += '<option value="' + p + '"' + (String(sel) === String(p) ? ' selected' : '') + '>' + p + ' %</option>';
+    return h;
+  }
   function obRender(){
     var o = $('onb'), st = ob.step, v = ob.v;
     var h = '<div class="obox"><div class="obtop"><span class="small">Schritt ' + (st + 1) + ' von ' + OB_STEPS + '</span><button class="ghost" id="obSkip">Überspringen</button></div>';
@@ -2023,10 +2028,10 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
            obField('obStand', 'Bisher geklickt', 'number', v.stand, 'z. B. 3500');
     }else if(st === 4){
       h += '<h2>Deine Fächer</h2><p>Optional: Wie viele Fragen hast du pro Fach schon geklickt, wie viel Prozent davon hattest du richtig und wie viele musst du noch zum ersten Mal klicken? Die falschen Fragen rechnet die App selbst aus. Berichte wie Last 100 oder Prüfungssimulationen trägst du später im Tab Fächer ein.</p>' +
-           '<div class="obrow h"><span>Fach</span><span>Geklickt</span><span>Richtig in %</span><span>Noch offen</span></div>';
+           '<div class="obrow h"><span>Fach</span><span>Geklickt</span><span>Richtig (%)</span><span>Noch offen</span></div>';
       SUBJECTS.forEach(function(sj, i){
         var sv = v.subj[sj.id] || {c:'', w:'', t:''};
-        h += '<div class="obrow"><span>' + esc(sj.name) + '</span><input id="obC' + i + '" type="number" inputmode="numeric" min="0" value="' + sv.c + '"><input id="obW' + i + '" type="text" inputmode="decimal" placeholder="%" value="' + sv.w + '"><input id="obT' + i + '" type="number" inputmode="numeric" min="0" value="' + (sv.t || '') + '"></div>';
+        h += '<div class="obrow"><span>' + esc(sj.name) + '</span><input id="obC' + i + '" type="number" inputmode="numeric" min="0" value="' + sv.c + '"><select id="obW' + i + '" aria-label="Richtig in Prozent">' + obPct(sv.w) + '</select><input id="obT' + i + '" type="number" inputmode="numeric" min="0" value="' + (sv.t || '') + '"></div>';
       });
     }else{
       var tg = readInt(v.target) || 20000, stand = readInt(v.stand), nf = 0;

@@ -214,7 +214,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 
 /* KI-Briefing: Radar beim Laden, Zeilen laufen ein */
 .radar{position:relative;width:84px;height:84px;margin:8px auto;border-radius:50%;border:1px solid var(--line);background:repeating-radial-gradient(circle,transparent 0 13px,var(--line) 13px 14px)}
-.radar i{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,79,216,0) 0deg,rgba(255,79,216,.6) 70deg,rgba(255,79,216,0) 71deg);animation:sweep 1.8s linear infinite}
+.radar i{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,color-mix(in srgb,var(--accent) 62%,transparent) 70deg,transparent 71deg);animation:sweep 1.8s linear infinite}
 @keyframes sweep{to{transform:rotate(360deg)}}
 .reveal>*{animation:lineIn .55s ease-out both;animation-delay:calc(var(--n,0) * .14s)}
 @keyframes lineIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -420,28 +420,70 @@ body.nbopen{overflow:hidden}
 .ils{position:relative;width:120px;height:84px}
 .ils .hz{position:absolute;left:10px;right:10px;top:41px;height:2px;background:#5b6aa0;border-radius:1px}
 .ils .tk{position:absolute;left:50%;margin-left:-5px;width:10px;height:10px;border-radius:50%;border:2px solid #8a97c8;box-sizing:border-box}
-.ils .dia{position:absolute;left:50%;top:34px;margin-left:-8px;width:16px;height:16px;background:#ff4fd8;transform-origin:50% 50%;border-radius:2px;box-shadow:0 0 10px rgba(255,79,216,.7)}
-.ils .dia.sfm{transform:translate(calc(var(--tx,0) * 1px),calc(var(--ty,0) * 1px)) rotate(45deg)}
+.ils .dia{position:absolute;left:50%;top:34px;margin-left:-8px;width:16px;height:16px}
+.ils .dd{display:block;width:16px;height:16px;background:var(--accent);transform:rotate(45deg);border-radius:2px;box-shadow:0 0 10px color-mix(in srgb,var(--accent) 70%,transparent)}
+.idl{display:block;animation:idlhov 2.8s ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes idlhov{0%,100%{transform:translateY(-2.5px)}50%{transform:translateY(2.5px)}}
+.stx{position:absolute;left:0;right:0;text-align:center;font-family:var(--mono);font-weight:700;letter-spacing:.06em;color:#ff5b6b;text-shadow:0 0 6px rgba(255,91,107,.55);animation:stxb 2s ease-in-out infinite}
+@keyframes stxb{0%,100%{opacity:1}50%{opacity:.35}}
+.ils .stx{top:34px;left:50%;right:auto;transform:translateX(-50%);white-space:nowrap;background:#070b18;padding:2px 5px;font-size:9.5px}
 .pfl{position:relative;width:200px;height:84px}
-.pfl svg.pfs{position:absolute;left:0;top:0;width:200px;height:84px}
-.pfl .plw{position:absolute;left:82px;top:34px;width:36px;height:20px}
+.pfl svg.pfs{position:absolute;left:0;top:0;width:200px;height:84px;overflow:visible}
+.pfl .plw{position:absolute;left:82px;top:41px;width:36px;height:20px}
 .pfl .plw svg{width:36px;height:20px;display:block;overflow:visible}
 .hzn{position:relative;width:84px;height:84px;border-radius:50%;overflow:hidden;border:2px solid #3a4770;box-sizing:content-box}
+.hzn .hzi{position:absolute;left:0;top:0;width:100%;height:100%}
+.hzn .hzi.idle{animation:hzsway 5.5s ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes hzsway{0%,100%{transform:rotate(-1.8deg) translateY(1.6px)}50%{transform:rotate(1.8deg) translateY(-1.6px)}}
 .hzn .hzs{position:absolute;left:-30%;width:160%;top:-50%;height:200%;background:linear-gradient(#3b8fe0 50%,#8a5a2b 50%)}
 .hzn .hzs:after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:#fff}
 .hzn svg.hzp{position:absolute;left:0;top:0;width:84px;height:84px}
+.hzn .hzx{top:14px;font-size:11px;text-shadow:0 1px 3px #000,0 0 6px rgba(255,91,107,.6)}
 .wsk{position:relative;width:110px;height:84px}
 .wsk svg.wpole{position:absolute;left:0;top:0;width:110px;height:84px}
 .wsk .wss{position:absolute;left:16px;top:6px;width:64px;height:24px;transform-origin:0 50%}
-.wsk .wss svg{width:64px;height:24px;display:block}
+.wsk .wsi{display:block;width:64px;height:24px;transform-origin:0 50%}
+.wsk .wsi.idle{animation:wsfl var(--dur,2s) ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes wsfl{0%,100%{transform:rotate(calc(var(--amp,3) * -1deg))}50%{transform:rotate(calc(var(--amp,3) * 1deg))}}
+.wsk .wss svg{width:64px;height:24px;display:block;overflow:visible}
+.wsk .wsg{transform-box:fill-box;transform-origin:50% 0;animation:wsgin 7s ease-in-out infinite;animation-delay:calc(var(--sd,0) * 1s)}
+@keyframes wsgin{0%{opacity:0;transform:translateY(-10px) scale(.6)}9%{opacity:1;transform:none}84%{opacity:1}94%,100%{opacity:0}}
+.wsk .wlamp{animation:stxb 1s steps(2) infinite}
 .rdr{position:relative;width:84px;height:84px}
 .rdr svg.rdrb{position:absolute;left:0;top:0;width:84px;height:84px}
-.rdr .blp{position:absolute;left:38px;top:38px;width:8px;height:8px;border-radius:50%;background:var(--bc,#4dff7a);box-shadow:0 0 8px 2px var(--bc,#4dff7a)}
-.stw svg{width:96px;height:64px;display:block}
+.rdr .rbg{fill:color-mix(in srgb,var(--accent) 9%,#060a14);stroke:color-mix(in srgb,var(--accent) 65%,#060a14);stroke-width:1.5}
+.rdr .rg{fill:none;stroke:color-mix(in srgb,var(--accent) 38%,transparent)}
+.rdr .rsw{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,color-mix(in srgb,var(--accent) 42%,transparent) 70deg,transparent 71deg);animation:sweep 3.2s linear infinite}
+.rdr .blp{position:absolute;left:38px;top:38px;width:8px;height:8px}
+.rdr .bl{display:block;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px 2px var(--accent);animation:rblip 1.6s ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes rblip{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.7)}}
+.rdr .rdx{top:31px;font-size:7px;line-height:1.35;color:color-mix(in srgb,var(--accent) 70%,#fff);text-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
+.stw{position:relative}
+.stw svg{width:96px;height:64px;display:block;overflow:visible}
+.stw .wxr{animation:wxrot 36s linear infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes wxrot{to{transform:rotate(360deg)}}
+.stw .wxc{animation:wxdrift 5s ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes wxdrift{0%,100%{transform:translateX(-2.5px)}50%{transform:translateX(2.5px)}}
+.stw .wxd{animation:wxdrop 1.1s linear infinite;animation-delay:calc(var(--x,0s) + var(--id,0s) + var(--dd,0s))}
+@keyframes wxdrop{0%{opacity:0;transform:translateY(-4px)}20%{opacity:1}100%{opacity:0;transform:translateY(8px)}}
+.stw .wxb{animation:wxbolt 4s linear infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes wxbolt{0%,84%,100%{opacity:1}88%{opacity:.15}91%{opacity:1}94%{opacity:.3}}
+.stw .wxw{animation:wxbow 3.4s ease-in-out infinite;animation-delay:calc(var(--x,0s) + var(--id,0s))}
+@keyframes wxbow{0%,100%{opacity:.78}50%{opacity:1}}
+.stw .wxf{animation:wxdrift 4.2s ease-in-out infinite;animation-delay:calc(var(--dd,0s))}
+.stw .wxq{animation:stxb 2.4s ease-in-out infinite}
 .stbd{font-family:var(--mono);min-width:176px}
 .stbd .r1{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:#ffb21e;opacity:.7;margin-bottom:6px}
-.stbd .r2{font-size:15px;font-weight:700;letter-spacing:.06em;text-align:center;white-space:nowrap}
-.sfpair.flipx{perspective:300px}
+.fcr{display:flex;justify-content:center;gap:1px}
+.fc{position:relative;display:block;width:11px;height:22px;background:#10182f;border-radius:2px;font-family:var(--mono);font-size:13px;font-weight:700;line-height:22px;text-align:center;overflow:hidden;perspective:60px}
+.fc:after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#04070f}
+.fc i{font-style:normal;display:block;position:absolute;left:0;right:0;top:0;bottom:0;z-index:1}
+.fc.fa .co{animation:fco .22s ease-in forwards;animation-delay:calc(.2s + var(--x,0s) + var(--d,0s))}
+.fc.fa .cn{animation:fcn .24s ease-out backwards;animation-delay:calc(.42s + var(--x,0s) + var(--d,0s))}
+@keyframes fco{to{transform:rotateX(-90deg);opacity:0}}
+@keyframes fcn{from{transform:rotateX(90deg);opacity:0}to{transform:none;opacity:1}}
+.papi .lights i.off{background:#2a2f45;box-shadow:none;opacity:.6}
+@media (prefers-reduced-motion: reduce){.idl,.stx,.hzn .hzi.idle,.wsk .wsi.idle,.wsk .wsg,.wsk .wlamp,.rdr .rsw,.rdr .bl,.stw *,.fc.fa .co,.fc.fa .cn{animation:none !important}.fc.fa .co{display:none}}
 .lkhr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}
 .lkhr .lkh{margin:0}
 .lkrs{font-size:12px;padding:5px 11px;border-radius:999px;background:transparent;color:var(--accent);border:1px solid var(--line);font-weight:600}
@@ -488,9 +530,9 @@ html{touch-action:manipulation}
 .funk{text-align:center;padding:22px 26px;min-width:220px}
 .fkhs{width:150px;height:112px;overflow:visible}
 .fkhs .hs{fill:none;stroke:#fff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
-.fkhs .cup{fill:#ff4fd8;stroke:#fff;stroke-width:3}
-.fkhs .dot{fill:#ff4fd8}
-.fkhs .wv{fill:none;stroke:#ff4fd8;stroke-width:4;stroke-linecap:round;opacity:0;animation:fkwave 1.3s ease-out infinite}
+.fkhs .cup{fill:var(--accent);stroke:#fff;stroke-width:3}
+.fkhs .dot{fill:var(--accent)}
+.fkhs .wv{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;opacity:0;animation:fkwave 1.3s ease-out infinite}
 .fkhs .wv.w2{animation-delay:.25s}.fkhs .wv.w3{animation-delay:.5s}
 @keyframes fkwave{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
 .fkhs .hsg{animation:fkbob 1.3s ease-in-out infinite;transform-origin:50% 60%}
@@ -1727,38 +1769,75 @@ body.menuopen{overflow:hidden}
   }
   var BD_TXT = ['VERSPÄTET', 'LEICHTE VERSPÄTUNG', 'ON TIME', 'LEICHT VORAUS', 'VORAUS'];
   var BD_COL = ['#ff5b6b', '#ffb21e', '#4dff7a', '#4dff7a', '#4dd2ff'];
-  var WX_NAME = ['Gewitter', 'Regen', 'Leicht bewölkt', 'Sonnig', 'Sonne und Regenbogen'];
-  function wxSVG(w){
+  var ST_LABELS = {
+    weather:['Gewitterlage', 'Regenschauer', 'Wolkig, im Plan', 'Sonnig, leicht voraus', 'Traumwetter, weit voraus'],
+    board:['Abflug stark verspätet', 'Abflug leicht verspätet', 'Abflug pünktlich', 'Abflug früher als geplant', 'Abflug deutlich früher'],
+    horizon:['Zu tief, Nase hoch', 'Etwas zu tief', 'Fluglage stabil', 'Leichter Steigflug', 'Steigflug, weit voraus'],
+    windsock:['Flaute, Sack hängt', 'Schwacher Wind', 'Mäßiger Wind', 'Frische Brise', 'Sack voll gestreckt'],
+    radar:['Ziel weit zurück', 'Ziel leicht zurück', 'Ziel auf Kurs', 'Ziel leicht voraus', 'Ziel weit voraus']
+  };
+  var ST_STBY = {papi:'Lichter aus', ils:'Kein Signal', profile:'Holding', weather:'Keine Wetterdaten', board:'Kein Abflug', horizon:'IRS richtet sich aus', windsock:'Windsack im Aufbau', radar:'Kein Ziel erfasst'};
+  function stLabel(st, w, sb){
+    if(sb) return (ST_STBY[st] || '') + ' · Prognose ab dem 2. Eintrag';
+    return (ST_LABELS[st] || PAPI_LABELS)[w];
+  }
+  /* Ohne zweiten echten Eintrag gibt es keine Prognose: Anzeigen sind im Standby */
+  function stIsStandby(){
+    var n = 0;
+    (S && S.entries || []).forEach(function(e){ if(e && !e.a) n++; });
+    return n < 2;
+  }
+  function wxSVG(w, sb){
     var sun = function(cx, cy, r, rays){
       var h = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#ffc93c"/>';
-      if(rays) for(var a = 0; a < 8; a++){
-        var an = a * Math.PI / 4, c = Math.cos(an), sn = Math.sin(an);
-        h += '<line x1="' + (cx + c * (r + 4)).toFixed(1) + '" y1="' + (cy + sn * (r + 4)).toFixed(1) + '" x2="' + (cx + c * (r + 9)).toFixed(1) + '" y2="' + (cy + sn * (r + 9)).toFixed(1) + '" stroke="#ffc93c" stroke-width="2.4" stroke-linecap="round"/>';
+      if(rays){
+        h += '<g class="wxr" style="transform-origin:' + cx + 'px ' + cy + 'px">';
+        for(var a = 0; a < 8; a++){
+          var an = a * Math.PI / 4, c = Math.cos(an), sn = Math.sin(an);
+          h += '<line x1="' + (cx + c * (r + 4)).toFixed(1) + '" y1="' + (cy + sn * (r + 4)).toFixed(1) + '" x2="' + (cx + c * (r + 9)).toFixed(1) + '" y2="' + (cy + sn * (r + 9)).toFixed(1) + '" stroke="#ffc93c" stroke-width="2.4" stroke-linecap="round"/>';
+        }
+        h += '</g>';
       }
       return h;
     };
-    var cloud = function(x, y, fill){
-      return '<g fill="' + fill + '"><circle cx="' + (x + 12) + '" cy="' + (y + 12) + '" r="10"/><circle cx="' + (x + 26) + '" cy="' + (y + 8) + '" r="13"/><circle cx="' + (x + 40) + '" cy="' + (y + 13) + '" r="9"/><rect x="' + (x + 6) + '" y="' + (y + 12) + '" width="40" height="10" rx="5"/></g>';
+    var cloud = function(x, y, fill, cls){
+      return '<g class="' + (cls === false ? '' : 'wxc') + '" fill="' + fill + '"><circle cx="' + (x + 12) + '" cy="' + (y + 12) + '" r="10"/><circle cx="' + (x + 26) + '" cy="' + (y + 8) + '" r="13"/><circle cx="' + (x + 40) + '" cy="' + (y + 13) + '" r="9"/><rect x="' + (x + 6) + '" y="' + (y + 12) + '" width="40" height="10" rx="5"/></g>';
     };
     var b = '<svg viewBox="0 0 96 64" aria-hidden="true">';
-    if(w === 0){
-      b += cloud(20, 6, '#566086') + '<polygon points="50,30 42,44 49,44 45,58 60,38 52,38 56,30" fill="#ffd84a"/>';
+    if(sb){
+      b += '<g class="wxq" style="opacity:.9">' + cloud(20, 6, '#2c3560', false) + '</g>' +
+        '<text class="wxq" x="48" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#8a97c8" font-family="sans-serif">?</text>' +
+        '<g stroke="#5b6aa0" stroke-width="2.4" stroke-linecap="round" opacity=".75"><line class="wxf" style="--dd:0s" x1="14" y1="44" x2="70" y2="44"/><line class="wxf" style="--dd:-1.4s" x1="28" y1="51" x2="84" y2="51"/><line class="wxf" style="--dd:-2.6s" x1="18" y1="58" x2="62" y2="58"/></g>';
+    }else if(w === 0){
+      b += cloud(20, 6, '#566086') + '<polygon class="wxb" points="50,30 42,44 49,44 45,58 60,38 52,38 56,30" fill="#ffd84a"/>';
     }else if(w === 1){
-      b += cloud(20, 6, '#8d97b8') + '<g stroke="#5aa2ff" stroke-width="2.6" stroke-linecap="round"><line x1="36" y1="36" x2="33" y2="46"/><line x1="48" y1="36" x2="45" y2="46"/><line x1="60" y1="36" x2="57" y2="46"/></g>';
+      b += cloud(20, 6, '#8d97b8') + '<g stroke="#5aa2ff" stroke-width="2.6" stroke-linecap="round"><line class="wxd" style="--dd:0s" x1="36" y1="36" x2="33" y2="46"/><line class="wxd" style="--dd:-.37s" x1="48" y1="36" x2="45" y2="46"/><line class="wxd" style="--dd:-.74s" x1="60" y1="36" x2="57" y2="46"/></g>';
     }else if(w === 2){
       b += sun(34, 26, 12, true) + cloud(38, 18, '#c9d0ee');
     }else if(w === 3){
       b += sun(48, 32, 14, true);
     }else{
       var cols = ['#ff4d4d', '#ffa23d', '#ffe14d', '#4dd96a', '#4da8ff'];
+      b += '<g class="wxw">';
       cols.forEach(function(c, i){ var r = 42 - i * 4; b += '<path d="M' + (48 - r) + ' 58 A' + r + ' ' + r + ' 0 0 1 ' + (48 + r) + ' 58" fill="none" stroke="' + c + '" stroke-width="3.2"/>'; });
-      b += sun(80, 14, 7, false);
+      b += '</g>' + sun(80, 14, 7, false);
     }
     return b + '</svg>';
   }
-  function stInst(st, w, pl){
-    var anim = !!(pl && pl.lo >= 0 && pl.from >= 0 && pl.from !== w), from = anim ? pl.from : w;
-    var dly = '--x:' + ((pl && pl.x) || 0).toFixed(2) + 's';
+  var PLANE_G = '<path d="M-19 0C-19 -3 -13 -4.5 -3 -4.5L11 -4.5C17 -4.5 20 -2 20 0C20 2 17 3.5 11 3.5L-3 3.5C-13 3.5 -19 3 -19 0Z" fill="#f3f6ff"/><path d="M-17 -1L-21 -11L-14 -11L-8 -1Z" style="fill:var(--accent)"/><path d="M-3 1L-9 9L-4 9L8 1Z" fill="#c9d0ee"/>';
+  function flapPad(t, n){ var l = Math.floor((n - t.length) / 2); return new Array(l + 1).join(' ') + t + new Array(n - t.length - l + 1).join(' '); }
+  function flapRow(txt, col, from, fcol, anim){
+    var N = 19, t = flapPad(txt, N), f = flapPad(from, N), h = '<div class="fcr">';
+    for(var i = 0; i < N; i++){
+      var c = t[i] === ' ' ? '&nbsp;' : t[i], o = f[i] === ' ' ? '&nbsp;' : f[i];
+      if(anim && t[i] !== f[i]) h += '<span class="fc fa" style="--d:' + (i * 0.035).toFixed(3) + 's"><i class="co" style="color:' + fcol + '">' + o + '</i><i class="cn" style="color:' + col + '">' + c + '</i></span>';
+      else h += '<span class="fc"><i style="color:' + col + '">' + c + '</i></span>';
+    }
+    return h + '</div>';
+  }
+  function stInst(st, w, pl, sb){
+    var anim = !sb && !!(pl && pl.lo >= 0 && pl.from >= 0 && pl.from !== w), from = anim ? pl.from : w;
+    var dly = '--x:' + ((pl && pl.x) || 0).toFixed(2) + 's;--id:' + (anim ? 2 : 0) + 's';
     function P(fn){
       var a = fn(w), b = fn(from);
       return dly + ';--tx:' + a[0] + ';--ty:' + a[1] + ';--tr:' + a[2] + ';--fx:' + b[0] + ';--fy:' + b[1] + ';--fr:' + b[2];
@@ -1772,42 +1851,60 @@ body.menuopen{overflow:hidden}
     if(st === 'ils'){
       h = '<div class="ils"><i class="hz"></i>';
       [-30, -15, 15, 30].forEach(function(o){ h += '<i class="tk" style="top:' + (37 + o) + 'px"></i>'; });
-      return h + '<span class="dia ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 15, 0]; }) + '"></span></div>';
+      if(sb) return h + '<div class="stx">SIGNAL NOT FOUND</div></div>';
+      return h + '<span class="dia ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 15, 0]; }) + '"><b class="idl"><i class="dd"></i></b></span></div>';
     }
     if(st === 'profile'){
-      var plane = '<svg viewBox="-22 -12 44 24"><path d="M-19 0C-19 -3 -13 -4.5 -3 -4.5L11 -4.5C17 -4.5 20 -2 20 0C20 2 17 3.5 11 3.5L-3 3.5C-13 3.5 -19 3 -19 0Z" fill="#f3f6ff"/><path d="M-17 -1L-21 -11L-14 -11L-8 -1Z" fill="#ff4fd8"/><path d="M-3 1L-9 9L-4 9L8 1Z" fill="#c9d0ee"/></svg>';
-      return '<div class="pfl"><svg class="pfs" viewBox="0 0 200 84" aria-hidden="true"><line x1="6" y1="76" x2="194" y2="12" stroke="#ff4fd8" stroke-width="1.6" stroke-dasharray="5 4"/><rect x="0" y="78" width="200" height="6" fill="#1f2b4f"/></svg><span class="plw ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 11, 8 + (v - 2) * 3]; }) + '">' + plane + '</span></div>';
+      if(sb){
+        var rt = 'M60 24H140A18 18 0 0 1 140 60H60A18 18 0 0 1 60 24Z';
+        return '<div class="pfl"><svg class="pfs" viewBox="0 0 200 84" aria-hidden="true"><path d="' + rt + '" fill="none" stroke="#2b3a66" stroke-width="1.4" stroke-dasharray="3 5"/><g><animateMotion dur="8s" repeatCount="indefinite" rotate="auto" path="' + rt + '"/><g transform="scale(.62)">' + PLANE_G + '</g></g></svg></div>';
+      }
+      return '<div class="pfl"><svg class="pfs" viewBox="0 0 200 84" aria-hidden="true"><line x1="6" y1="12" x2="160" y2="76" style="stroke:var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/><rect x="0" y="78" width="200" height="6" fill="#1f2b4f"/><rect x="150" y="77" width="50" height="7" rx="1" fill="#46548a"/><line x1="156" y1="80.5" x2="196" y2="80.5" stroke="#cfd6f2" stroke-width="1.2" stroke-dasharray="5 4"/></svg>' +
+        '<span class="plw ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 9, 12 + (v - 2) * 3]; }) + '"><b class="idl"><svg viewBox="-22 -12 44 24">' + PLANE_G + '</svg></b></span></div>';
     }
     if(st === 'weather'){
-      return '<div class="stw">' + pair(wxSVG, 'wx') + '</div>';
+      return '<div class="stw" style="' + dly + '">' + (sb ? wxSVG(0, true) : pair(wxSVG, 'wx')) + '</div>';
     }
     if(st === 'board'){
-      var bd = function(v){ return '<div class="stbd"><div class="r1"><span>PRÜFUNG</span><span>STATUS</span></div><div class="r2" style="color:' + BD_COL[v] + ';text-shadow:0 0 10px ' + BD_COL[v] + '66">' + BD_TXT[v] + '</div></div>'; };
-      return pair(bd, 'flipx');
+      if(sb) return '<div class="stbd"><div class="r1"><span>ABFLUG</span><span>STATUS</span></div>' + flapRow('NO DEPARTURES TODAY', '#ffb21e', '', '#ffb21e', false) + '</div>';
+      return '<div class="stbd" style="' + dly + '"><div class="r1"><span>PRÜFUNG</span><span>STATUS</span></div>' + flapRow(BD_TXT[w], BD_COL[w], BD_TXT[from], BD_COL[from], anim) + '</div>';
     }
     if(st === 'horizon'){
-      return '<div class="hzn"><div class="hzs ' + mc + '" style="' + P(function(v){ return [0, (v - 2) * 9, -(v - 2) * 3]; }) + '"></div>' +
-        '<svg class="hzp" viewBox="0 0 84 84" aria-hidden="true"><path d="M8 42H30M54 42H76M42 42m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" fill="none" stroke="#ffd04a" stroke-width="3" stroke-linecap="round"/></svg></div>';
+      var ball = sb ? '<div class="hzs"></div>' : '<div class="hzs ' + mc + '" style="' + P(function(v){ return [0, (v - 2) * 9, -(v - 2) * 3]; }) + '"></div>';
+      return '<div class="hzn"><div class="hzi' + (sb ? '' : ' idle') + '" style="' + dly + '">' + ball + '</div>' +
+        '<svg class="hzp" viewBox="0 0 84 84" aria-hidden="true"><path d="M8 42H30M54 42H76M42 42m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" fill="none" stroke="#ffd04a" stroke-width="3" stroke-linecap="round"/></svg>' +
+        (sb ? '<div class="stx hzx">ALIGN IRS</div>' : '') + '</div>';
     }
     if(st === 'windsock'){
       var seg = '';
       for(var i = 0; i < 5; i++){
         var x0 = i * 12.8, x1 = x0 + 12.8, h0 = 11 - x0 * 0.075, h1 = 11 - x1 * 0.075;
-        seg += '<polygon points="' + x0.toFixed(1) + ',' + (12 - h0).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 - h1).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 + h1).toFixed(1) + ' ' + x0.toFixed(1) + ',' + (12 + h0).toFixed(1) + '" fill="' + (i % 2 ? '#f4f6ff' : '#ff7a1f') + '"/>';
+        seg += '<polygon' + (sb ? ' class="wsg" style="--sd:' + (i * 0.8).toFixed(1) + '"' : '') + ' points="' + x0.toFixed(1) + ',' + (12 - h0).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 - h1).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 + h1).toFixed(1) + ' ' + x0.toFixed(1) + ',' + (12 + h0).toFixed(1) + '" fill="' + (i % 2 ? '#f4f6ff' : '#ff7a1f') + '"/>';
       }
-      return '<div class="wsk"><svg class="wpole" viewBox="0 0 110 84" aria-hidden="true"><rect x="13" y="6" width="4" height="78" rx="2" fill="#aeb8dc"/><circle cx="15" cy="18" r="4" fill="#aeb8dc"/></svg>' +
-        '<span class="wss ' + mc + '" style="' + P(function(v){ return [0, 0, (4 - v) * 19.5]; }) + '"><svg viewBox="0 0 64 24" aria-hidden="true">' + seg + '</svg></span></div>';
+      var pole = '<svg class="wpole" viewBox="0 0 110 84" aria-hidden="true"><rect x="13" y="6" width="4" height="78" rx="2" fill="#aeb8dc"/><circle cx="15" cy="18" r="4" fill="#aeb8dc"/>';
+      if(sb){
+        pole += '<defs><pattern id="wsh" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="8" fill="#ff7a1f"/><rect x="4" width="4" height="8" fill="#f4f6ff"/></pattern></defs>' +
+          '<rect x="46" y="62" width="50" height="9" rx="1.5" fill="url(#wsh)"/><rect x="50" y="71" width="2.4" height="13" fill="#aeb8dc"/><rect x="90" y="71" width="2.4" height="13" fill="#aeb8dc"/><circle class="wlamp" cx="71" cy="58" r="2.6" fill="#ffb21e"/>';
+      }
+      pole += '</svg>';
+      var amp = (2.5 + w * 0.6).toFixed(1), dur = (2.5 - w * 0.3).toFixed(1);
+      return '<div class="wsk">' + pole + '<span class="wss ' + (sb ? '' : mc) + '" style="' + (sb ? 'transform:rotate(80deg)' : P(function(v){ return [0, 0, (4 - v) * 19.5]; })) + '"><b class="wsi' + (sb ? '' : ' idle') + '" style="--amp:' + amp + ';--dur:' + dur + 's"><svg viewBox="0 0 64 24" aria-hidden="true">' + seg + '</svg></b></span></div>';
     }
     if(st === 'radar'){
-      return '<div class="rdr"><svg class="rdrb" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="40" fill="#08180f" stroke="#2f6b46" stroke-width="1.5"/><circle cx="42" cy="42" r="27" fill="none" stroke="#2f6b46"/><circle cx="42" cy="42" r="14" fill="none" stroke="#2f6b46"/><line x1="2" y1="42" x2="82" y2="42" stroke="#2f6b46"/><line x1="42" y1="2" x2="42" y2="82" stroke="#2f6b46"/><path d="M42 42L42 2A40 40 0 0 1 70 13Z" fill="rgba(77,255,122,.16)"/></svg>' +
-        '<span class="blp ' + mc + '" style="--bc:' + ['#ff5b6b', '#ffb21e', '#4dff7a', '#4dd2ff', '#4dd2ff'][w] + ';' + P(function(v){ return [(v - 2) * 9, -(v - 2) * 12, 0]; }) + '"></span></div>';
+      return '<div class="rdr"><svg class="rdrb" viewBox="0 0 84 84" aria-hidden="true"><circle class="rbg" cx="42" cy="42" r="40"/><circle class="rg" cx="42" cy="42" r="27"/><circle class="rg" cx="42" cy="42" r="14"/><line class="rg" x1="2" y1="42" x2="82" y2="42"/><line class="rg" x1="42" y1="2" x2="42" y2="82"/></svg>' +
+        (sb ? '<div class="stx rdx">NO TARGET<br>FOUND</div>' :
+        '<i class="rsw"></i><span class="blp ' + mc + '" style="' + P(function(v){ return [(v - 2) * 9, -(v - 2) * 12, 0]; }) + '"><b class="bl"></b></span>') + '</div>';
     }
     return '';
   }
-  function papiHTML(w, pl){
-    var st = lookSt();
-    var inner = st === 'papi' ? papiLights(w, pl) : '<div class="stbox">' + stInst(st, w, pl) + '</div>';
-    return '<div class="papi" role="img" aria-label="' + PAPI_LABELS[w] + '">' + inner + '<div class="plbl">' + PAPI_LABELS[w] + '</div></div>';
+  function papiHTML(w, pl, sb){
+    var st = lookSt(), lab = stLabel(st, w, sb);
+    var inner;
+    if(st === 'papi'){
+      if(sb) inner = '<div class="lights"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div>';
+      else inner = papiLights(w, pl);
+    }else inner = '<div class="stbox">' + stInst(st, w, pl, sb) + '</div>';
+    return '<div class="papi" role="img" aria-label="' + lab + '">' + inner + '<div class="plbl">' + lab + '</div></div>';
   }
   /* Zeichnet die Lichter nur neu, wenn sich Zustand oder Animationsplan geändert haben */
   function papiMount(id, r, ctx){
@@ -1815,6 +1912,13 @@ body.menuopen{overflow:hidden}
     if(!el || typeof PAPI_LABELS === 'undefined' || !PAPI_LABELS) return;
     if(r === null){ el.innerHTML = ''; el.removeAttribute('data-sig'); el.hidden = true; return; }
     el.hidden = false;
+    if(stIsStandby()){
+      var sbSig = lookSt() + ':standby';
+      if(el.getAttribute('data-sig') === sbSig && el.firstChild) return;
+      el.setAttribute('data-sig', sbSig);
+      el.innerHTML = papiHTML(2, null, true);
+      return;
+    }
     var w = papiW(r), pl = papiPlan(w, ctx);
     var sig = lookSt() + ':' + w + ':' + pl.lo + ':' + pl.hi + ':' + pl.x.toFixed(2) + ':' + (pl.vis ? 1 : 0);
     if(el.getAttribute('data-sig') === sig && el.firstChild) return;
@@ -2997,12 +3101,12 @@ body.menuopen{overflow:hidden}
     for(k = 0; k < 7; k++) rl += '<circle class="rl" cx="' + (262 + k * 8) + '" cy="141.5" r="1.8"/>';
     var plane = '<g class="gpl" transform="translate(-60,20)">' +
       '<path d="M-19 0C-19 -3 -13 -4.5 -3 -4.5L11 -4.5C17 -4.5 20 -2 20 0C20 2 17 3.5 11 3.5L-3 3.5C-13 3.5 -19 3 -19 0Z" fill="#f3f6ff"/>' +
-      '<path d="M-17 -1L-21 -11L-14 -11L-8 -1Z" fill="#ff4fd8"/>' +
+      '<path d="M-17 -1L-21 -11L-14 -11L-8 -1Z" style="fill:var(--accent)"/>' +
       '<path d="M-3 1L-9 9L-4 9L8 1Z" fill="#c9d0ee"/>' +
       '<ellipse cx="3" cy="5.5" rx="3" ry="1.8" fill="#aab3d6"/></g>';
     var ov = makeOverlay('<div class="cbox gbox"><div class="gscene"><svg viewBox="0 0 320 170" aria-hidden="true">' +
       '<rect x="0" y="140" width="320" height="30" fill="#070b18"/>' +
-      '<line x1="10" y1="50" x2="289" y2="140" stroke="#ff4fd8" stroke-width="1.6" stroke-dasharray="5 4" opacity=".9"/>' +
+      '<line x1="10" y1="50" x2="289" y2="140" style="stroke:var(--accent)" stroke-width="1.6" stroke-dasharray="5 4" opacity=".9"/>' +
       rl + plane + '</svg></div>' +
       '<div class="gpapi">' + papiHTML(w, {lo:-1, hi:-1, x:0}) + '</div>' +
       '<div class="gtxt">' + GLIDE_TXT[w] + '</div></div>');
@@ -3023,6 +3127,7 @@ body.menuopen{overflow:hidden}
     setTimeout(close, reducedMotion() ? 3000 : 6000);
   }
   function queueGlideScene(){
+    if(stIsStandby()) return;
     var n = homeNums();
     if(n.last.n >= S.target) return;
     var w = papiW(n.planPerDay > 0 ? n.diff / n.planPerDay : 0);
@@ -4031,14 +4136,14 @@ body.menuopen{overflow:hidden}
       '<div class="small">Lege die PDF-Zusammenfassung oder deine Originale (PDF oder Foto) zu diesem Paket. Du kannst sie später in der App öffnen.</div>' +
       '<label>Art<select id="ndKind"><option value="summary">PDF-Zusammenfassung</option><option value="original">Original der Notizen</option></select></label>' +
       '<input type="file" id="ndFile" accept="application/pdf,image/jpeg,image/png,image/webp" style="margin-top:10px;width:100%">' +
-      '<div class="small" id="ndMsg" style="margin-top:8px">Höchstens 30 MB pro Datei.</div>');
+      '<div class="small" id="ndMsg" style="margin-top:8px">Höchstens 100 MB pro Datei. Sehr große Dateien bleiben nur auf diesem Gerät, wenn der Cloud-Abgleich sie nicht annimmt.</div>');
     sh.ov.querySelector('#ndFile').addEventListener('change', function(ev){
       var f = ev.target.files && ev.target.files[0], msg = sh.ov.querySelector('#ndMsg');
       if(!f) return;
       var mime = f.type;
       if(!mime){ var ex = (f.name.split('.').pop() || '').toLowerCase(); mime = ({pdf:'application/pdf', jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp'})[ex] || ''; }
       if(!NB_MIME[mime]){ msg.textContent = 'Nur PDF, JPEG, PNG oder WebP.'; return; }
-      if(f.size > 30 * 1048576){ msg.textContent = 'Die Datei ist größer als 30 MB.'; return; }
+      if(f.size > 100 * 1048576){ msg.textContent = 'Die Datei ist größer als 100 MB.'; return; }
       if((p.docs || []).length >= 8){ msg.textContent = 'Pro Paket sind höchstens 8 Dokumente möglich.'; return; }
       msg.textContent = 'Lese Datei …';
       var fr = new FileReader();
@@ -5086,6 +5191,10 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-17', items:[
+      {t:'Zustandsanzeigen mit Standby und Idle', x:'Mit nur einem Eintrag ist noch keine Prognose möglich: Die Anzeige zeigt einen Standby (z. B. PAPI aus, „Signal not found“, Holding, „No departures today“). Ab dem zweiten Eintrag geht sie an und bewegt sich im Ruhezustand leicht.'},
+      {t:'Anzeigen in deiner Farbe', x:'Claude-Analyse, Anfunken, Anflugprofil, Gleitpfadanzeige und Radar nutzen jetzt deine gewählte Farbe. Der Gleitpfad im Anflugprofil sinkt nun von links nach rechts, die Gleitpfad-Raute bleibt immer eine Raute.'}
+    ]},
     {v:'2026.10.10-16', items:[
       {t:'Tage ohne Eintrag', x:'Ist ein Tag vorbei und du hast nichts eingetragen, zählt er als 0 geklickte Fragen und wird automatisch im Verlauf ergänzt (Markierung „auto“). Prognose und Rückstand aktualisieren sich dadurch jeden Tag. Du kannst jeden Tag jederzeit nachtragen.'},
       {t:'Anmelden mit Profil', x:'Beim ersten Start fragt die App zuerst, ob du schon ein Profil hast. Mit deinem GitHub-Token wird dein Stand direkt geladen.', web:true},

@@ -2022,11 +2022,11 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       h += '<h2>Dein Stand</h2><p>Gesamtzahl der Fragen, die du bis heute geklickt hast, über alle Fächer. Weißt du es nicht genau, lass es leer, dann startest du bei 0.</p>' +
            obField('obStand', 'Bisher geklickt', 'number', v.stand, 'z. B. 3500');
     }else if(st === 4){
-      h += '<h2>Deine Fächer</h2><p>Optional: Wie viele Fragen hast du pro Fach schon geklickt, wie viele davon waren falsch und wie viele musst du noch zum ersten Mal klicken? Berichte wie Last 100 oder Prüfungssimulationen trägst du später im Tab Fächer ein.</p>' +
-           '<div class="obrow h"><span>Fach</span><span>Geklickt</span><span>Davon falsch</span><span>Noch offen</span></div>';
+      h += '<h2>Deine Fächer</h2><p>Optional: Wie viele Fragen hast du pro Fach schon geklickt, wie viel Prozent davon hattest du richtig und wie viele musst du noch zum ersten Mal klicken? Die falschen Fragen rechnet die App selbst aus. Berichte wie Last 100 oder Prüfungssimulationen trägst du später im Tab Fächer ein.</p>' +
+           '<div class="obrow h"><span>Fach</span><span>Geklickt</span><span>Richtig in %</span><span>Noch offen</span></div>';
       SUBJECTS.forEach(function(sj, i){
         var sv = v.subj[sj.id] || {c:'', w:'', t:''};
-        h += '<div class="obrow"><span>' + esc(sj.name) + '</span><input id="obC' + i + '" type="number" inputmode="numeric" min="0" value="' + sv.c + '"><input id="obW' + i + '" type="number" inputmode="numeric" min="0" value="' + sv.w + '"><input id="obT' + i + '" type="number" inputmode="numeric" min="0" value="' + (sv.t || '') + '"></div>';
+        h += '<div class="obrow"><span>' + esc(sj.name) + '</span><input id="obC' + i + '" type="number" inputmode="numeric" min="0" value="' + sv.c + '"><input id="obW' + i + '" type="text" inputmode="decimal" placeholder="%" value="' + sv.w + '"><input id="obT' + i + '" type="number" inputmode="numeric" min="0" value="' + (sv.t || '') + '"></div>';
       });
     }else{
       var tg = readInt(v.target) || 20000, stand = readInt(v.stand), nf = 0;
@@ -2055,7 +2055,9 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     S.entries = [{d:today, n:stand}];
     SUBJECTS.forEach(function(sj){
       var sv = v.subj[sj.id]; if(!sv) return;
-      var c = readInt(sv.c), w = readInt(sv.w), t = readInt(sv.t);
+      var c = readInt(sv.c), t = readInt(sv.t);
+      var pr = parseFloat(String(sv.w).replace(',', '.')), w = null;
+      if(c !== null && isFinite(pr)) w = Math.round(c * (100 - Math.max(0, Math.min(100, pr))) / 100);
       if(c === null && t === null) return;
       var sub = getSub(sj.id);
       if(t !== null) sub.todo = t;

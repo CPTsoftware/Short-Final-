@@ -481,6 +481,31 @@ body.nbopen{overflow:hidden}
 .lkcd.ai{grid-template-columns:repeat(3,1fr)}
 .lkpv.ai{height:30px}
 .aiw{font-size:15px;letter-spacing:.01em}
+
+/* Kein Heranzoomen beim Tippen (iOS zoomt bei Schrift unter 16px) */
+@media (pointer:coarse),(max-width:820px){input,select,textarea,.nbta,.chin textarea{font-size:16px !important}}
+html{touch-action:manipulation}
+.funk{text-align:center;padding:22px 26px;min-width:220px}
+.fkhs{width:150px;height:112px;overflow:visible}
+.fkhs .hs{fill:none;stroke:#fff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.fkhs .cup{fill:#ff4fd8;stroke:#fff;stroke-width:3}
+.fkhs .dot{fill:#ff4fd8}
+.fkhs .wv{fill:none;stroke:#ff4fd8;stroke-width:4;stroke-linecap:round;opacity:0;animation:fkwave 1.3s ease-out infinite}
+.fkhs .wv.w2{animation-delay:.25s}.fkhs .wv.w3{animation-delay:.5s}
+@keyframes fkwave{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+.fkhs .hsg{animation:fkbob 1.3s ease-in-out infinite;transform-origin:50% 60%}
+@keyframes fkbob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.fktx{font-size:15px;font-weight:650;margin-top:6px}
+.fktx small{display:block;font-size:12px;font-weight:500;color:#aab3d6;margin-top:2px}
+@media (prefers-reduced-motion: reduce){.fkhs .wv,.fkhs .hsg{animation:none}.fkhs .wv{opacity:.8}}
+.tdlist{margin:8px 0}
+.tdrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+.tdedit{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font-size:13.5px}
+.tdedit input{max-width:120px;flex:0 0 120px}
+.impsum{margin:6px 0;padding-left:18px;font-size:13.5px;line-height:1.5}
+body.obopen .sheetov{z-index:210}
+.obimp{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.obimp .ok{padding:10px 12px;border:1px solid var(--accent);border-radius:12px;font-size:13.5px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;background:#141a33;color:#fff;border:1px solid rgba(255,79,216,.5);padding:10px 18px;border-radius:999px;font-size:13.5px;animation:cfade .25s ease-out both;max-width:90vw;text-align:center}
 .tour{position:fixed;left:0;right:0;top:0;bottom:0;z-index:150}
 .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,8,20,.8),0 0 0 2px var(--accent),0 0 22px 2px var(--accent);transition:all .35s ease;pointer-events:none}
@@ -621,7 +646,8 @@ body.menuopen{overflow:hidden}
         <button id="aiBtn">Analyse erstellen</button>
         <button class="ghost" id="aiStop" hidden>Stopp</button>
       </div>
-      <button class="ghost" id="chatBtn" style="width:100%;margin-top:8px">Mit Claude darüber sprechen</button>
+      <button class="ghost" id="chatBtn" style="width:100%;margin-top:8px">Claude anfunken</button>
+      <div class="small" id="chatInfo" style="margin-top:6px"></div>
       <div class="small" id="aiMsg" style="margin-top:6px"></div>
     </div>
     <div class="card" id="fcCard"></div>
@@ -678,6 +704,12 @@ body.menuopen{overflow:hidden}
   <details class="card settings" id="lookCard">
     <summary>Individualisierung</summary>
     <div id="lookBody"></div>
+  </details>
+
+  <details class="card settings" id="impCard">
+    <summary>Lernstand importieren</summary>
+    <div class="small" style="margin-bottom:8px">Fragen bisher in Excel, Notizen oder einer anderen App getrackt? Claude liest deine Dateien, stellt dir Rückfragen und erstellt eine Datei, mit der du deinen Lernstand hier einträgst. Notizen können zusätzlich als Lernpaket übernommen werden.</div>
+    <button type="button" id="lsImpBtn" style="width:100%">Import starten</button>
   </details>
 
   <details class="card settings" id="verCard">
@@ -776,7 +808,7 @@ body.menuopen{overflow:hidden}
     ['radar', 'Radar', 'Blip auf dem Schirm']
   ];
   var AI_PROVS = [['claude', 'Claude', 'claude.ai'], ['chatgpt', 'ChatGPT', 'chatgpt.com'], ['gemini', 'Gemini', 'gemini.google.com']];
-  var LOOK_DEF = {accent:'magenta', cd:'flap', st:'papi', ai:'claude'};
+  var LOOK_DEF = {accent:'magenta', cd:'flap', st:'papi', ai:'claude', hap:true};
   var appStart = Date.now();
   var STANDALONE = true;
 
@@ -1546,6 +1578,7 @@ body.menuopen{overflow:hidden}
       renderForm(i);
       save(); updateCard(i); updateSummary();
       if(addTot){ queueGlideScene(); render(); renderHome(); }
+      haptic('ok');
       toast('Bericht gespeichert');
     }else if(b.hasAttribute('data-edit')){
       editNote = {i:i, k:b.getAttribute('data-k'), t:Number(b.getAttribute('data-edit'))};
@@ -1825,7 +1858,11 @@ body.menuopen{overflow:hidden}
     return same ? 'heute ' + hm : fd(dt) + ' ' + hm;
   }
   function renderAI(){
-    var cb0 = $('chatBtn'); if(cb0) cb0.textContent = 'Mit ' + aiName() + ' darüber sprechen';
+    var cb0 = $('chatBtn'); if(cb0) cb0.textContent = aiName() + ' anfunken';
+    var ci0 = $('chatInfo');
+    if(ci0) ci0.textContent = (typeof STANDALONE !== 'undefined' && STANDALONE)
+      ? 'Funkverbindung zur KI: ' + aiName() + ' öffnet sich und bekommt alle deine Daten aus der App (Lernstand, Plan, Fächer, Berichte, Notizen, Lernzentrum). Danach kannst du frei darüber sprechen, zum Beispiel für einen Wochenplan oder eine zweite Meinung.'
+      : 'Funkverbindung zu Claude: Er kennt alle deine Daten aus der App (Lernstand, Plan, Fächer, Berichte, Notizen, Lernzentrum). Du chattest direkt hier und kannst frei darüber sprechen, zum Beispiel für einen Wochenplan oder eine zweite Meinung.';
     var body = $('aiBody'), btn = $('aiBtn'), stop = $('aiStop');
     btn.disabled = aiBusy;
     btn.textContent = aiBusy ? (STANDALONE ? 'Öffne ' + aiName() + ' …' : 'Analysiere …') : (STANDALONE ? 'In ' + aiName() + ' analysieren' : (S.ai ? 'Neu analysieren' : 'Analyse erstellen'));
@@ -2204,7 +2241,7 @@ body.menuopen{overflow:hidden}
     return esc(t).replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
   }
   function chatOpenSheet(){
-    var sh = openSheet('<div class="shead"><h2>Mit Claude sprechen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+    var sh = openSheet('<div class="shead"><h2>Claude anfunken</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<div class="small" style="margin-bottom:8px">Claude kennt alle deine Daten aus der App. Frag ihn, was du willst, zum Beispiel nach einem Wochenplan, deinen schwächsten Fächern oder wie du deine Notizen nutzt.</div>' +
       '<div class="chlog" id="chLog" aria-live="polite"></div>' +
       '<div class="chsug" id="chSug"></div>' +
@@ -2297,9 +2334,295 @@ body.menuopen{overflow:hidden}
       if(!w){ box.innerHTML = esc(m) + ' <a href="' + escA(L.url) + '" target="_blank" rel="noopener" style="color:var(--accent);font-weight:650">' + esc(nm) + ' öffnen</a>'; }
     });
   }
+  var funkBusy = false;
+  function funkScene(next){
+    if(funkBusy) return;
+    funkBusy = true;
+    var nm = aiName();
+    var ov = makeOverlay('<div class="cbox funk"><svg class="fkhs" viewBox="0 0 160 120" aria-hidden="true">' +
+      '<path class="wv w1" d="M56 26 Q80 6 104 26"/><path class="wv w2" d="M44 16 Q80 -12 116 16"/><path class="wv w3" d="M32 6 Q80 -30 128 6"/>' +
+      '<g class="hsg"><path class="hs" d="M34 76 C30 36 56 30 80 30 C104 30 130 36 126 76"/>' +
+      '<rect class="cup" x="22" y="62" width="22" height="34" rx="9"/><rect class="cup" x="116" y="62" width="22" height="34" rx="9"/>' +
+      '<path class="hs" d="M28 96 C30 112 56 116 84 108"/><circle class="dot" cx="88" cy="107" r="6"/></g></svg>' +
+      '<div class="fktx" id="fkTx">Funke ' + esc(nm) + ' an …</div></div>');
+    var quick = reducedMotion();
+    setTimeout(function(){ var t = ov.querySelector('#fkTx'); if(t) t.innerHTML = 'Verbindung steht<small>Alle deine Daten sind unterwegs</small>'; }, quick ? 150 : 1000);
+    setTimeout(function(){
+      ov.classList.add('out');
+      setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); funkBusy = false; next(); }, 360);
+    }, quick ? 500 : 1700);
+  }
   $('chatBtn').addEventListener('click', function(){
-    if(typeof STANDALONE !== 'undefined' && STANDALONE) chatOpenExternal(); else chatOpenSheet();
+    haptic('tick');
+    funkScene(function(){
+      if(typeof STANDALONE !== 'undefined' && STANDALONE) chatOpenExternal(); else chatOpenSheet();
+    });
   });
+
+  /* ---------- Offene Fragen: monatliche Kontrolle ---------- */
+  var todoLater = false, todoTries = 0;
+  /* Zeitpunkt der letzten Kontrolle liegt in S.nb (wird so mit allen Geräten abgeglichen) */
+  function todoCheckDue(){
+    var m = nbMeta(), has = SUBJECTS.some(function(sj){ return nn(getSub(sj.id).todo) !== null; });
+    if(!has) return false;
+    if(typeof m.todoChk !== 'number'){ m.todoChk = Date.now(); save(); return false; }
+    return Date.now() - m.todoChk >= 30 * 86400000;
+  }
+  function todoBusy(){
+    var onb = $('onb');
+    return !!(tourSt || document.querySelector('.celeb, .sheetov') || (onb && !onb.hidden) || !$('menu').hidden);
+  }
+  function tryTodoCheck(){
+    if(todoLater) return;
+    if(!S || !Array.isArray(S.entries) || !S.entries.length){ if(todoTries++ < 20) setTimeout(tryTodoCheck, 3000); return; }
+    if(S.fresh === true) return;
+    if(!todoCheckDue()) return;
+    if(todoBusy()){ if(todoTries++ < 40) setTimeout(tryTodoCheck, 3000); return; }
+    showTodoCheck();
+  }
+  function showTodoCheck(){
+    todoLater = true;
+    var subs = SUBJECTS.filter(function(sj){ return nn(getSub(sj.id).todo) !== null; });
+    var rows = subs.map(function(sj){ return '<div class="tdrow"><span>' + esc(sj.name) + '</span><b>' + fmt(getSub(sj.id).todo) + '</b></div>'; }).join('');
+    var sh = openSheet('<div class="shead"><h2>Stimmen deine offenen Fragen?</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div id="tdBody"><div class="small">Vor etwa einem Monat habe ich zuletzt nachgefragt. So viele Fragen hast du laut App pro Fach noch nie geklickt:</div>' +
+      '<div class="tdlist">' + rows + '</div>' +
+      '<div class="row" style="margin-top:12px"><button type="button" id="tdYes" style="flex:1">Ja, stimmt</button><button type="button" class="ghost" id="tdNo" style="flex:1">Nein, korrigieren</button></div>' +
+      '<button type="button" class="ghost" id="tdLater" style="width:100%;margin-top:8px">Später (beim nächsten Öffnen)</button></div>');
+    var o = sh.ov;
+    function g(id){ return o.querySelector('#' + id); }
+    g('tdYes').addEventListener('click', function(){
+      nbMeta().todoChk = Date.now(); save(); sh.close(); toast('Danke, notiert');
+    });
+    g('tdLater').addEventListener('click', function(){ sh.close(); });
+    g('tdNo').addEventListener('click', function(){
+      var h = '<div class="small">Trage ein, wie viele Fragen pro Fach noch nie geklickt wurden. Leer lassen = unverändert.</div>';
+      subs.forEach(function(sj, i){
+        h += '<label class="tdedit"><span>' + esc(sj.name) + '</span><input type="number" inputmode="numeric" min="0" id="tdv' + i + '" value="' + getSub(sj.id).todo + '"></label>';
+      });
+      h += '<button type="button" id="tdSave" style="width:100%;margin-top:12px">Speichern</button>';
+      g('tdBody').innerHTML = h;
+      g('tdSave').addEventListener('click', function(){
+        var ch = [];
+        subs.forEach(function(sj, i){
+          var v = readInt(g('tdv' + i).value), s = getSub(sj.id);
+          if(v !== null && v !== s.todo){ ch.push(sj.name + ' ' + fmt(s.todo) + ' → ' + fmt(v)); s.todo = v; }
+        });
+        if(ch.length) logAdd('Noch offen korrigiert: ' + ch.join(', '), []);
+        nbMeta().todoChk = Date.now();
+        sh.close(); refreshAll(); toast(ch.length ? 'Korrigiert' : 'Nichts geändert');
+      });
+    });
+  }
+  setTimeout(tryTodoCheck, 5000);
+
+  /* ---------- Bisherigen Lernstand importieren (Excel, Notizen, andere Apps) ---------- */
+  var IMP_KINDS = ['rep', 'gen', 'sim', 'l100', 'l200', 'l300', 'l500'];
+  function impDate(d){
+    if(typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
+    var dt = parse(d);
+    return (dt && !isNaN(dt.getTime()) && iso(dt) === d) ? d : null;
+  }
+  function impInt(v, max){
+    var n = (typeof v === 'string' && /^\d+$/.test(v.trim())) ? parseInt(v, 10) : v;
+    return (typeof n === 'number' && isFinite(n) && n >= 0 && n <= (max || 1000000)) ? Math.round(n) : null;
+  }
+  function impClean(o){
+    if(!o || typeof o !== 'object' || o.format !== 'short-final-import') return {err:'Das ist keine Import-Datei von Short Final! (Lernstand-Import.json).'};
+    var d = {verlauf:[], faecher:{}, ziel:null, ziel_datum:null, pruefung:null, pack:null, skipped:0};
+    var seenD = {};
+    (Array.isArray(o.verlauf) ? o.verlauf : []).slice(0, 800).forEach(function(e){
+      var dd = e && impDate(e.d), n = e && impInt(e.n);
+      if(!dd || n === null){ d.skipped++; return; }
+      if(seenD[dd]){ d.verlauf = d.verlauf.filter(function(x){ return x.d !== dd; }); }
+      seenD[dd] = 1; d.verlauf.push({d:dd, n:n});
+    });
+    d.verlauf.sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    d.ziel = impInt(o.ziel); if(d.ziel !== null && d.ziel < 1) d.ziel = null;
+    d.ziel_datum = impDate(o.ziel_datum); d.pruefung = impDate(o.pruefung);
+    var ids = SUBJECTS.map(function(s){ return s.id; });
+    var fa = (o.faecher && typeof o.faecher === 'object') ? o.faecher : {};
+    Object.keys(fa).forEach(function(id){
+      if(ids.indexOf(id) < 0){ d.skipped++; return; }
+      var f = fa[id] || {}, r = {c:impInt(f.geklickt), w:impInt(f.davon_falsch), t:impInt(f.noch_offen), rep:[], last:[], sim:[], gen:[]};
+      if(r.c !== null && r.w !== null && r.w > r.c) r.w = r.c;
+      (Array.isArray(f.berichte) ? f.berichte : []).slice(0, 500).forEach(function(b){
+        var kind = b && b.art, dd = b && impDate(b.d), n = b && impInt(b.von, 100000), ok = b && impInt(b.richtig, 100000);
+        if(IMP_KINDS.indexOf(kind) < 0 || !dd || !n || n < 1 || ok === null || ok > n){ d.skipped++; return; }
+        var note = (typeof b.notiz === 'string') ? b.notiz.trim().slice(0, 300) : '';
+        var rec;
+        if(/^l\d+$/.test(kind)){ rec = {d:dd, x:parseInt(kind.slice(1), 10), ok:ok}; r.last.push(rec); }
+        else{ rec = {d:dd, n:n, ok:ok}; r[kind].push(rec); }
+        if(note) rec.c = note;
+      });
+      if(r.c === null && r.w === null && r.t === null && !r.rep.length && !r.last.length && !r.sim.length && !r.gen.length) return;
+      d.faecher[id] = r;
+    });
+    if(o.lernpaket){
+      var pr = nbClean(o.lernpaket);
+      if(pr.pack) d.pack = pr.pack;
+    }
+    if(!d.verlauf.length && !Object.keys(d.faecher).length && !d.pack) return {err:'Die Datei enthält keine verwertbaren Daten.'};
+    return {data:d};
+  }
+  function impParseText(raw){
+    var o = null;
+    try{ o = JSON.parse(String(raw).replace(/^﻿/, '').trim()); }catch(e){ return {err:'Der Text ist keine gültige JSON-Datei.'}; }
+    if(o && o.format === 'short-final-pack') return {pack:o};
+    return impClean(o);
+  }
+  function impCounts(d){
+    var rc = 0, fc = 0, fcl = 0;
+    Object.keys(d.faecher).forEach(function(id){ var f = d.faecher[id]; fc++; rc += f.rep.length + f.last.length + f.sim.length + f.gen.length; if(f.c !== null) fcl++; });
+    return {fc:fc, rc:rc, fcl:fcl};
+  }
+  function impSummary(d){
+    var c = impCounts(d), h = '';
+    if(d.verlauf.length){ var last = d.verlauf[d.verlauf.length - 1]; h += '<li><b>Gesamtverlauf:</b> ' + d.verlauf.length + ' Einträge, zuletzt ' + fmt(last.n) + ' Fragen am ' + fd(parse(last.d)) + '</li>'; }
+    if(c.fc) h += '<li><b>Fächer:</b> ' + c.fc + ' mit Angaben' + (c.rc ? ', ' + c.rc + ' Berichte' : '') + '</li>';
+    if(d.ziel !== null || d.ziel_datum || d.pruefung) h += '<li><b>Ziel und Termine:</b> ' + [d.ziel !== null ? fmt(d.ziel) + ' Fragen' : '', d.ziel_datum ? 'bis ' + fd(parse(d.ziel_datum)) : '', d.pruefung ? 'Prüfung ' + fd(parse(d.pruefung)) : ''].filter(Boolean).join(', ') + '</li>';
+    if(d.pack) h += '<li><b>Lernpaket:</b> ' + esc(d.pack.title) + ' (' + d.pack.items.length + ' Einträge)</li>';
+    if(d.skipped) h += '<li class="small">' + d.skipped + ' Angaben waren nicht verwertbar und werden übersprungen.</li>';
+    return '<ul class="impsum">' + h + '</ul>';
+  }
+  function impApply(d, opt){
+    opt = opt || {};
+    var parts = [];
+    if(opt.verlauf !== false && d.verlauf.length){
+      var map = {};
+      S.entries.forEach(function(e){ map[e.d] = e; });
+      d.verlauf.forEach(function(e){ if(map[e.d]) map[e.d].n = e.n; else { var ne = {d:e.d, n:e.n}; S.entries.push(ne); map[e.d] = ne; } });
+      S.entries.sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+      /* Kein Platzhalter-Eintrag mit 0, wenn es echte frühere Stände gibt */
+      if(S.entries.length > 1) S.entries = S.entries.filter(function(e){ return !(e.n === 0 && S.entries.some(function(x){ return x.d < e.d && x.n > 0; })); });
+      parts.push('Verlauf');
+    }
+    if(opt.faecher !== false && Object.keys(d.faecher).length){
+      Object.keys(d.faecher).forEach(function(id){
+        var f = d.faecher[id], s = getSub(id);
+        if(f.c !== null) s.clicked = f.c;
+        if(f.w !== null) s.wrong = (f.c !== null ? Math.min(f.w, f.c) : f.w);
+        if(f.t !== null) s.todo = f.t;
+        ['rep', 'last', 'sim', 'gen'].forEach(function(k){
+          f[k].forEach(function(r){
+            var n = k === 'last' ? r.x : r.n;
+            var dup = s[k].some(function(e){ return e.d === r.d && e.ok === r.ok && (k === 'last' ? e.x === r.x : e.n === r.n); });
+            if(dup) return;
+            var rec = k === 'last' ? {d:r.d, t:newT(), x:r.x, ok:r.ok} : {d:r.d, t:newT(), n:r.n, ok:r.ok};
+            if(r.c) rec.c = r.c;
+            s[k].push(rec);
+          });
+        });
+      });
+      parts.push('Fächer');
+    }
+    if(opt.settings !== false){
+      if(d.ziel !== null) S.target = d.ziel;
+      if(d.ziel_datum) S.deadline = d.ziel_datum;
+      if(d.pruefung) S.exam = d.pruefung;
+    }
+    var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    if(es.length) S.milestone = Math.floor(es[es.length - 1].n / 5000) * 5000;
+    if(parts.length) logAdd('Import: ' + parts.join(', '), []);
+    var done = Promise.resolve();
+    if(opt.pack !== false && d.pack){ done = nbAddPack(d.pack).then(function(){ nbRefresh(); }); }
+    ensureS(); save();
+    S.papi = null; papiCur = {home:null, main:null}; papiShown = {home:false, main:false};
+    try{ render(); renderSubjects(); renderHome(); }catch(e){}
+    return done;
+  }
+  /* Bestätigen, was importiert wird. In der Einrichtung wird der Import nur vorgemerkt (onDefer). */
+  function impConfirm(d, onDefer){
+    var sh = openSheet('<div class="shead"><h2>Lernstand importieren</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small">Das steckt in der Datei:</div>' + impSummary(d) +
+      '<div class="small" style="margin-top:6px">Vorhandene Werte derselben Tage und Fächer werden überschrieben, Berichte werden ergänzt. Mit der Chronik kannst du den Import nicht rückgängig machen. Sichere vorher zur Sicherheit deine Daten.</div>' +
+      '<div class="row" style="margin-top:12px"><button type="button" id="impGo" style="flex:1">' + (onDefer ? 'Übernehmen' : 'Importieren') + '</button><button type="button" class="ghost" data-sx="1">Abbrechen</button></div>');
+    sh.ov.querySelector('#impGo').addEventListener('click', function(){
+      sh.close();
+      if(onDefer){ onDefer(d); return; }
+      impApply(d, {}).then(function(){ toast('Lernstand importiert'); haptic('ok'); });
+    });
+  }
+  function impHandleRaw(raw, onDefer){
+    var r = impParseText(raw);
+    if(r.err){ toast(r.err); return; }
+    if(r.pack){ nbConfirmImport(JSON.stringify(r.pack), 'file'); return; }
+    impConfirm(r.data, onDefer);
+  }
+  function impPromptText(){
+    var subs = SUBJECTS.map(function(s){ return s.id + ' = ' + s.name; }).join('; ');
+    return 'Du hilfst mir, meinen bisherigen ATPL-Lernstand in meine Lern-App „Short Final!“ zu übernehmen. Ich habe meine geklickten Fragen bisher anders festgehalten, zum Beispiel in Excel, in Notizen, auf Fotos oder in PDFs. Die Dateien hänge ich an diese Nachricht an.\n\n' +
+      'ABLAUF\n' +
+      '1) Lies zuerst alle angehängten Dateien genau. Sag mir in 3 bis 5 Sätzen, was du gefunden hast (Zeitraum, Fächer, Art der Zahlen).\n' +
+      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen, höchstens 4 pro Runde, als nummerierte Liste mit Antwortvorschlägen. Kläre mindestens:\n' +
+      '   a) Was bedeuten die Zahlen genau? Sind es Fragen pro Tag oder ein Gesamtstand? Was ist geklickt, richtig, falsch? Wie sind Datumsangaben gemeint?\n' +
+      '   b) Wie ordnest du meine Bezeichnungen den App-Fächern zu (Liste unten)? Frag nach, wo es nicht eindeutig ist.\n' +
+      '   c) Pro Fach, soweit ableitbar oder von mir genannt: insgesamt geklickt, davon falsch und wie viele Fragen noch nie geklickt wurden („noch offen“).\n' +
+      '   d) Berichte wie Last 100/200/300/500, Prüfungssimulation, Falsche wiederholt oder generell wiederholt, jeweils mit Datum, Fragenzahl und Ergebnis, falls vorhanden.\n' +
+      '   e) Gesamtstand aller Fächer und sein Verlauf über die Zeit.\n' +
+      '   f) Enthalten die Dateien Notizen oder Zusammenfassungen (auch als Fotos)? Frag mich dann, ob sie zusätzlich als Lernpaket in die App sollen. Wenn ja, folge für dieses Lernpaket der Anleitung am Ende dieser Nachricht.\n' +
+      '   g) Fragenziel (Anzahl und Datum) und Prüfungstermin, falls erkennbar.\n' +
+      '3) Erfinde nichts. Was sich nicht klären lässt, setzt du auf null oder lässt es weg, und sagst mir, was fehlt.\n' +
+      '4) Bevor du die Datei erstellst, fasse alles kurz als Tabelle zusammen (je Fach: geklickt, falsch, offen, Berichte) und lass es mich bestätigen.\n' +
+      '5) Dann erzeugst du die Datei per Code (Python), nicht von Hand getippt, prüfst sie mit json.load und gibst sie mir als herunterladbare Datei mit dem Namen Lernstand-Import.json. Wollte ich ein Lernpaket, erzeugst du zusätzlich die zweite Datei nach der Anleitung am Ende. Sag mir zum Schluss, wie ich beide Dateien in der App importiere (Menü › Lernstand importieren, bzw. Lernzentrum › Pakete).\n\n' +
+      'FORMAT von Lernstand-Import.json (reines JSON, UTF-8):\n' +
+      '{"format":"short-final-import","version":1,"ziel":35000,"ziel_datum":"2026-11-16","pruefung":"2026-11-16",' +
+      '"verlauf":[{"d":"2026-10-04","n":14402}],' +
+      '"faecher":{"<fach-id>":{"geklickt":1200,"davon_falsch":260,"noch_offen":340,"berichte":[{"art":"l100","d":"2026-10-01","richtig":78,"von":100,"notiz":""}]}}}\n\n' +
+      'REGELN\n' +
+      '- Alle Datumsangaben im Format JJJJ-MM-TT. ziel, ziel_datum, pruefung sind null, wenn unbekannt.\n' +
+      '- "verlauf" ist der Gesamtstand aller Fächer zusammen als KUMULIERTE Summe je Datum, aufsteigend sortiert. Liegen nur Tageswerte vor, summierst du selbst auf und sagst mir das.\n' +
+      '- Fach-IDs sind ausschließlich diese: ' + subs + '. Andere Schlüssel sind ungültig.\n' +
+      '- geklickt = wie viele Fragen des Fachs insgesamt durchgeklickt wurden. davon_falsch = wie viele davon falsch waren (höchstens geklickt). noch_offen = wie viele Fragen des Fachs noch nie geklickt wurden. Unbekannte Werte: null.\n' +
+      '- berichte: art ist eine von rep (nur zuvor falsch beantwortete Fragen wiederholt), gen (generell wiederholt), sim (Prüfungssimulation), l100, l200, l300, l500 (die letzten 100/200/300/500 Prüfungsfragen; von muss dann 100/200/300/500 sein). richtig und von sind ganze Zahlen mit richtig <= von.\n' +
+      '- Die Datei darf höchstens 500 Berichte je Fach enthalten.\n\n' +
+      'ANLEITUNG FÜR EIN LERNPAKET (nur wenn ich in 2f) zugestimmt habe; dann gilt sie genau so, inklusive der Rückfragen dort):\n<<<\n' + nbPromptText() + '\n>>>';
+  }
+  function impOpenSheet(opt){
+    opt = opt || {};
+    var text = impPromptText(), web = !!nbHooks.openClaude;
+    var sh = openSheet('<div class="shead"><h2>Lernstand mit Claude importieren</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small" style="margin-bottom:8px">Für Fragen, die du bisher anders getrackt hast, zum Beispiel in Excel, in Notizen oder einer anderen App. Claude liest deine Dateien, stellt dir Rückfragen und erstellt eine Datei mit deinem Lernstand. Auch Notizen können als Lernpaket übernommen werden. Das macht immer Claude.</div>' +
+      '<ol class="nbsteps"><li><b>Prompt kopieren</b> und in einem neuen Chat bei Claude einfügen' + (web ? ' (der Button öffnet Claude)' : '') + '.</li>' +
+      '<li><b>Dateien anhängen:</b> Excel, CSV, PDF oder Fotos deiner Notizen.</li>' +
+      '<li><b>Rückfragen beantworten.</b> Claude klärt Bedeutung der Zahlen, Fächer, Berichte und ob Notizen als Lernpaket übernommen werden sollen.</li>' +
+      '<li><b>Datei herunterladen</b> („Lernstand-Import.json“) und hier importieren.</li></ol>' +
+      '<textarea id="impTxt" class="nbta" rows="5" readonly spellcheck="false" aria-label="Prompt für Claude">' + esc(text) + '</textarea>' +
+      '<div class="row" style="margin-top:10px"><button type="button" id="impCopy" style="flex:1">Prompt kopieren</button>' + (web ? '<button type="button" id="impOpen" style="flex:1">In Claude öffnen</button>' : '') + '</div>' +
+      '<div class="row" style="margin-top:8px"><button type="button" class="ghost" id="impFileB" style="flex:1">Datei importieren</button><button type="button" class="ghost" id="impPasteB" style="flex:1">Text einfügen</button></div>' +
+      '<input type="file" id="impFile" accept=".json,application/json,text/plain" hidden>' +
+      '<div class="small" id="impMsg" style="margin-top:8px"></div>');
+    var o = sh.ov, msg = o.querySelector('#impMsg');
+    function go(raw){ sh.close(); impHandleRaw(raw, opt.onDefer); }
+    o.querySelector('#impCopy').addEventListener('click', function(){
+      nbCopy(text).then(function(ok){
+        if(!ok){ var ta = o.querySelector('#impTxt'); ta.focus(); ta.select(); }
+        msg.textContent = ok ? 'Prompt kopiert. Füge ihn bei Claude ein und hänge deine Dateien an.' : 'Der Text ist markiert. Bitte manuell kopieren.';
+      });
+    });
+    if(web) o.querySelector('#impOpen').addEventListener('click', function(){
+      nbHooks.openClaude(text);
+      msg.textContent = 'Claude wird geöffnet. Ist das Textfeld leer, füge den kopierten Prompt ein und hänge deine Dateien an.';
+    });
+    o.querySelector('#impFileB').addEventListener('click', function(){ o.querySelector('#impFile').click(); });
+    o.querySelector('#impFile').addEventListener('change', function(){
+      var f = this.files && this.files[0];
+      if(!f) return;
+      var fr = new FileReader();
+      fr.onload = function(){ go(fr.result); };
+      fr.onerror = function(){ msg.textContent = 'Datei konnte nicht gelesen werden.'; };
+      fr.readAsText(f);
+    });
+    o.querySelector('#impPasteB').addEventListener('click', function(){
+      var sh2 = openSheet('<div class="shead"><h2>Text einfügen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><textarea id="impPaste" class="nbta" rows="8" placeholder="Inhalt von Lernstand-Import.json einfügen"></textarea><button type="button" id="impPasteGo" style="width:100%;margin-top:10px">Prüfen</button>');
+      sh2.ov.querySelector('#impPasteGo').addEventListener('click', function(){
+        var v = sh2.ov.querySelector('#impPaste').value;
+        if(!v.trim()){ toast('Erst Text einfügen'); return; }
+        sh2.close(); sh.close(); impHandleRaw(v, opt.onDefer);
+      });
+    });
+  }
+  $('lsImpBtn').addEventListener('click', function(){ closeMenu(); impOpenSheet(); });
 
   $('examBtn').addEventListener('click', function(){
     var d = $('examIn').value, tm = $('examTimeIn').value;
@@ -2569,6 +2892,7 @@ body.menuopen{overflow:hidden}
   }
   function celebrate(m){
     var reached = m >= S.target;
+    haptic('win');
     var next = Math.min(m + 5000, S.target);
     enqueueOverlay(function(done){
       var ov = makeOverlay('<div class="cbox"><div class="cnum">' + fmt(m) + '</div><div class="ctxt">' + (reached ? 'Ziel erreicht' : 'Fragen geschafft') + '</div>' +
@@ -2824,8 +3148,8 @@ body.menuopen{overflow:hidden}
   });
 
   /* ---------- Einrichtung beim ersten Start ---------- */
-  var OB_STEPS = 6;
-  var ob = {step:0, v:{name:'', cloud:false, target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
+  var OB_STEPS = 7;
+  var ob = {step:0, imp:null, v:{name:'', cloud:false, target:'20000', deadline:addDaysISO(60), exam:'', examTime:'', stand:'', subj:{}}};
   function obVal(id){ var el = $(id); return el ? el.value : null; }
   function obCollect(){
     var v = ob.v, x;
@@ -2857,15 +3181,20 @@ body.menuopen{overflow:hidden}
       h += '<h2>Willkommen bei Short Final!</h2><p>Richte die App in wenigen Schritten ein, damit sie deinen Lernstand von Anfang an richtig anzeigt. Alles ist freiwillig. Mit „Überspringen“ startest du sofort mit Standardwerten. Du kannst alles später unter Einstellungen und im Tab Fächer ergänzen.</p>' +
            obField('obName', 'Wie sollen wir dich nennen? (optional)', 'text', v.name, 'Dein Name') + '<div class="small" style="margin-top:6px">Damit begrüßt dich die App auf dem Startbildschirm.</div>';
     }else if(st === 1){
+      h += '<h2>Schon Fragen getrackt?</h2><p>Hast du bisher schon Fragen anders festgehalten, zum Beispiel in Notizen, in Excel oder einer anderen App? Dann kann Claude deine Unterlagen lesen, dir Rückfragen stellen und eine Datei erstellen, die deinen Lernstand hier einträgt. Auch Notizen kannst du als Lernpaket übernehmen.</p><div class="obimp">' +
+           (ob.imp ? '<div class="ok">Lernstand vorgemerkt: ' + impSummary(ob.imp).replace(/<\/?ul[^>]*>/g, '') + '</div>' : '') +
+           '<button type="button" id="obImp">' + (ob.imp ? 'Andere Datei importieren' : 'Ja, mit Claude importieren') + '</button>' +
+           (ob.imp ? '' : '<button type="button" class="ghost" id="obNoImp">Nein, ich fange neu an</button>') + '</div>';
+    }else if(st === 2){
       h += '<h2>Dein Ziel</h2><p>Wie viele ATPL-Fragen willst du insgesamt geklickt haben und bis wann?</p>' +
            obField('obTarget', 'Ziel (Anzahl Fragen)', 'number', v.target, 'z. B. 20000') + obField('obDeadline', 'Bis wann?', 'date', v.deadline);
-    }else if(st === 2){
+    }else if(st === 3){
       h += '<h2>Deine Prüfung</h2><p>Für den Countdown. Ohne Angabe nutzt die App das Zieldatum.</p>' +
            obField('obExam', 'Prüfungstermin', 'date', v.exam || v.deadline) + obField('obExamTime', 'Uhrzeit (optional)', 'time', v.examTime);
-    }else if(st === 3){
+    }else if(st === 4){
       h += '<h2>Dein Stand</h2><p>Gesamtzahl der Fragen, die du bis heute geklickt hast, über alle Fächer. Weißt du es nicht genau, lass es leer, dann startest du bei 0.</p>' +
            obField('obStand', 'Bisher geklickt', 'number', v.stand, 'z. B. 3500');
-    }else if(st === 4){
+    }else if(st === 5){
       h += '<h2>Deine Fächer</h2><p>Optional: Wie viele Fragen hast du pro Fach schon geklickt, wie viel Prozent davon hattest du richtig und wie viele musst du noch zum ersten Mal klicken? Die falschen Fragen rechnet die App selbst aus. Berichte wie Last 100 oder Prüfungssimulationen trägst du später im Tab Fächer ein.</p>' +
            '<div class="obrow h"><span>Fach</span><span>Geklickt</span><span>Richtig (%)</span><span>Noch offen</span></div>';
       SUBJECTS.forEach(function(sj, i){
@@ -2884,8 +3213,23 @@ body.menuopen{overflow:hidden}
     o.innerHTML = h;
     o.scrollTop = 0;
   }
+  function obImpDefer(d){
+    ob.imp = d;
+    var v = ob.v, vl = d.verlauf.length ? d.verlauf[d.verlauf.length - 1] : null;
+    if(vl) v.stand = String(vl.n);
+    if(d.ziel !== null) v.target = String(d.ziel);
+    if(d.ziel_datum) v.deadline = d.ziel_datum;
+    if(d.pruefung) v.exam = d.pruefung;
+    Object.keys(d.faecher).forEach(function(id){
+      var f = d.faecher[id];
+      var pct = (f.c !== null && f.c > 0 && f.w !== null) ? String(Math.round((f.c - f.w) / f.c * 100)) : '';
+      v.subj[id] = {c:f.c === null ? '' : String(f.c), w:pct, t:f.t === null ? '' : String(f.t)};
+    });
+    obRender();
+  }
   function obOpen(){
     $('onb').hidden = false;
+    document.body.classList.add('obopen');
     document.body.style.overflow = 'hidden';
     obRender();
   }
@@ -2917,7 +3261,9 @@ body.menuopen{overflow:hidden}
     S.papi = null; papiPrev = null; papiCur = {home:null, main:null}; papiShown = {home:false, main:false};
     cuPrev = {}; cuCh = {}; cuAnim = {}; cuSave();
     ensureS();
+    if(ob.imp){ var impd = ob.imp; ob.imp = null; impApply(impd, {settings:false}); }
     save();
+    document.body.classList.remove('obopen');
     $('onb').hidden = true;
     $('onb').innerHTML = '';
     document.body.style.overflow = '';
@@ -2931,6 +3277,8 @@ body.menuopen{overflow:hidden}
     var b = ev.target.closest ? ev.target.closest('button') : null;
     if(!b) return;
     if(b.id === 'obSkip'){ obApply(); return; }
+    if(b.id === 'obImp'){ obCollect(); impOpenSheet({onDefer:obImpDefer}); return; }
+    if(b.id === 'obNoImp'){ obCollect(); ob.step++; obRender(); return; }
     if(b.id === 'obNext'){
       obCollect();
       if(ob.step >= OB_STEPS - 1){ obApply(); return; }
@@ -3040,7 +3388,7 @@ body.menuopen{overflow:hidden}
   /* Fragen hinzufügen (Heute) */
   function showAddQ(){
     var mode = 'ok', cat = 'click';
-    var catBtns = [['click', 'Durchgeklickt']].concat(CATS).map(function(c){
+    var catBtns = [['click', 'Neue Fragen geklickt']].concat(CATS).map(function(c){
       return '<button type="button" class="catb' + (c[0] === 'click' ? ' on' : '') + '" data-aqcat="' + c[0] + '">' + c[1] + '</button>';
     }).join('');
     var opts = '<option value="">Kein Fach (nur Gesamtzahl)</option>' + SUBJECTS.map(function(sj, i){ return '<option value="' + i + '">' + esc(sj.name) + '</option>'; }).join('');
@@ -3064,7 +3412,8 @@ body.menuopen{overflow:hidden}
           h += SUBJECTS[+si].name + ': +' + fmt(n) + ' geklickt';
           if(rs) h += ', ' + fmt(rs.wrong) + ' falsch (' + Math.round(rs.ok / n * 100) + ' % richtig)';
           var td = nn(getSub(SUBJECTS[+si].id).todo);
-          if(td !== null) h += ', noch offen −' + fmt(Math.min(td, n));
+          if(td !== null) h += ', noch offen −' + fmt(Math.min(td, n)) + ' (jetzt ' + fmt(td) + ', danach ' + fmt(td - Math.min(td, n)) + ')';
+          else h += ', „Noch offen“ ist für dieses Fach nicht eingetragen';
         }else{
           h += 'Bericht ' + catLabel(cat) + ' für ' + SUBJECTS[+si].name + ': ' + (rs ? rs.ok + '/' + n + ' (' + Math.round(rs.ok / n * 100) + ' %)' : fmt(n) + ' Fragen');
         }
@@ -3073,13 +3422,13 @@ body.menuopen{overflow:hidden}
       if(g('aqT').checked){ var nm = homeNums(); h += 'Gesamt: ' + fmt(nm.last.n) + ' → ' + fmt(nm.last.n + n) + '.'; }
       g('aqHint').textContent = h;
     }
-    function catLabel(c){ return c === 'click' ? 'Durchgeklickt' : (CATS.filter(function(x){ return x[0] === c; })[0] || [0, c])[1]; }
+    function catLabel(c){ return c === 'click' ? 'Neue Fragen geklickt' : (CATS.filter(function(x){ return x[0] === c; })[0] || [0, c])[1]; }
     function applyCat(){
       var isLast = /^l\d+$/.test(cat), nEl = g('aqN');
       Array.prototype.forEach.call(g('aqCats').children, function(x){ x.classList.toggle('on', x.getAttribute('data-aqcat') === cat); });
       if(isLast){ nEl.value = cat.slice(1); nEl.disabled = true; }
       else{ if(nEl.disabled) nEl.value = ''; nEl.disabled = false; }
-      var hint = cat === 'click' ? 'Neue Fragen durchgeklickt: erhöht Geklickt und Falsch des Fachs und senkt „Noch offen“.' : (CATHINT[cat] || ('Die letzten ' + cat.slice(1) + ' Prüfungsfragen des Fachs. Je größer der Umfang, desto höher das Gewicht.'));
+      var hint = cat === 'click' ? 'Fragen, die du zum ersten Mal geklickt hast: Die Anzahl wird bei „Noch offen“ des Fachs abgezogen und zu „Geklickt“ (und bei Ergebnis zu „Falsch“) addiert.' : (CATHINT[cat] || ('Die letzten ' + cat.slice(1) + ' Prüfungsfragen des Fachs. Je größer der Umfang, desto höher das Gewicht.'));
       g('aqCatHint').textContent = hint;
       g('aqQl').textContent = cat === 'click' ? 'Wie viele davon richtig? (optional)' : 'Ergebnis (Pflicht für Berichte)';
       g('aqT').checked = (cat === 'click');
@@ -3133,6 +3482,7 @@ body.menuopen{overflow:hidden}
       sh.close();
       if(tot) queueGlideScene();
       refreshAll();
+      haptic('ok');
       toast('Hinzugefügt');
     });
   }
@@ -3894,7 +4244,7 @@ body.menuopen{overflow:hidden}
   function nbQuizNext(){
     var qz = nbv.quiz;
     qz.k++; qz.st = 'ask'; qz.pick = -1; qz.verdict = ''; qz.typed = '';
-    if(qz.k >= qz.items.length){ qz.done = true; save(); }
+    if(qz.k >= qz.items.length){ qz.done = true; save(); haptic('ok'); }
     nbDrawQuiz();
     $('nb').scrollTop = 0;
   }
@@ -4049,6 +4399,7 @@ body.menuopen{overflow:hidden}
       pack.items.push(item);
       nbv.newPack = pack.id; nbv.newSub = item.subject; nbv.newTyp = item.type;
       nbAddPack(pack).then(function(){
+        haptic('ok');
         toast('Eintrag gespeichert');
         nbRefresh();
       });
@@ -4262,6 +4613,30 @@ body.menuopen{overflow:hidden}
     if(nbHooks.boot) nbHooks.boot();
   }, 0);
 
+  /* ---------- Vibration / Haptik ---------- */
+  var hapEl = null;
+  function hapOn(){ return !(S && S.look && S.look.hap === false); }
+  function hapIos(){
+    try{
+      if(!hapEl){
+        var l = document.createElement('label');
+        l.setAttribute('aria-hidden', 'true');
+        l.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+        var i = document.createElement('input');
+        i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+        l.appendChild(i); document.body.appendChild(l); hapEl = l;
+      }
+      hapEl.click();
+    }catch(e){}
+  }
+  function haptic(kind){
+    if(!hapOn()) return;
+    var pat = kind === 'win' ? [30, 60, 30, 60, 70] : (kind === 'ok' ? [18, 55, 18] : [14]);
+    try{ if(navigator.vibrate && navigator.vibrate(pat)) return; }catch(e){}
+    var n = kind === 'win' ? 3 : (kind === 'ok' ? 2 : 1), k = 0;
+    (function t(){ hapIos(); if(++k < n) setTimeout(t, 90); })();
+  }
+
   /* ---------- Individualisierung: App-Farben und Countdown-Anzeige ---------- */
   function lookNorm(){
     if(!S.look || typeof S.look !== 'object' || Array.isArray(S.look)) S.look = {};
@@ -4271,6 +4646,7 @@ body.menuopen{overflow:hidden}
     if(!CD_STYLES.some(function(c){ return c[0] === S.look.cd; })) S.look.cd = 'flap';
     if(!ST_STYLES.some(function(c){ return c[0] === S.look.st; })) S.look.st = 'papi';
     if(!AI_PROVS.some(function(c){ return c[0] === S.look.ai; })) S.look.ai = 'claude';
+    if(typeof S.look.hap !== 'boolean') S.look.hap = true;
     return S.look;
   }
   function hexRgb(h){ return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
@@ -4340,7 +4716,8 @@ body.menuopen{overflow:hidden}
       });
       h += '</div>';
     }
-    var allDef = L.accent === LOOK_DEF.accent && L.cd === LOOK_DEF.cd && L.st === LOOK_DEF.st && (!webl || L.ai === LOOK_DEF.ai);
+    h += '<div class="lkhr"><h3 class="lkh">Vibration</h3>' + rs('hap') + '</div><label class="tg"><span>Handy vibriert bei Berichten, Einträgen und Meilensteinen <span class="lkdef">★ Standard: an</span></span><input type="checkbox" class="sw" data-lkhap="1"' + (L.hap ? ' checked' : '') + '></label><div class="small" style="margin-top:4px">Auf dem iPhone gibt es nur ein leichtes Tippen, und nur in Safari ab iOS 17.4.</div>';
+    var allDef = L.accent === LOOK_DEF.accent && L.cd === LOOK_DEF.cd && L.st === LOOK_DEF.st && L.hap === LOOK_DEF.hap && (!webl || L.ai === LOOK_DEF.ai);
     return h + '<button type="button" class="ghost lkall" data-lkreset="all"' + (allDef ? ' disabled' : '') + '>Alles auf Standard zurücksetzen</button>';
   }
   function lookRefresh(){
@@ -4364,9 +4741,9 @@ body.menuopen{overflow:hidden}
   function lookReset(key){
     lookNorm();
     if(key === 'all'){
-      S.look.accent = LOOK_DEF.accent; S.look.cd = LOOK_DEF.cd; S.look.st = LOOK_DEF.st; S.look.ai = LOOK_DEF.ai;
+      S.look.accent = LOOK_DEF.accent; S.look.cd = LOOK_DEF.cd; S.look.st = LOOK_DEF.st; S.look.ai = LOOK_DEF.ai; S.look.hap = LOOK_DEF.hap;
       save(); applyLook(); cdMode = null; renderCountdown(); lookRefresh(); stRedraw(); renderAI();
-    }else if(LOOK_DEF[key]){
+    }else if(LOOK_DEF[key] !== undefined){
       lookSet(key, LOOK_DEF[key]);
     }
   }
@@ -4389,6 +4766,7 @@ body.menuopen{overflow:hidden}
   document.addEventListener('change', function(ev){
     var t = ev.target;
     if(t && t.getAttribute && t.getAttribute('data-lkcustom')){ save(); lookRefresh(); }
+    if(t && t.getAttribute && t.getAttribute('data-lkhap')){ lookNorm(); S.look.hap = !!t.checked; save(); lookRefresh(); if(t.checked) haptic('ok'); }
   });
   try{ new MutationObserver(applyLook).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']}); }catch(e){}
   try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyLook); }catch(e){}
@@ -4458,7 +4836,7 @@ body.menuopen{overflow:hidden}
   /* ---------- Menü ---------- */
   function buildMenu(){
     var body = $('menuBody');
-    var parts = [$('lookCard'), $('verCard'), $('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('syncCard')];
+    var parts = [$('lookCard'), $('verCard'), $('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('impCard'), $('syncCard')];
     parts.forEach(function(el){ if(el && body) body.appendChild(el); });
   }
   function openMenu(){
@@ -4489,7 +4867,7 @@ body.menuopen{overflow:hidden}
       {tab:'home', sel:'#homeStats', t:'Dein Stand', x:'Stand, Vorsprung zum Plan und was heute noch fehlt. Die PAPI-Lichter zeigen, ob du auf dem Gleitpfad bist.'},
       {tab:'home', sel:'#fcCard', t:'Prognose', x:'Reicht dein Fragenziel, damit alle Fächer sicher bestehen? Wenn nicht, empfiehlt die App ein höheres Ziel.'},
       {tab:'home', sel:'#aiCard', t:web ? 'Analyse mit ' + aiName() : 'KI-Tagesübersicht', x:web ? 'Dein Lernstand wird als Text kopiert und ' + aiName() + ' öffnet sich. Dort bekommst du Bewertung und Tagesempfehlung.' : 'Bewertung deiner Performance und Empfehlung für heute, erstellt von Claude.'},
-      {tab:'home', sel:'#chatBtn', t:'Mit ' + aiName() + ' sprechen', x:'Die App übergibt alle deine Daten, damit du frei über Lernstand, Plan, Fächer und Notizen reden kannst.'},
+      {tab:'home', sel:'#chatBtn', t:aiName() + ' anfunken', x:'Die App übergibt alle deine Daten an die KI, damit du frei über Lernstand, Plan, Fächer und Notizen reden kannst.'},
       {tab:'main', sel:'#inNum', t:'Gesamtstand', x:'Hier trägst du deine Gesamtzahl ein. Flugroute und Verlauf zeigen, ob du vorn oder hinten liegst.'},
       {tab:'subj', sel:'#subjSummary', t:'Fächer', x:'Übersicht über alle Fächer mit Scores. Jedes Fach hat einen eigenen Score aus deinen Berichten.'},
       {tab:'subj', sel:'#sc-0 .blk', open:'#sc-0', t:'Geklickt und offen', x:'Trage ein, wie viele Fragen du geklickt hast, wie viele davon falsch waren und wie viele noch offen sind.'},
@@ -4591,6 +4969,16 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-15', items:[
+      {t:'Neue Fragen geklickt', x:'In „Fragen Tracken“ heißt die Kategorie jetzt „Neue Fragen geklickt“. Sie zieht die Anzahl vom „Noch offen“ des Fachs ab.', tab:'home', sel:'#addQBtn'},
+      {t:'Offene Fragen prüfen', x:'Einmal im Monat fragt die App, ob die noch zu klickenden Fragen stimmen: Ja, Nein (dann korrigierst du) oder Später (kommt beim nächsten Öffnen wieder).'},
+      {t:'Lernstand importieren', x:'Fragen bisher in Excel, Notizen oder einer anderen App getrackt? Claude liest deine Dateien, stellt Rückfragen und erstellt eine Datei für die App. Notizen können als Lernpaket übernommen werden.', menu:true, sel:'#impCard summary', open:'#impCard'}
+    ]},
+    {v:'2026.10.10-14', items:[
+      {t:'Claude anfunken', x:'Aus „Mit Claude darüber sprechen“ wird „Claude anfunken“, mit kurzer Funk-Animation und einer Erklärung darunter. Bei anderen KIs steht deren Name.', tab:'home', sel:'#chatBtn'},
+      {t:'Kein Heranzoomen beim Tippen', x:'Beim Ausfüllen von Feldern auf dem Handy zoomt die App nicht mehr heran.'},
+      {t:'Vibration', x:'Das Handy vibriert bei gespeicherten Berichten, Einträgen, Abfrage-Ergebnissen und Meilensteinen. Abschaltbar unter Individualisierung. Auf dem iPhone gibt es nur ein leichtes Tippen (Safari ab iOS 17.4).', menu:true, sel:'#lookCard summary', open:'#lookCard'}
+    ]},
     {v:'2026.10.10-13', items:[
       {t:'Mit Claude darüber sprechen', x:'Unter der Analyse gibt es jetzt „Mit Claude darüber sprechen“. Die App übergibt alle deine Daten, damit du frei über Lernstand, Plan, Fächer und Notizen reden kannst.', tab:'home', sel:'#chatBtn'},
       {t:'ChatGPT und Gemini', x:'Unter Individualisierung wählst du den KI-Assistenten für Analyse und Gespräch. Lernpakete erstellt immer Claude.', web:true, menu:true, sel:'#lookCard summary', open:'#lookCard'},

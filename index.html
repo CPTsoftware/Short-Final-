@@ -320,6 +320,44 @@ body.nbopen{overflow:hidden}
 .nbres{text-align:center}
 .nbbig{font-family:var(--mono);font-size:44px;font-weight:700}
 @media (min-width:760px){.nbin{padding-top:28px}.nbq{padding:22px}}
+.nbfil{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin:8px 0 2px}
+.nbfil label{margin:0}
+.nbfil select{margin-top:3px;padding:9px 8px;font-size:13.5px}
+.nbstat{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px}
+.nbok{color:var(--good);font-weight:700}.nbno{color:var(--bad);font-weight:700}
+.nbdf{padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;font-weight:700}
+.nbdf.d-never,.nbdf.d-hard{color:var(--bad);border-color:var(--bad)}
+.nbdf.d-mid{color:var(--warn);border-color:var(--warn)}
+.nbdf.d-easy{color:var(--good);border-color:var(--good)}
+.nbdf.d-new{color:var(--muted)}
+.nbdots{display:inline-flex;gap:3px;margin-left:auto}
+.nbdots i{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.nbdots i.r{background:var(--bad)}
+.nbmini{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.nbmini.d-never,.nbmini.d-hard{background:var(--bad)}.nbmini.d-mid{background:#f2b01e}.nbmini.d-easy{background:var(--good)}
+.nbringw{position:relative;width:176px;height:176px;margin:4px auto 0}
+.nbring{width:100%;height:100%}
+.nbring .bg{fill:none;stroke:var(--track);stroke-width:9}
+.nbring .fg{fill:none;stroke:var(--good);stroke-width:9;stroke-linecap:round}
+.nbring.w .fg{stroke:#f2b01e}.nbring.r .fg{stroke:var(--bad)}
+.nbring .pl{fill:var(--accent)}
+.nbpctw{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.nbpct{font-family:var(--mono);font-size:38px;font-weight:700;line-height:1}
+.nbimp{margin-top:12px;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+.nbimp.show{opacity:1;transform:none}
+.nbdelta{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);text-align:left}
+.nbdelta.up{border-color:var(--good)}.nbdelta.up b{color:var(--good)}
+.nbdelta.down{border-color:var(--bad)}.nbdelta.down b{color:var(--bad)}
+@media (prefers-reduced-motion: reduce){.nbimp{transition:none;opacity:1;transform:none}}
+.addq.lz{background:#f09d37;border-color:#f09d37;color:#1b1204;display:flex;flex-direction:column;align-items:center;gap:1px;padding:11px 18px;animation:lzpulse 3.4s ease-in-out infinite}
+.addq.lz b{font-size:16px;letter-spacing:.02em}
+.addq.lz span{font-size:12px;font-weight:600;opacity:.8}
+@keyframes lzpulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(240,157,55,.0)}50%{transform:scale(1.018);box-shadow:0 0 18px 2px rgba(240,157,55,.5)}}
+@media (prefers-reduced-motion: reduce){.addq.lz{animation:none}}
+.nbdocs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.nbdoc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.nbdn{flex:1;min-width:120px;overflow-wrap:anywhere}
+.nbsyncbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;background:#141a33;color:#fff;border:1px solid rgba(255,79,216,.5);padding:10px 18px;border-radius:999px;font-size:13.5px;animation:cfade .25s ease-out both;max-width:90vw;text-align:center}
 .tour{position:fixed;left:0;right:0;top:0;bottom:0;z-index:150}
 .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,8,20,.8),0 0 0 2px var(--accent),0 0 22px 2px var(--accent);transition:all .35s ease;pointer-events:none}
@@ -448,7 +486,7 @@ body.menuopen{overflow:hidden}
   <div id="tabHome">
     <div class="card cdc" id="cdCard"></div>
     <button class="addq" id="addQBtn">Fragen hinzufügen</button>
-    <button class="addq alt" id="nbBtn">Notizen und Lernpakete</button>
+    <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
     <div class="card" id="planCard"></div>
@@ -2688,7 +2726,21 @@ body.menuopen{overflow:hidden}
   var nbHooks = {};
   var NB = {packs:{}, loaded:false, persist:true};
   var NB_TYPES = {merk:'Merkspruch', formel:'Formel', fakt:'Fakt', definition:'Definition', skizze:'Skizze'};
-  var nbv = {tab:'items', sub:'all', q:'', open:{}, limit:60, quiz:null};
+  var nbv = {tab:'items', sub:'all', typ:'all', dif:'all', fav:false, q:'', open:{}, limit:60, quiz:null};
+  var NB_DIFF = {never:'Noch nie richtig', hard:'Schwer (unter 50 %)', mid:'Mittel (50 bis 79 %)', easy:'Leicht (ab 80 %)', new:'Noch nie gefragt'};
+  var nbAnimTok = 0;
+  function nbDiff(st){
+    var ok = (st && st.ok) || 0, bad = (st && st.bad) || 0, n = ok + bad;
+    if(!n) return 'new';
+    if(!ok) return 'never';
+    var r = ok / n;
+    return r < 0.5 ? 'hard' : (r < 0.8 ? 'mid' : 'easy');
+  }
+  function nbPersist(pack){
+    pack.rev = Date.now();
+    nbChanged();
+    return nbIdb('readwrite', function(st){ return st.put(pack); }).then(function(){}, function(){ NB.persist = false; });
+  }
 
   function nbMeta(){
     if(!S.nb || typeof S.nb !== 'object' || Array.isArray(S.nb)) S.nb = {};
@@ -2696,6 +2748,7 @@ body.menuopen{overflow:hidden}
       if(!S.nb[k] || typeof S.nb[k] !== 'object' || Array.isArray(S.nb[k])) S.nb[k] = {};
     });
     if(!Array.isArray(S.nb.packs)) S.nb.packs = [];
+    if(!S.nb.del || typeof S.nb.del !== 'object' || Array.isArray(S.nb.del)) S.nb.del = {};
     return S.nb;
   }
   function nbIdb(mode, fn){
@@ -2742,7 +2795,12 @@ body.menuopen{overflow:hidden}
     return (typeof v === 'string') ? v.replace(/\u0000/g, '').trim().slice(0, max) : '';
   }
   function nbRid(){ return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
-  function nbClean(o){
+  var NB_MIME = {'application/pdf':1, 'image/jpeg':1, 'image/png':1, 'image/webp':1};
+  function nbDocOk(mime, data){
+    if(typeof data !== 'string' || data.length > 42000000 || data.indexOf('data:' + mime + ';base64,') !== 0) return false;
+    return /^[A-Za-z0-9+\/=]*$/.test(data.slice(data.indexOf(',') + 1));
+  }
+  function nbClean(o, opts){
     if(!o || typeof o !== 'object' || o.format !== 'short-final-pack' || !Array.isArray(o.items)){
       return {err:'Das ist keine gültige Lernpaket-Datei von Short Final!.'};
     }
@@ -2771,22 +2829,50 @@ body.menuopen{overflow:hidden}
     });
     if(!items.length) return {err:'Die Datei enthält keine verwertbaren Einträge.'};
     var pid = nbSan(o.id, 40).replace(/[^\w.\-]/g, '_') || ('p' + nbRid());
-    return {pack:{format:'short-final-pack', version:1, id:pid, title:nbSan(o.title, 100) || 'Lernpaket', author:nbSan(o.author, 60), created:nbSan(o.created, 20), items:items}, skipped:skipped};
+    var docs = [], dseen = {};
+    (Array.isArray(o.docs) ? o.docs : []).slice(0, 8).forEach(function(d, k){
+      if(!d || typeof d !== 'object') return;
+      var mime = nbSan(d.mime, 40);
+      if(!NB_MIME[mime]) return;
+      var did = nbSan(d.id, 30).replace(/[^\w.\-]/g, '_') || ('d' + (k + 1));
+      while(dseen[did]) did += '_';
+      dseen[did] = 1;
+      var data = nbDocOk(mime, d.data) ? d.data : '';
+      if(!data && !(opts && opts.noData)) return;
+      docs.push({id:did, kind:d.kind === 'original' ? 'original' : 'summary', name:nbSan(d.name, 100) || ('Dokument ' + (k + 1)), mime:mime, size:data ? Math.round(data.length * 0.75) : (Number(d.size) || 0), data:data});
+    });
+    return {pack:{format:'short-final-pack', version:1, id:pid, title:nbSan(o.title, 100) || 'Lernpaket', author:nbSan(o.author, 60), created:nbSan(o.created, 20), rev:Number(o.rev) > 0 ? Number(o.rev) : 0, items:items, docs:docs}, skipped:skipped};
   }
-  function nbParseText(raw){
+  function nbParseText(raw, opts){
     var o = null;
     try{ o = JSON.parse(String(raw).replace(/^﻿/, '').trim()); }catch(e){ return {err:'Der Text ist keine gültige JSON-Datei.'}; }
-    return nbClean(o);
+    return nbClean(o, opts);
   }
-  function nbAddPack(pack){
-    var m = nbMeta(), had = !!NB.packs[pack.id], idx = -1;
-    NB.packs[pack.id] = pack;
+  function nbUpsertMeta(pack){
+    var m = nbMeta(), idx = -1;
     m.packs.forEach(function(p, i){ if(p.id === pack.id) idx = i; });
     var rec = {id:pack.id, title:pack.title, author:pack.author, n:pack.items.length, added:iso(new Date())};
     if(idx >= 0){ rec.share = m.packs[idx].share; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
     else m.packs.push(rec);
+  }
+  function nbChanged(){ if(nbHooks.changed) nbHooks.changed(); }
+  function nbAddPack(pack){
+    var m = nbMeta(), had = !!NB.packs[pack.id];
+    pack.rev = Date.now();
+    delete m.del[pack.id];
+    NB.packs[pack.id] = pack;
+    nbUpsertMeta(pack);
     save();
+    nbChanged();
     return nbIdb('readwrite', function(st){ return st.put(pack); }).then(function(){ return had; }, function(){ NB.persist = false; return had; });
+  }
+  function nbDelLocal(pid, stamp){
+    var m = nbMeta();
+    m.packs = m.packs.filter(function(p){ return p.id !== pid; });
+    [m.fav, m.extra, m.stat].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.indexOf(pid + '~') === 0) delete o[k]; }); });
+    delete NB.packs[pid];
+    if(stamp) m.del[pid] = stamp;
+    nbIdb('readwrite', function(st){ return st.delete(pid); }).catch(function(){});
   }
   function nbImportText(raw){
     var r = nbParseText(raw);
@@ -2847,6 +2933,7 @@ body.menuopen{overflow:hidden}
     document.body.classList.add('nbopen');
     nbDraw();
     $('nb').scrollTop = 0;
+    if(nbHooks.syncPacks) nbHooks.syncPacks(false);
   }
   function nbClosePage(){
     nbv.quiz = null;
@@ -2864,8 +2951,10 @@ body.menuopen{overflow:hidden}
   function nbFiltered(all){
     var m = nbMeta(), q = nbv.q.trim().toLowerCase();
     return all.filter(function(e){
-      if(nbv.sub === 'fav' && !m.fav[e.gid]) return false;
-      if(nbv.sub !== 'all' && nbv.sub !== 'fav' && e.subs.indexOf(nbv.sub) < 0) return false;
+      if(nbv.fav && !m.fav[e.gid]) return false;
+      if(nbv.sub !== 'all' && e.subs.indexOf(nbv.sub) < 0) return false;
+      if(nbv.typ !== 'all' && e.it.type !== nbv.typ) return false;
+      if(nbv.dif !== 'all' && nbDiff(m.stat[e.gid]) !== nbv.dif) return false;
       if(q){
         var it = e.it;
         if((it.title + ' ' + it.q + ' ' + it.a + ' ' + it.note).toLowerCase().indexOf(q) < 0) return false;
@@ -2877,7 +2966,7 @@ body.menuopen{overflow:hidden}
     var m = nbMeta(), it = e.it, open = !!nbv.open[e.gid], st = m.stat[e.gid], fav = !!m.fav[e.gid];
     var h = '<div class="nbc' + (open ? ' open' : '') + '" data-g="' + escA(e.gid) + '">' +
       '<div class="nbh" data-nbtoggle="1" role="button" tabindex="0" aria-expanded="' + open + '"><span class="nbtag t-' + it.type + '">' + NB_TYPES[it.type] + '</span>' +
-      '<b class="nbtit">' + esc(it.title) + '</b>' +
+      '<b class="nbtit">' + esc(it.title) + '</b>' + (st && (st.ok || st.bad) ? '<span class="nbmini d-' + nbDiff(st) + '" title="' + escA(NB_DIFF[nbDiff(st)]) + '"></span>' : '') +
       '<button type="button" class="nbstar' + (fav ? ' on' : '') + '" data-nbfav="1" aria-label="' + (fav ? 'Favorit entfernen' : 'Als Favorit markieren') + '">' + (fav ? '★' : '☆') + '</button></div>';
     if(open){
       h += '<div class="nbbody">';
@@ -2886,16 +2975,19 @@ body.menuopen{overflow:hidden}
       if(it.note) h += '<div class="nbnote">' + nbT(it.note) + '</div>';
       h += nbImgHTML(it);
       h += '<div class="nbfoot">' + e.subs.map(function(s, n){ return '<span class="chip">' + esc(nbSubName(s)) + '</span>'; }).join('') +
-        '<button type="button" class="ghost" data-nbassign="1">Fach zuordnen</button></div>';
-      if(st && (st.ok || st.bad)) h += '<div class="small">Abfrage: ' + (st.ok || 0) + ' gewusst, ' + (st.bad || 0) + ' nicht gewusst</div>';
+        '<button type="button" class="ghost" data-nbedit="1">Bearbeiten</button><button type="button" class="ghost" data-nbassign="1">Fach zuordnen</button></div>';
+      if(st && (st.ok || st.bad)){
+        h += '<div class="nbstat"><span class="nbok">✓ ' + (st.ok || 0) + '</span><span class="nbno">✗ ' + (st.bad || 0) + '</span><span class="nbdf d-' + nbDiff(st) + '">' + NB_DIFF[nbDiff(st)].replace(/ \(.*\)/, '') + '</span><span class="nbdots" title="Letzte Antworten">' +
+          (st.h || []).map(function(v){ return '<i class="' + (v ? 'g' : 'r') + '"></i>'; }).join('') + '</span></div>';
+      }else h += '<div class="small">Noch nie abgefragt</div>';
       h += '<div class="small">Paket: ' + esc(e.pack.title) + '</div></div>';
     }
     return h + '</div>';
   }
   function nbListHTML(all){
     var list = nbFiltered(all), h = '';
-    if(!list.length) return '<div class="small" style="padding:14px 2px">' + (nbv.q ? 'Keine Treffer.' : (nbv.sub === 'fav' ? 'Noch keine Favoriten. Tippe bei einem Eintrag auf den Stern.' : 'Hier ist noch nichts.')) + '</div>';
-    var shown = list.slice(0, nbv.limit), grouped = (nbv.sub === 'all' || nbv.sub === 'fav'), cur = null;
+    if(!list.length) return '<div class="small" style="padding:14px 2px">' + (nbv.q ? 'Keine Treffer.' : (nbv.fav ? 'Keine Favoriten mit diesen Filtern. Tippe bei einem Eintrag auf den Stern.' : 'Mit diesen Filtern ist nichts dabei.')) + '</div>';
+    var shown = list.slice(0, nbv.limit), grouped = (nbv.sub === 'all'), cur = null;
     if(grouped){
       var order = nbSubIds();
       shown = shown.slice().sort(function(a, b){ return order.indexOf(a.it.subject) - order.indexOf(b.it.subject); });
@@ -2912,7 +3004,7 @@ body.menuopen{overflow:hidden}
   }
   function nbDraw(){
     var el = $('nb'), all = nbEntries(), c = nbCounts(all), m = nbMeta();
-    var h = '<div class="nbin"><div class="nbtop"><button type="button" class="ghost" data-nbact="back">← Zurück</button><h2>Notizen</h2><button type="button" class="ghost" data-nbact="prompt">Prompt</button></div>' +
+    var h = '<div class="nbin"><div class="nbtop"><button type="button" class="ghost" data-nbact="back">← Zurück</button><h2>Lernzentrum</h2><button type="button" class="ghost" data-nbact="prompt">Prompt</button></div>' +
       '<div class="seg" id="nbTabs"><button type="button" data-nbtab="items" class="' + (nbv.tab === 'items' ? 'on' : '') + '">Einträge (' + all.length + ')</button><button type="button" data-nbtab="packs" class="' + (nbv.tab === 'packs' ? 'on' : '') + '">Pakete (' + nbPackList().length + ')</button></div>';
     if(nbv.tab === 'items'){
       if(!all.length){
@@ -2921,16 +3013,18 @@ body.menuopen{overflow:hidden}
       }else{
         h += '<button type="button" data-nbact="quiz" style="width:100%;margin:2px 0 10px">Abfrage starten</button>' +
           '<input type="search" id="nbSearch" placeholder="Suchen" value="' + escA(nbv.q) + '" style="width:100%" aria-label="Notizen durchsuchen">' +
-          '<div class="nbchips" id="nbChips">';
-        h += '<button type="button" class="catb' + (nbv.sub === 'all' ? ' on' : '') + '" data-nbsub="all">Alle (' + c.all + ')</button>';
-        h += '<button type="button" class="catb' + (nbv.sub === 'fav' ? ' on' : '') + '" data-nbsub="fav">★ Favoriten (' + c.fav + ')</button>';
-        nbSubIds().forEach(function(s){
-          if(c[s]) h += '<button type="button" class="catb' + (nbv.sub === s ? ' on' : '') + '" data-nbsub="' + s + '">' + esc(nbSubName(s)) + ' (' + c[s] + ')</button>';
-        });
+          '<div class="nbfil"><label>Fach<select id="nbFSub"><option value="all">Alle Fächer (' + c.all + ')</option>';
+        nbSubIds().forEach(function(s){ if(c[s]) h += '<option value="' + s + '"' + (nbv.sub === s ? ' selected' : '') + '>' + esc(nbSubName(s)) + ' (' + c[s] + ')</option>'; });
+        h += '</select></label><label>Art<select id="nbFTyp"><option value="all">Alle Arten</option>';
+        Object.keys(NB_TYPES).forEach(function(k){ h += '<option value="' + k + '"' + (nbv.typ === k ? ' selected' : '') + '>' + NB_TYPES[k] + '</option>'; });
+        h += '</select></label><label>Schwierigkeit<select id="nbFDif"><option value="all">Alle</option>';
+        ['never', 'hard', 'mid', 'easy', 'new'].forEach(function(k){ h += '<option value="' + k + '"' + (nbv.dif === k ? ' selected' : '') + '>' + NB_DIFF[k] + '</option>'; });
+        h += '</select></label></div><div class="nbchips"><button type="button" class="catb' + (nbv.fav ? ' on' : '') + '" data-nbfavtog="1">★ Nur Favoriten (' + c.fav + ')</button></div>';
         h += '</div><div id="nbList">' + nbListHTML(all) + '</div>';
       }
     }else{
       h += '<div class="row" style="margin:10px 0"><button type="button" data-nbact="import" style="flex:1">Datei importieren</button><button type="button" class="ghost" data-nbact="paste" style="padding:9px 14px">Text einfügen</button></div>';
+      if(nbHooks.syncPacks) h += '<div class="nbsyncbar"><button type="button" class="ghost" data-nbact="psync" style="padding:7px 14px">Mit GitHub abgleichen</button><span class="small" id="nbSyncMsg">' + esc(nbv.syncMsg || 'Pakete werden automatisch auf alle Geräte deines GitHub-Kontos übertragen.') + '</span></div>';
       var plist = nbPackList();
       if(!plist.length){
         h += '<div class="card"><p class="small" style="margin:0">Noch kein Lernpaket. Erstelle mit „Prompt“ oben rechts die Anleitung für Claude oder importiere eine Datei, die du bekommen hast.</p></div>';
@@ -2939,6 +3033,7 @@ body.menuopen{overflow:hidden}
         var have = !!NB.packs[p.id];
         h += '<div class="card nbpk" data-pk="' + escA(p.id) + '"><b>' + esc(p.title) + '</b><div class="small">' + (p.author ? 'von ' + esc(p.author) + ' · ' : '') + p.n + ' Einträge · ' + esc(p.added || '') + '</div>';
         if(!have) h += '<div class="small" style="color:var(--warn);margin-top:4px">Der Inhalt fehlt auf diesem Gerät. Importiere die Datei hier noch einmal.</div>';
+        if(have) h += nbDocsHTML(NB.packs[p.id]);
         h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button>' : '') +
           '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
       });
@@ -2946,6 +3041,79 @@ body.menuopen{overflow:hidden}
     }
     h += '<input type="file" id="nbFile" accept=".json,application/json,text/plain" multiple hidden></div>';
     el.innerHTML = h;
+  }
+
+  /* ---- Dokumente (PDF-Zusammenfassung, Originale) ---- */
+  function nbMB(n){ return (n / 1048576 >= 0.1 ? (n / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'); }
+  function nbDocsHTML(p){
+    var docs = p.docs || [], h = '<div class="nbdocs">';
+    docs.forEach(function(d){
+      h += '<div class="nbdoc"><span class="nbtag ' + (d.kind === 'original' ? 't-skizze' : 't-formel') + '">' + (d.kind === 'original' ? 'Original' : 'Zusammenfassung') + '</span><span class="nbdn">' + esc(d.name) + ' <span class="small">' + nbMB(d.size || 0) + '</span></span>' +
+        (d.data ? '<button type="button" class="ghost" data-nbdocopen="' + escA(d.id) + '" style="padding:5px 12px">Öffnen</button>' : '<span class="small">wird beim Abgleich geladen</span>') +
+        '<button type="button" class="ghost" data-nbdocdel="' + escA(d.id) + '" aria-label="Dokument entfernen" style="padding:5px 10px">✕</button></div>';
+    });
+    return h + '<button type="button" class="ghost" data-nbact="docadd" style="padding:6px 14px;margin-top:6px">+ PDF oder Original hinzufügen</button></div>';
+  }
+  function nbDocBlob(d){
+    var bin = atob(d.data.slice(d.data.indexOf(',') + 1)), u = new Uint8Array(bin.length);
+    for(var k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
+    return new Blob([u], {type:d.mime});
+  }
+  function nbOpenDoc(pid, did){
+    var p = NB.packs[pid], d = null;
+    ((p && p.docs) || []).forEach(function(x){ if(x.id === did) d = x; });
+    if(!d || !d.data) return;
+    if(d.mime.indexOf('image/') === 0){
+      openSheet('<div class="shead"><h2>' + esc(d.name) + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><img src="' + escA(d.data) + '" alt="" style="width:100%;height:auto;border-radius:12px;background:#fff">');
+      return;
+    }
+    var name = /\.(pdf|jpe?g|png|webp)$/i.test(d.name) ? d.name : d.name + '.pdf', blob;
+    try{ blob = nbDocBlob(d); }catch(e){ toast('Dokument beschädigt'); return; }
+    if(window.claude && window.claude.use){
+      window.claude.use('downloads').then(function(dl){
+        if(!dl){ toast('Speichern ist hier nicht möglich'); return; }
+        return dl.save({filename:name, data:blob}).then(function(){ toast('Datei gespeichert'); }, function(e){ if(!e || e.code !== 'declined') toast('Speichern nicht möglich'); });
+      }, function(){ toast('Speichern ist hier nicht möglich'); });
+      return;
+    }
+    var url = URL.createObjectURL(blob), w2 = null;
+    try{ w2 = window.open(url, '_blank'); }catch(e){}
+    if(!w2){
+      var a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click();
+      setTimeout(function(){ document.body.removeChild(a); }, 1500);
+    }
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 120000);
+  }
+  function nbDocAddSheet(pid){
+    var p = NB.packs[pid];
+    if(!p) return;
+    var sh = openSheet('<div class="shead"><h2>Dokument hinzufügen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small">Lege die PDF-Zusammenfassung oder deine Originale (PDF oder Foto) zu diesem Paket. Du kannst sie später in der App öffnen.</div>' +
+      '<label>Art<select id="ndKind"><option value="summary">PDF-Zusammenfassung</option><option value="original">Original der Notizen</option></select></label>' +
+      '<input type="file" id="ndFile" accept="application/pdf,image/jpeg,image/png,image/webp" style="margin-top:10px;width:100%">' +
+      '<div class="small" id="ndMsg" style="margin-top:8px">Höchstens 30 MB pro Datei.</div>');
+    sh.ov.querySelector('#ndFile').addEventListener('change', function(ev){
+      var f = ev.target.files && ev.target.files[0], msg = sh.ov.querySelector('#ndMsg');
+      if(!f) return;
+      var mime = f.type;
+      if(!mime){ var ex = (f.name.split('.').pop() || '').toLowerCase(); mime = ({pdf:'application/pdf', jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp'})[ex] || ''; }
+      if(!NB_MIME[mime]){ msg.textContent = 'Nur PDF, JPEG, PNG oder WebP.'; return; }
+      if(f.size > 30 * 1048576){ msg.textContent = 'Die Datei ist größer als 30 MB.'; return; }
+      if((p.docs || []).length >= 8){ msg.textContent = 'Pro Paket sind höchstens 8 Dokumente möglich.'; return; }
+      msg.textContent = 'Lese Datei …';
+      var fr = new FileReader();
+      fr.onload = function(){
+        var data = String(fr.result);
+        data = data.replace(/^data:[^;,]*/, 'data:' + mime);
+        if(!nbDocOk(mime, data)){ msg.textContent = 'Die Datei konnte nicht gelesen werden.'; return; }
+        var id = 'd' + nbRid();
+        p.docs = (p.docs || []).concat([{id:id, kind:sh.ov.querySelector('#ndKind').value === 'original' ? 'original' : 'summary', name:f.name.slice(0, 100), mime:mime, size:f.size, data:data}]);
+        nbPersist(p); sh.close(); nbDraw(); toast('Dokument gespeichert');
+      };
+      fr.onerror = function(){ msg.textContent = 'Die Datei konnte nicht gelesen werden.'; };
+      fr.readAsDataURL(f);
+    });
   }
 
   /* ---- Kopieren, Teilen ---- */
@@ -3055,6 +3223,7 @@ body.menuopen{overflow:hidden}
       '   b) Wie soll abgefragt werden: nur Multiple Choice (dann erfindest du zu jedem Eintrag 3 plausible falsche Antworten), nur freie Antwort oder beides?\n' +
       '   c) Wie sollen Zeichnungen behandelt werden: als Ausschnitt aus meinem Foto oder von dir sauber als SVG nachgezeichnet? Frag pro Zeichnung nach oder gib mir eine Sammelauswahl.\n' +
       '   d) Wie soll das Paket heißen und wer ist der Autor?\n' +
+      '   e) Soll ich zusätzlich eine PDF-Zusammenfassung deiner Notizen erstellen und deine Originale (Fotos oder PDF) mit ins Paket legen, damit du beides in der App abrufen kannst?\n' +
       '3) Erst nach meinen Antworten baust du die Datei.\n\n' +
       'REGELN FÜR DEN INHALT\n' +
       '- Übernimm meine Notizen inhaltlich genau und korrigiere nichts stillschweigend. Ist etwas unleserlich oder fachlich zweifelhaft, schreibe im Feld "note" den Hinweis "(unsicher)" und sag es mir am Ende.\n' +
@@ -3065,23 +3234,24 @@ body.menuopen{overflow:hidden}
       'DATEIFORMAT (JSON, UTF-8)\n' +
       '{"format":"short-final-pack","version":1,"id":"<kurze eindeutige ID>","title":"<Titel>","author":"<Autor>","created":"<JJJJ-MM-TT>","items":[\n' +
       ' {"id":"1","subject":"met","also":["perf"],"type":"formel","title":"<Kurztitel>","q":"<Frage>","a":"<Antwort>","note":"<optional: Eselsbrücke, Hinweis>","wrong":["<falsch 1>","<falsch 2>","<falsch 3>"],"img":"data:image/jpeg;base64,...","imgq":false}\n' +
-      ']}\n' +
-      'type ist merk, formel, fakt, definition oder skizze. "wrong", "img", "svg", "also", "note" sind optional. Statt "img" kann "svg" stehen (ein sauberes, kompaktes SVG mit xmlns und viewBox, ohne Skripte und externe Verweise). Mit "imgq": true wird das Bild schon bei der Frage gezeigt, sonst erst bei der Antwort.\n' +
+      '],"docs":[{"id":"d1","kind":"summary","name":"Zusammenfassung.pdf","mime":"application/pdf","data":"data:application/pdf;base64,..."}]}\n' +
+      'type ist merk, formel, fakt, definition oder skizze. "wrong", "img", "svg", "also", "note" und "docs" sind optional. Statt "img" kann "svg" stehen (ein sauberes, kompaktes SVG mit xmlns und viewBox, ohne Skripte und externe Verweise). Mit "imgq": true wird das Bild schon bei der Frage gezeigt, sonst erst bei der Antwort.\n' +
       'Fächer-Kürzel für "subject" und "also": ' + subs + '.\n\n' +
       'TECHNIK\n' +
       '- Erzeuge die Datei per Code (Python), nicht von Hand getippt. Prüfe, dass sie mit json.load lesbar ist und jeder Eintrag ein gültiges Fächerkürzel hat.\n' +
       '- Foto-Ausschnitte: schneide die Zeichnung aus dem Foto (Pillow), skaliere auf höchstens 900 Pixel Kantenlänge, speichere als JPEG mit Qualität 72 und schreibe das Ergebnis als data-URL in "img".\n' +
-      '- Die Datei soll höchstens etwa 8 MB groß sein. Wird sie größer, teile sie in mehrere Pakete.\n' +
+      '- Dokumente (nur wenn ich es in e) wünsche): "docs" enthält bis zu 8 Dateien. kind ist summary (deine PDF-Zusammenfassung, gegliedert nach Fächern, mit den Skizzen, höchstens 5 MB) oder original (meine Notizen, Fotos als JPEG mit höchstens 1600 Pixeln Kantenlänge und Qualität 70, am besten zu einem PDF zusammengefasst, höchstens 10 MB gesamt). mime ist application/pdf, image/jpeg, image/png oder image/webp, data ist die komplette data-URL.\n' +
+      '- Die Datei soll ohne Dokumente höchstens etwa 8 MB groß sein, mit Dokumenten insgesamt höchstens 25 MB. Wird sie größer, lass die Dokumente weg und sag es mir (ich füge sie dann in der App hinzu) oder teile in mehrere Pakete.\n' +
       '- Dateiname: Lernpaket-<Titel>.json. Gib sie mir als herunterladbare Datei.\n\n' +
       'Zum Schluss: Liste mir knapp, wie viele Einträge je Fach entstanden sind und was unsicher ist.';
   }
   function nbPromptSheet(){
     var text = nbPromptText(), web = !!nbHooks.openClaude;
-    var sh = openSheet('<div class="shead"><h2>Notizen mit Claude umwandeln</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+    var sh = openSheet('<div class="shead"><h2>Lernpaket mit Claude erstellen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<ol class="nbsteps"><li><b>Notizen fotografieren.</b> Eine Seite pro Foto, flach, gut beleuchtet, scharf. Auch ein PDF geht.</li>' +
       '<li><b>Prompt kopieren</b> und unten in einem neuen Chat bei Claude einfügen' + (web ? ' (der Button öffnet Claude)' : '') + '.</li>' +
       '<li><b>Fotos anhängen</b> und senden. Claude fragt dich, was ins Paket soll, wie abgefragt wird und wie Zeichnungen behandelt werden.</li>' +
-      '<li><b>Datei herunterladen.</b> Claude liefert eine Datei „Lernpaket-….json“.</li>' +
+      '<li><b>Datei herunterladen.</b> Claude liefert eine Datei „Lernpaket-….json“, auf Wunsch mit PDF-Zusammenfassung und deinen Originalen.</li>' +
       '<li><b>Hier importieren</b> unter Notizen › Pakete › Datei importieren.</li></ol>' +
       '<textarea id="nbPrTxt" class="nbta" rows="6" readonly spellcheck="false" aria-label="Prompt für Claude">' + esc(text) + '</textarea>' +
       '<div class="row" style="margin-top:10px"><button type="button" id="nbPrCopy" style="flex:1">Prompt kopieren</button>' + (web ? '<button type="button" id="nbPrOpen" style="flex:1">In Claude öffnen</button>' : '') + '</div>' +
@@ -3174,20 +3344,22 @@ body.menuopen{overflow:hidden}
     if(!all.length){ toast('Erst ein Lernpaket importieren'); return; }
     var c = nbCounts(all), m = nbMeta(), sel = {};
     var avail = nbSubIds().filter(function(s){ return c[s]; });
-    if(nbv.sub !== 'all' && nbv.sub !== 'fav' && c[nbv.sub]) sel[nbv.sub] = 1;
+    if(nbv.sub !== 'all' && c[nbv.sub]) sel[nbv.sub] = 1;
     else avail.forEach(function(s){ sel[s] = 1; });
-    var cfg = {mode:'mix', ev:'self', count:20, fav:nbv.sub === 'fav', weak:false};
+    var cfg = {mode:'mix', ev:'self', count:20, fav:nbv.fav, typ:nbv.typ, dif:nbv.dif};
     function poolOf(){
       return all.filter(function(e){
         if(cfg.fav && !m.fav[e.gid]) return false;
-        if(cfg.weak){ var st = m.stat[e.gid]; if(!st || st.last !== 0) return false; }
+        if(cfg.typ !== 'all' && e.it.type !== cfg.typ) return false;
+        if(cfg.dif !== 'all' && nbDiff(m.stat[e.gid]) !== cfg.dif) return false;
         return e.subs.some(function(s){ return sel[s]; });
       });
     }
     var sh = openSheet('<div class="shead"><h2>Abfrage starten</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<label>Fächer</label><div class="cats" id="nqSubs"></div>' +
       '<label class="tg"><span>Nur Favoriten</span><input type="checkbox" class="sw" id="nqFav"' + (cfg.fav ? ' checked' : '') + '></label>' +
-      '<label class="tg"><span>Nur Schwächen (zuletzt nicht gewusst)</span><input type="checkbox" class="sw" id="nqWeak"></label>' +
+      '<div class="f2"><label>Art<select id="nqTyp"><option value="all">Alle Arten</option>' + Object.keys(NB_TYPES).map(function(k){ return '<option value="' + k + '"' + (cfg.typ === k ? ' selected' : '') + '>' + NB_TYPES[k] + '</option>'; }).join('') + '</select></label>' +
+      '<label>Schwierigkeit<select id="nqDif"><option value="all">Alle</option>' + ['never', 'hard', 'mid', 'easy', 'new'].map(function(k){ return '<option value="' + k + '"' + (cfg.dif === k ? ' selected' : '') + '>' + NB_DIFF[k] + '</option>'; }).join('') + '</select></label></div>' +
       '<label>Fragenart</label><div class="seg" id="nqMode"><button type="button" data-nqm="mc">Multiple Choice</button><button type="button" data-nqm="ans">Antwort</button><button type="button" data-nqm="mix" class="on">Gemischt</button></div>' +
       '<div id="nqEvBox"><label>Antworten bewerten</label><div class="seg" id="nqEv"><button type="button" data-nqe="self" class="on">Selbstbewertung</button><button type="button" data-nqe="auto">Tippen und Abgleich</button></div></div>' +
       '<label>Anzahl<select id="nqCount"><option value="10">10 Einträge</option><option value="20" selected>20 Einträge</option><option value="50">50 Einträge</option><option value="0">Alle</option></select></label>' +
@@ -3221,7 +3393,8 @@ body.menuopen{overflow:hidden}
     o.addEventListener('change', function(ev){
       var t = ev.target;
       if(t.id === 'nqFav'){ cfg.fav = t.checked; paint(); }
-      else if(t.id === 'nqWeak'){ cfg.weak = t.checked; paint(); }
+      else if(t.id === 'nqTyp'){ cfg.typ = t.value; paint(); }
+      else if(t.id === 'nqDif'){ cfg.dif = t.value; paint(); }
     });
   }
   function nbStartQuiz(list, cfg, all){
@@ -3230,7 +3403,9 @@ body.menuopen{overflow:hidden}
       if(cfg.mode === 'mc' || (cfg.mode === 'mix' && Math.random() < 0.5)) ch = nbChoices(e, all);
       return {e:e, ch:ch};
     });
-    nbv.quiz = {items:items, k:0, ok:0, wrong:[], cfg:cfg, all:all, st:'ask', pick:-1, verdict:'', typed:'', done:false};
+    var prior = {}, m0 = nbMeta();
+    list.forEach(function(e){ var s0 = m0.stat[e.gid]; if(s0) prior[e.gid] = {ok:s0.ok || 0, bad:s0.bad || 0, last:s0.last}; });
+    nbv.quiz = {items:items, k:0, ok:0, wrong:[], res:[], prior:prior, cfg:cfg, all:all, st:'ask', pick:-1, verdict:'', typed:'', done:false};
     nbDrawQuiz();
     $('nb').scrollTop = 0;
   }
@@ -3239,6 +3414,8 @@ body.menuopen{overflow:hidden}
     var st = m.stat[e.gid] || {ok:0, bad:0, last:null, t:0};
     if(ok) st.ok = (st.ok || 0) + 1; else st.bad = (st.bad || 0) + 1;
     st.last = ok ? 1 : 0; st.t = Date.now();
+    st.h = (st.h || []).concat([ok ? 1 : 0]).slice(-12);
+    qz.res.push({gid:e.gid, ok:!!ok});
     m.stat[e.gid] = st;
     if(ok) qz.ok++; else qz.wrong.push(qz.items[qz.k]);
   }
@@ -3253,13 +3430,107 @@ body.menuopen{overflow:hidden}
     if(nbv.quiz){ save(); nbv.quiz = null; }
     if(redraw !== false) nbDraw();
   }
+  function nbImprove(qz){
+    var pOk = 0, pN = 0, nowOk = 0, nowN = 0, fixed = 0, prevWrong = 0;
+    qz.res.forEach(function(r){
+      var p = qz.prior[r.gid];
+      if(!p) return;
+      var n = (p.ok || 0) + (p.bad || 0);
+      if(!n) return;
+      pOk += p.ok || 0; pN += n; nowN++;
+      if(r.ok) nowOk++;
+      if(p.last === 0){ prevWrong++; if(r.ok) fixed++; }
+    });
+    return {cmp:nowN, prev:pN ? pOk / pN : 0, now:nowN ? nowOk / nowN : 0, fixed:fixed, prevWrong:prevWrong};
+  }
+  function nbAnimateResult(pct){
+    var tok = ++nbAnimTok, C = 2 * Math.PI * 52, box = $('nb').querySelector('.nbimp');
+    function setv(p){
+      var fg = $('nbRingFg'), pc = $('nbPct'), pl = $('nbPl');
+      if(!fg || !pc || !pl) return false;
+      fg.style.strokeDashoffset = (C * (1 - p / 100)).toFixed(2);
+      pc.textContent = Math.round(p) + ' %';
+      pl.setAttribute('transform', 'rotate(' + (p * 3.6).toFixed(1) + ' 60 60)');
+      return true;
+    }
+    if(reducedMotion() || typeof requestAnimationFrame !== 'function'){ setv(pct); if(box) box.classList.add('show'); return; }
+    var t0 = null;
+    function step(ts){
+      if(tok !== nbAnimTok) return;
+      if(t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / 1600), e = 1 - Math.pow(1 - k, 3);
+      if(!setv(pct * e)) return;
+      if(k < 1) requestAnimationFrame(step);
+      else if(box) box.classList.add('show');
+    }
+    requestAnimationFrame(step);
+  }
+  function nbEditSheet(gid){
+    var e = null;
+    nbEntries().forEach(function(x){ if(x.gid === gid) e = x; });
+    if(!e) return;
+    var it = e.it, hasImg = !!(it.img || it.svg), m = nbMeta();
+    var tyOpts = Object.keys(NB_TYPES).map(function(k){ return '<option value="' + k + '"' + (it.type === k ? ' selected' : '') + '>' + NB_TYPES[k] + '</option>'; }).join('');
+    var suOpts = nbSubIds().map(function(s){ return '<option value="' + s + '"' + (it.subject === s ? ' selected' : '') + '>' + esc(nbSubName(s)) + '</option>'; }).join('');
+    var sh = openSheet('<div class="shead"><h2>Eintrag bearbeiten</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<label>Titel<input id="neT" value="' + escA(it.title) + '"></label>' +
+      '<div class="f2"><label>Art<select id="neTy">' + tyOpts + '</select></label><label>Fach<select id="neSu">' + suOpts + '</select></label></div>' +
+      '<label>Frage<textarea id="neQ" class="nbta" rows="2">' + esc(it.q) + '</textarea></label>' +
+      '<label>Antwort<textarea id="neA" class="nbta" rows="3">' + esc(it.a) + '</textarea></label>' +
+      '<label>Hinweis oder Eselsbrücke<textarea id="neN" class="nbta" rows="2">' + esc(it.note) + '</textarea></label>' +
+      '<label>Falsche Antworten für Multiple Choice (eine pro Zeile)<textarea id="neW" class="nbta" rows="3">' + esc((it.wrong || []).join('\n')) + '</textarea></label>' +
+      (hasImg ? '<label class="tg"><span>Zeichnung entfernen</span><input type="checkbox" class="sw" id="neImg"></label>' : '') +
+      '<button type="button" id="neSave" style="width:100%;margin-top:12px">Speichern</button>' +
+      '<div class="row" style="margin-top:8px"><button type="button" class="ghost" id="neReset" style="padding:8px 14px">Statistik zurücksetzen</button><button type="button" class="ghost" id="neDel" style="padding:8px 14px;margin-left:auto">Eintrag löschen</button></div>');
+    var o = sh.ov;
+    function g(id){ return o.querySelector('#' + id); }
+    g('neSave').addEventListener('click', function(){
+      var title = nbSan(g('neT').value, 200), q = nbSan(g('neQ').value, 1500), a = nbSan(g('neA').value, 3000);
+      var removeImg = !!(g('neImg') && g('neImg').checked), keepImg = hasImg && !removeImg;
+      if(!a && !keepImg){ toast('Die Antwort fehlt'); return; }
+      if(!title) title = (q || a).slice(0, 60);
+      if(!title){ toast('Der Titel fehlt'); return; }
+      it.title = title; it.q = q; it.a = a; it.note = nbSan(g('neN').value, 1200);
+      it.wrong = g('neW').value.split('\n').map(function(w){ return nbSan(w, 300); }).filter(Boolean).slice(0, 5);
+      it.type = g('neTy').value;
+      var ns = g('neSu').value;
+      if(ns !== it.subject){ it.subject = ns; it.also = (it.also || []).filter(function(s){ return s !== ns; }); if(m.extra[gid]){ m.extra[gid] = m.extra[gid].filter(function(s){ return s !== ns; }); if(!m.extra[gid].length) delete m.extra[gid]; } }
+      if(removeImg){ it.img = ''; it.svg = ''; it.imgq = false; }
+      nbPersist(e.pack); save(); sh.close(); nbDraw(); toast('Gespeichert');
+    });
+    g('neReset').addEventListener('click', function(){
+      delete m.stat[gid]; save(); sh.close(); nbDraw(); toast('Statistik zurückgesetzt');
+    });
+    g('neDel').addEventListener('click', function(){
+      var b = g('neDel');
+      if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Wirklich löschen?'; setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = 'Eintrag löschen'; } }, 3000); return; }
+      e.pack.items = e.pack.items.filter(function(x){ return x !== it; });
+      [m.fav, m.extra, m.stat].forEach(function(obj){ delete obj[gid]; });
+      m.packs.forEach(function(pr){ if(pr.id === e.pack.id) pr.n = e.pack.items.length; });
+      delete nbv.open[gid];
+      nbPersist(e.pack); save(); sh.close(); nbDraw(); toast('Eintrag gelöscht');
+    });
+  }
   function nbDrawQuiz(){
     var qz = nbv.quiz, el = $('nb');
     if(!qz) return;
     if(qz.done){
-      var n = qz.items.length, pct = Math.round(qz.ok / n * 100);
+      var n = qz.items.length, pct = Math.round(qz.ok / n * 100), imp = nbImprove(qz);
+      var C = 2 * Math.PI * 52, cls = pct >= 75 ? 'g' : (pct >= 50 ? 'w' : 'r');
       var msg = pct >= 90 ? 'Sehr stark.' : pct >= 75 ? 'Gut, das sitzt weitgehend.' : pct >= 50 ? 'Da ist noch Luft nach oben.' : 'Wiederholen lohnt sich.';
-      var h = '<div class="nbin"><div class="nbtop"><span></span><h2>Ergebnis</h2><span></span></div><div class="card nbres"><div class="nbbig">' + qz.ok + ' / ' + n + '</div><div class="small">' + pct + ' % gewusst · ' + msg + '</div></div>';
+      var h = '<div class="nbin"><div class="nbtop"><span></span><h2>Ergebnis</h2><span></span></div><div class="card nbres">' +
+        '<div class="nbringw"><svg class="nbring ' + cls + '" viewBox="0 0 120 120" aria-hidden="true"><circle class="bg" cx="60" cy="60" r="52"/>' +
+        '<circle class="fg" id="nbRingFg" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" style="stroke-dasharray:' + C.toFixed(2) + ';stroke-dashoffset:' + C.toFixed(2) + '"/>' +
+        '<g id="nbPl"><path class="pl" d="M71,8 L59,2.5 L62,8 L59,13.5 Z"/></g></svg><div class="nbpctw"><div class="nbpct" id="nbPct">0 %</div><div class="small">' + qz.ok + ' von ' + n + ' gewusst</div></div></div>' +
+        '<div class="small" style="margin-top:6px">' + msg + '</div><div class="nbimp">';
+      if(imp.cmp){
+        var dl = Math.round((imp.now - imp.prev) * 100), arrow = dl > 0 ? '▲' : (dl < 0 ? '▼' : '●'), dcls = dl > 0 ? 'up' : (dl < 0 ? 'down' : 'same');
+        h += '<div class="nbdelta ' + dcls + '"><b>' + arrow + ' ' + (dl > 0 ? '+' : '') + dl + ' Prozentpunkte</b><div class="small">Bei denselben ' + imp.cmp + ' Fragen: früher ' + Math.round(imp.prev * 100) + ' %, jetzt ' + Math.round(imp.now * 100) + ' %.' +
+          (imp.prevWrong ? ' Von ' + imp.prevWrong + ' zuletzt falschen Fragen hast du ' + imp.fixed + ' diesmal richtig.' : '') + '</div></div>';
+      }else{
+        h += '<div class="nbdelta same"><b>Erste Runde mit diesen Fragen</b><div class="small">Beim nächsten Mal siehst du hier, ob du dich verbessert hast.</div></div>';
+      }
+      h += '</div></div>';
       if(qz.wrong.length){
         h += '<h3 class="nbgh">Nicht gewusst (' + qz.wrong.length + ')</h3>';
         qz.wrong.forEach(function(x){
@@ -3268,6 +3539,7 @@ body.menuopen{overflow:hidden}
       }
       h += '<div class="row" style="margin-top:12px">' + (qz.wrong.length ? '<button type="button" data-nbact="qredo" style="flex:1">Fehler wiederholen</button>' : '') + '<button type="button" class="ghost" data-nbact="qquit" style="padding:9px 18px">Fertig</button></div></div>';
       el.innerHTML = h;
+      nbAnimateResult(pct);
       return;
     }
     var cur = qz.items[qz.k], e = cur.e, it = e.it, rev = qz.st === 'rev', ch = cur.ch;
@@ -3324,6 +3596,8 @@ body.menuopen{overflow:hidden}
       else if(a === 'prompt'){ nbPromptSheet(); }
       else if(a === 'import'){ var f = $('nbFile'); if(f) f.click(); }
       else if(a === 'paste'){ nbPasteSheet(); }
+      else if(a === 'psync'){ if(nbHooks.syncPacks) nbHooks.syncPacks(true); }
+      else if(a === 'docadd'){ var pk3 = b.closest('.nbpk'); if(pk3) nbDocAddSheet(pk3.getAttribute('data-pk')); }
       else if(a === 'quiz'){ nbQuizSetup(); }
       else if(a === 'share'){ var pk = b.closest('.nbpk'); if(pk) nbShareSheet(pk.getAttribute('data-pk')); }
       else if(a === 'delpk'){
@@ -3334,12 +3608,8 @@ body.menuopen{overflow:hidden}
           setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = 'Löschen'; } }, 3000);
           return;
         }
-        var m = nbMeta();
-        m.packs = m.packs.filter(function(p){ return p.id !== pid; });
-        [m.fav, m.extra, m.stat].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.indexOf(pid + '~') === 0) delete o[k]; }); });
-        delete NB.packs[pid];
-        nbIdb('readwrite', function(st){ return st.delete(pid); }).catch(function(){});
-        save(); nbDraw(); toast('Paket gelöscht');
+        nbDelLocal(pid, Date.now());
+        save(); nbChanged(); nbDraw(); toast('Paket gelöscht');
       }
       else if(qz && a === 'qquit'){ nbQuitQuiz(true); }
       else if(qz && a === 'qredo'){
@@ -3359,8 +3629,17 @@ body.menuopen{overflow:hidden}
       else if(qz && a === 'qnext' && qz.st === 'rev'){ nbQuizNext(); }
       return;
     }
+    if((b = t.closest('[data-nbdocopen]'))){ var dk = b.closest('.nbpk'); if(dk) nbOpenDoc(dk.getAttribute('data-pk'), b.getAttribute('data-nbdocopen')); return; }
+    if((b = t.closest('[data-nbdocdel]'))){
+      var dk2 = b.closest('.nbpk');
+      if(!dk2) return;
+      if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Löschen?'; setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = '✕'; } }, 3000); return; }
+      var pp = NB.packs[dk2.getAttribute('data-pk')], did = b.getAttribute('data-nbdocdel');
+      if(pp){ pp.docs = (pp.docs || []).filter(function(d){ return d.id !== did; }); nbPersist(pp); nbDraw(); toast('Dokument entfernt'); }
+      return;
+    }
     if((b = t.closest('[data-nbtab]'))){ nbv.tab = b.getAttribute('data-nbtab'); nbDraw(); return; }
-    if((b = t.closest('[data-nbsub]'))){ nbv.sub = b.getAttribute('data-nbsub'); nbv.limit = 60; nbDraw(); return; }
+    if((b = t.closest('[data-nbfavtog]'))){ nbv.fav = !nbv.fav; nbv.limit = 60; nbDraw(); return; }
     if((b = t.closest('[data-nbmore]'))){ nbv.limit += 60; nbDraw(); return; }
     var gid = nbCardOf(t);
     if(!gid) return;
@@ -3370,6 +3649,7 @@ body.menuopen{overflow:hidden}
       save(); nbDraw(); return;
     }
     if(t.closest('[data-nbassign]')){ nbAssignSheet(gid); return; }
+    if(t.closest('[data-nbedit]')){ nbEditSheet(gid); return; }
     if(t.closest('[data-nbzoom]')){
       var img = t.closest('[data-nbzoom]');
       openSheet('<div class="shead"><h2>Zeichnung</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><img src="' + escA(img.getAttribute('src')) + '" alt="" style="width:100%;height:auto;border-radius:12px;background:#fff">');
@@ -3396,6 +3676,10 @@ body.menuopen{overflow:hidden}
   });
   $('nb').addEventListener('change', function(ev){
     var f = ev.target;
+    if(f && (f.id === 'nbFSub' || f.id === 'nbFTyp' || f.id === 'nbFDif')){
+      if(f.id === 'nbFSub') nbv.sub = f.value; else if(f.id === 'nbFTyp') nbv.typ = f.value; else nbv.dif = f.value;
+      nbv.limit = 60; nbDraw(); return;
+    }
     if(!f || f.id !== 'nbFile' || !f.files || !f.files.length) return;
     var files = Array.prototype.slice.call(f.files), chain = Promise.resolve();
     files.forEach(function(file){
@@ -3450,7 +3734,7 @@ body.menuopen{overflow:hidden}
       {c:true, t:'Willkommen an Bord', x:'Eine kurze Tour durch Short Final!. Dauert etwa eine Minute und lässt sich jederzeit überspringen.'},
       {tab:'home', sel:'#cdCard', t:'Countdown', x:'So viel Zeit bleibt bis zur Prüfung. Den Termin änderst du im Menü oben rechts.'},
       {tab:'home', sel:'#addQBtn', t:'Fragen hinzufügen', x:'Nach dem Lernen trägst du hier ein, wie viele Fragen du geklickt hast, optional mit Fach und Trefferquote. Mit dem Schalter erhöht sich auch die Gesamtzahl.'},
-      {tab:'home', sel:'#nbBtn', t:'Notizen und Lernpakete', x:'Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen sie nach Fächern sortiert hier, mit Favoriten, Zuordnung zu weiteren Fächern und Abfrage.'},
+      {tab:'home', sel:'#nbBtn', t:'Lernzentrum', x:'Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen sie nach Fächern sortiert hier, mit Favoriten, Zuordnung zu weiteren Fächern und Abfrage.'},
       {tab:'home', sel:'#homeStats', t:'Dein Stand', x:'Stand, Vorsprung zum Plan und was heute noch fehlt. Die PAPI-Lichter zeigen, ob du auf dem Gleitpfad bist.'},
       {tab:'home', sel:'#fcCard', t:'Prognose', x:'Reicht dein Fragenziel, damit alle Fächer sicher bestehen? Wenn nicht, empfiehlt die App ein höheres Ziel.'},
       {tab:'home', sel:'#aiCard', t:web ? 'Analyse mit Claude' : 'KI-Tagesübersicht', x:web ? 'Dein Lernstand wird als Text kopiert und Claude öffnet sich. Dort bekommst du Bewertung und Tagesempfehlung.' : 'Bewertung deiner Performance und Empfehlung für heute, erstellt von Claude.'},
@@ -3550,12 +3834,11 @@ body.menuopen{overflow:hidden}
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-7';
+  var APP_VER = '2026.10.10-9';
   var CHANGELOG = [
-    {t:'Notizen und Lernpakete', x:'Lade deine Zusammenfassungen als Lernpaket hoch: sortiert nach Fächern, mit Zeichnungen, Favoriten und weiteren Fächern pro Eintrag.'},
-    {t:'Abfrage', x:'Lass dich zu Merksprüchen, Formeln und Fakten abfragen, per Multiple Choice oder mit freier Antwort. Fächer und Favoriten wählst du vorher aus.'},
-    {t:'Prompt für Claude', x:'Die App erstellt den Prompt und die Anleitung, mit der Claude deine Fotos in ein Lernpaket umwandelt.'},
-    {t:'Pakete teilen', x:'Teile ein Lernpaket als Datei, als Text oder in der GitHub-Version auch per Link.'}
+    {t:'Lernzentrum', x:'Dein Lernzentrum bündelt Notizen und Lernpakete: Filter nach Fach, Art und Schwierigkeit, Bearbeiten, Trefferquote und Ergebnis-Animation.'},
+    {t:'Pakete auf allen Geräten', x:'Mit verbundenem Geräte-Abgleich laden sich Lernpakete automatisch auf alle Geräte deines GitHub-Kontos.', web:true},
+    {t:'PDF und Originale', x:'Lege zu jedem Paket eine PDF-Zusammenfassung und deine Originalnotizen ab und rufe sie in der App ab.'}
   ];
   function changelogScene(still){
     var path = 'M-14,12 C70,10 150,50 286,78';
@@ -3688,7 +3971,7 @@ body.menuopen{overflow:hidden}
     }).catch(function(e){
       syncStatus(true);
       syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“. Bitte neu verbinden.' : 'Abgleich nicht möglich, vermutlich offline. Es wird später erneut versucht.');
-    }).then(function(){ syncBusy = false; });
+    }).then(function(){ syncBusy = false; if(nbHooks.syncPacks) nbHooks.syncPacks(false); });
   }
   function hasLocalData(){
     if(S.fresh === true) return false;
@@ -3702,6 +3985,7 @@ body.menuopen{overflow:hidden}
     syncCfg.last = Date.now(); syncStore();
     $('syncChoice').innerHTML = ''; $('syncTok').value = '';
     syncUI(); syncMsg(msg);
+    if(nbHooks.syncPacks) nbHooks.syncPacks(true);
   }
   $('syncConnect').addEventListener('click', function(){
     var tok = $('syncTok').value.trim();
@@ -3807,6 +4091,105 @@ body.menuopen{overflow:hidden}
       })();
     }).catch(function(){ toast('Das Lernpaket konnte nicht geladen werden.'); });
   };
+
+  /* ---------- Lernpakete über alle Geräte des GitHub-Kontos abgleichen ---------- */
+  var nbSyncBusy = false, nbSyncLast = 0, nbSyncTimer = null;
+  function nbSyncSay(t){ nbv.syncMsg = t; var el = $('nbSyncMsg'); if(el) el.textContent = t; }
+  function nbFileText(f){
+    if(!f) return Promise.resolve('');
+    if(f.truncated && f.raw_url) return fetch(f.raw_url, {cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('http'); return r.text(); });
+    return Promise.resolve(f.content || '');
+  }
+  function nbStrip(p){ return JSON.stringify(p, function(k, v){ return k === 'data' ? undefined : v; }); }
+  nbHooks.changed = function(){
+    clearTimeout(nbSyncTimer);
+    nbSyncTimer = setTimeout(function(){ nbHooks.syncPacks(true); }, 2500);
+  };
+  nbHooks.syncPacks = function(force){
+    if(!syncCfg || !syncCfg.token || nbSyncBusy) return Promise.resolve(false);
+    if(!force && Date.now() - nbSyncLast < 300000) return Promise.resolve(false);
+    var m = nbMeta();
+    if(!m.gist && !Object.keys(NB.packs).length) return Promise.resolve(false);
+    nbSyncBusy = true; nbSyncLast = Date.now(); nbSyncSay('Gleiche Pakete ab …');
+    var gp = m.gist ? Promise.resolve() : gh('/gists', {method:'POST', body:{description:'Short Final! Lernpakete (automatisch)', public:false, files:{'info.txt':{content:'Lernpakete von Short Final!'}}}}).then(function(g){ m.gist = g.id; save(); });
+    return gp.then(function(){ return gh('/gists/' + m.gist); }).then(function(g){
+      var rf = g.files || {}, remote = {}, rdocs = {}, files = {}, changed = false, chain = Promise.resolve();
+      Object.keys(rf).forEach(function(name){
+        var a = /^pack-(.+)-(\d{10,})\.json$/.exec(name), b = /^doc-([^~]+)~(.+)\.json$/.exec(name);
+        if(a) remote[a[1]] = {name:name, rev:+a[2], f:rf[name]};
+        else if(b){ (rdocs[b[1]] = rdocs[b[1]] || {})[b[2]] = name; }
+      });
+      /* anderswo gelöschte Pakete hier entfernen, hier gelöschte auch online entfernen */
+      Object.keys(m.del).forEach(function(pid){
+        var lp = NB.packs[pid];
+        if(lp && (lp.rev || 0) <= m.del[pid]){ nbDelLocal(pid); changed = true; }
+        var r = remote[pid];
+        if(r && r.rev <= m.del[pid]){
+          files[r.name] = null;
+          Object.keys(rdocs[pid] || {}).forEach(function(d){ files[rdocs[pid][d]] = null; });
+          delete remote[pid];
+        }
+      });
+      /* neue oder geänderte Pakete herunterladen */
+      Object.keys(remote).forEach(function(pid){
+        var r = remote[pid], lp = NB.packs[pid];
+        if(m.del[pid] && m.del[pid] >= r.rev) return;
+        if(lp && (lp.rev || 0) >= r.rev) return;
+        chain = chain.then(function(){
+          return nbFileText(r.f).then(function(text){
+            var res = nbParseText(text, {noData:true});
+            if(res.err) return;
+            var np = res.pack, old = NB.packs[pid], c2 = Promise.resolve();
+            np.id = pid; np.rev = r.rev;
+            (np.docs || []).forEach(function(d){
+              var od = old && (old.docs || []).filter(function(x){ return x.id === d.id; })[0];
+              if(od && od.data){ d.data = od.data; return; }
+              var fn = (rdocs[pid] || {})[d.id];
+              if(!fn) return;
+              c2 = c2.then(function(){ return nbFileText(rf[fn]).then(function(tx){
+                try{ var o = JSON.parse(tx); if(o && nbDocOk(d.mime, o.data)) d.data = o.data; }catch(e){}
+              }); });
+            });
+            return c2.then(function(){
+              NB.packs[pid] = np; nbUpsertMeta(np); changed = true;
+              return nbIdb('readwrite', function(st){ return st.put(np); }).catch(function(){ NB.persist = false; });
+            });
+          });
+        });
+      });
+      return chain.then(function(){
+        /* neue oder geänderte Pakete hochladen */
+        var puts = [];
+        Object.keys(NB.packs).forEach(function(pid){
+          var lp = NB.packs[pid], r = remote[pid];
+          if(m.del[pid] && m.del[pid] >= (lp.rev || 0)) return;
+          if(!lp.rev){ lp.rev = Date.now(); puts.push(nbIdb('readwrite', function(st){ return st.put(lp); }).catch(function(){})); }
+          var push = !r || lp.rev > r.rev;
+          if(push){
+            if(r) files[r.name] = null;
+            files['pack-' + pid + '-' + lp.rev + '.json'] = {content:nbStrip(lp)};
+          }
+          var have = rdocs[pid] || {}, ids = (lp.docs || []).map(function(d){ return d.id; });
+          (lp.docs || []).forEach(function(d){
+            if(d.data && !have[d.id]) files['doc-' + pid + '~' + d.id + '.json'] = {content:JSON.stringify({data:d.data})};
+          });
+          if(push) Object.keys(have).forEach(function(did){ if(ids.indexOf(did) < 0) files[have[did]] = null; });
+        });
+        return Promise.all(puts);
+      }).then(function(){
+        if(!Object.keys(files).length) return;
+        return gh('/gists/' + m.gist, {method:'PATCH', body:{files:files}});
+      }).then(function(){
+        if(changed) save();
+        nbSyncSay('Pakete abgeglichen · ' + hhmm(Date.now()) + ' Uhr');
+        nbRefresh();
+      });
+    }).catch(function(e){
+      nbSyncSay(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“.' : 'Paket-Abgleich nicht möglich (offline oder Dateien zu groß).');
+    }).then(function(){ nbSyncBusy = false; return true; });
+  };
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && nbHooks.syncPacks) nbHooks.syncPacks(false); });
+  setTimeout(function(){ nbHooks.syncPacks(false); }, 2500);
 
   maybeChangelog();
   connect(0);

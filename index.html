@@ -306,6 +306,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       </div>
       <div class="small" id="aiMsg" style="margin-top:6px"></div>
     </div>
+    <div class="card" id="fcCard"></div>
     <details class="card settings">
       <summary>Prüfungstermin</summary>
       <div class="row" style="margin-top:10px">
@@ -1550,9 +1551,82 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     save(); renderHome();
   });
 
+  /* ---------- Prognose: reicht das Fragenziel? ---------- */
+  var FC_CAP = 95, FC_PASS = 77, FC_GOAL = 80, FC_MIN_SUBJ = 6;
+  function fcCollect(){
+    var n = homeNums(), rows = [];
+    SUBJECTS.forEach(function(sj){
+      var s = getSub(sj.id), a = analyze(sj.id), c = nn(s.clicked);
+      if(a.sc !== null && c !== null && c > 0){
+        var sc = Math.max(5, Math.min(FC_CAP - 1, a.sc));
+        rows.push({name:sj.name, raw:a.sc, c:c, tau:-c / Math.log(1 - sc / FC_CAP)});
+      }
+    });
+    return {n:n, N:n.last.n, rows:rows};
+  }
+  /* Lernkurve je Fach: Score = 95 % * (1 - e^(-Fragen / tau)), tau wird aus dem aktuellen Stand des Fachs bestimmt */
+  function fcAt(d, T){
+    var f = Math.max(1, T / Math.max(1, d.N)), sum = 0, list = [];
+    d.rows.forEach(function(r){
+      var p = Math.min(FC_CAP, Math.max(r.raw, FC_CAP * (1 - Math.exp(-(r.c * f) / r.tau))));
+      sum += p; list.push({name:r.name, now:r.raw, p:p});
+    });
+    list.sort(function(a, b){ return a.p - b.p; });
+    return {avg:sum / list.length, list:list, below:list.filter(function(x){ return x.p < FC_PASS; })};
+  }
+  function fcOk(r){ return r.avg >= FC_GOAL && r.below.length === 0; }
+  function fcRecommend(d){
+    var start = Math.max(500, Math.ceil(d.N / 500) * 500), end = Math.max(S.target, d.N, 5000) * 4;
+    for(var T = start; T <= end; T += 500){ if(fcOk(fcAt(d, T))) return T; }
+    return null;
+  }
+  function renderForecast(){
+    var el = $('fcCard');
+    if(!el) return;
+    var d = fcCollect(), h = '<h2>Prognose: reicht dein Ziel?</h2>';
+    if(d.rows.length < FC_MIN_SUBJ || d.N < 1000){
+      h += '<div class="small">Noch zu wenig Daten. Für die Prognose brauche ich bei mindestens ' + FC_MIN_SUBJ + ' Fächern geklickte Fragen und eine Quote oder Berichte (aktuell ' + d.rows.length + ' von ' + SUBJECTS.length + '), dazu einen Gesamtstand ab 1.000 Fragen.</div>';
+      el.innerHTML = h; return;
+    }
+    var T0 = Math.max(S.target, d.N), pt = fcAt(d, T0), rec = fcRecommend(d), ok = fcOk(pt);
+    var lvl = ok ? 'good' : ((pt.avg >= 75 && pt.below.length <= 2) ? 'warn' : 'bad');
+    var title = ok ? 'Dein Ziel reicht rechnerisch' : (lvl === 'warn' ? 'Knapp, einzelne Fächer hängen' : 'Das Ziel reicht so noch nicht');
+    h += '<div class="aitop"><div class="rate ' + lvl + '" style="font-size:34px">' + Math.round(pt.avg) + ' %<small>Ø bei ' + fmt(T0) + '</small></div><div><div style="font-weight:650">' + esc(title) + '</div>' +
+         '<div class="small">Schwächstes Fach: ' + esc(pt.list[0].name) + ' (' + Math.round(pt.list[0].p) + ' %)</div></div></div>';
+    if(pt.below.length){
+      h += '<div class="aih">Fächer unter ' + FC_PASS + ' % bei ' + fmt(T0) + ' Fragen</div><div>' + pt.below.slice(0, 5).map(function(x){ return '<span class="chip">' + esc(x.name) + ' ' + Math.round(x.p) + ' %</span>'; }).join('') + '</div>';
+    }
+    var close = d.N / Math.max(1, S.target) >= 0.85;
+    if(!ok){
+      if(rec){
+        var dl = Math.max(1, days(d.n.today, parse(S.deadline))), need = Math.round(Math.max(0, rec - d.N) / dl);
+        h += '<div class="aih">Empfehlung</div><div style="font-size:14px">' + (close ? 'Du bist fast am Ziel, aber die Fächer tragen noch nicht. ' : '') +
+             'Bei deiner bisherigen Lernkurve brauchst du rechnerisch etwa <b>' + fmt(rec) + '</b> Fragen, damit alle Fächer sicher über ' + FC_PASS + ' % liegen.</div>' +
+             '<div class="small" style="margin-top:4px">Das wären ' + fmt(need) + ' Fragen pro Tag bis ' + fd(parse(S.deadline)) + ' (bisher ' + fmt(Math.round(d.n.pace)) + ').</div>' +
+             '<button id="fcApply" data-t="' + rec + '" style="margin-top:8px">Ziel auf ' + fmt(rec) + ' setzen</button>';
+      }else{
+        h += '<div class="aih">Empfehlung</div><div style="font-size:14px">Mit der bisherigen Lernkurve würde auch eine deutlich höhere Zahl allein nicht reichen. Wiederhole gezielt die falschen Fragen der schwächsten Fächer, statt nur mehr zu klicken.</div>';
+      }
+    }else if(rec && rec < S.target){
+      h += '<div class="small" style="margin-top:10px">Rechnerisch sind schon bei etwa ' + fmt(rec) + ' Fragen alle Fächer über ' + FC_PASS + ' %. Der Rest ist Sicherheit.</div>';
+    }
+    h += '<div class="small" style="margin-top:10px">Schätzung aus Fragenstand und Fach-Scores, gleichmäßig auf die Fächer verteilt. Keine Garantie. Je mehr Berichte du einträgst, desto genauer.</div>';
+    if(d.rows.length < SUBJECTS.length) h += '<div class="small">' + (SUBJECTS.length - d.rows.length) + ' Fächer ohne Daten sind nicht eingerechnet.</div>';
+    el.innerHTML = h;
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('#fcApply') : null;
+    if(!b) return;
+    var t = parseInt(b.getAttribute('data-t'), 10);
+    if(!t || t < 1) return;
+    S.target = t; save();
+    render(); renderHome();
+  });
+
   function renderHome(){
     renderCountdown();
     renderHomeStats();
+    renderForecast();
     renderAI();
     renderPlan();
     $('examIn').value = S.exam;

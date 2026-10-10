@@ -267,6 +267,59 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .chr{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
 .chr .ts{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 .chr button{flex:0 0 auto;padding:5px 11px;font-size:12px}
+.addq.alt{background:var(--card2);color:var(--text);border-color:var(--line)}
+body.nbopen{overflow:hidden}
+.nbpage{position:fixed;left:0;right:0;top:0;bottom:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.nbin{max-width:760px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(48px + env(safe-area-inset-bottom,0px))}
+.nbtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.nbtop h2{margin:0;font-size:18px}
+.nbpage input[type=search]{margin-top:8px}
+.nbchips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nbchips::-webkit-scrollbar{display:none}
+.nbchips .catb{white-space:nowrap;flex:0 0 auto}
+.nbgh{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 2px 6px}
+.nbc{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;overflow:hidden}
+.nbc.open{border-color:var(--accent)}
+.nbh{display:flex;align-items:center;gap:8px;padding:10px 8px 10px 12px;cursor:pointer}
+.nbtit{flex:1;min-width:0;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.nbtag{flex:0 0 auto;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--muted);border:1px solid var(--line)}
+.nbtag.t-formel{color:var(--cy);border-color:var(--cy)}
+.nbtag.t-merk{color:var(--accent);border-color:var(--accent)}
+.nbtag.t-skizze{color:var(--warn);border-color:var(--warn)}
+.nbstar{background:transparent;border:0;color:var(--muted);padding:4px 8px;font-size:20px;line-height:1}
+.nbstar.on{color:#f2b01e}
+.nbbody{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.nbql{font-size:13px;color:var(--muted)}
+.nba{font-size:15px;font-weight:600;line-height:1.45;overflow-wrap:anywhere}
+.nbnote{font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px;font-style:italic}
+.nbimg{display:block;max-width:100%;max-height:340px;border-radius:12px;background:#fff;border:1px solid var(--line);margin:2px 0;cursor:zoom-in;object-fit:contain}
+.nbfoot{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.nbfoot .ghost{margin-left:auto}
+.nbempty h2{margin-top:0}
+.nbpk b{display:block;font-size:15px}
+.nbta{width:100%;font:inherit;font-size:14px;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px;resize:vertical}
+.nbsteps{margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.5}
+.nbsteps li{margin-bottom:5px}
+.nbshare{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.nbconf b{font-size:16px}
+.nbbar{height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin-bottom:12px}
+.nbbar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.nbq{padding:16px}
+.nbqt{font-size:17px;font-weight:700;line-height:1.4;margin:6px 0 12px;overflow-wrap:anywhere}
+.nbopts{display:flex;flex-direction:column;gap:8px}
+.nbopt{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:14px;text-align:left;font-weight:600;font-size:14.5px;padding:12px 14px;line-height:1.4}
+.nbopt.good{background:rgba(11,138,80,.16);border-color:var(--good);color:var(--text)}
+.nbopt.bad{background:rgba(198,42,58,.16);border-color:var(--bad);color:var(--text)}
+.nbopt:disabled{opacity:1}
+.nbsol,.nbyou{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line)}
+.nbv-ok{color:var(--good)}.nbv-near{color:var(--warn)}.nbv-bad{color:var(--bad)}
+.nbgood{background:var(--good);border-color:var(--good);color:#fff}
+.nbbadb{background:var(--bad);border-color:var(--bad);color:#fff}
+.nbgood:not(.pre),.nbbadb:not(.pre){opacity:.88}
+.nbgood.pre,.nbbadb.pre{box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.nbres{text-align:center}
+.nbbig{font-family:var(--mono);font-size:44px;font-weight:700}
+@media (min-width:760px){.nbin{padding-top:28px}.nbq{padding:22px}}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;background:#141a33;color:#fff;border:1px solid rgba(255,79,216,.5);padding:10px 18px;border-radius:999px;font-size:13.5px;animation:cfade .25s ease-out both;max-width:90vw;text-align:center}
 .tour{position:fixed;left:0;right:0;top:0;bottom:0;z-index:150}
 .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,8,20,.8),0 0 0 2px var(--accent),0 0 22px 2px var(--accent);transition:all .35s ease;pointer-events:none}
@@ -395,6 +448,7 @@ body.menuopen{overflow:hidden}
   <div id="tabHome">
     <div class="card cdc" id="cdCard"></div>
     <button class="addq" id="addQBtn">Fragen hinzufügen</button>
+    <button class="addq alt" id="nbBtn">Notizen und Lernpakete</button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
     <div class="card" id="planCard"></div>
@@ -485,11 +539,11 @@ body.menuopen{overflow:hidden}
         <div class="small" style="margin:8px 0 10px">Hält deinen Stand auf allen Geräten gleich. Er liegt in einem privaten Gist in deinem GitHub-Konto. Einrichten: 1) Token bei GitHub erzeugen (nur Berechtigung „gist“), 2) hier einfügen, 3) auf jedem Gerät wiederholen.</div>
         <a href="https://github.com/settings/tokens/new?scopes=gist&description=Short%20Final" target="_blank" rel="noopener" style="color:var(--accent);font-weight:650;font-size:13px">Token bei GitHub erstellen</a>
         <input type="password" id="syncTok" placeholder="Token einfügen (ghp_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;margin-top:10px">
-        <div class="row" style="margin-top:8px"><button id="syncConnect">Verbinden</button></div>
+        <div class="row" style="margin-top:8px"><button id="syncConnect">Verbinden</button><button class="ghost" id="syncPaste">Einfügen</button></div>
       </div>
       <div id="syncOn1" hidden>
         <div class="small" style="margin:8px 0 10px">Verbunden. Änderungen werden automatisch hochgeladen. Beim Öffnen der App holt sie den neuesten Stand.</div>
-        <div class="row"><button class="ghost" id="syncNowBtn">Jetzt abgleichen</button><button class="ghost" id="syncOffBtn">Trennen</button></div>
+        <div class="row"><button class="ghost" id="syncNowBtn">Jetzt abgleichen</button><button class="ghost" id="syncCopy">Token kopieren</button><button class="ghost" id="syncOffBtn">Trennen</button></div>
       </div>
       <div class="small" id="syncMsg" style="margin-top:8px"></div>
       <div id="syncChoice"></div>
@@ -507,6 +561,7 @@ body.menuopen{overflow:hidden}
     </details>
   </div>
 </main>
+<div class="nbpage" id="nb" hidden></div>
 <div class="menuov" id="menuOv" hidden></div>
 <aside class="menu" id="menu" aria-label="Menü und Einstellungen" hidden>
   <div class="mhead"><h2>Einstellungen</h2><button class="ghost" id="menuX" aria-label="Menü schließen">✕</button></div>
@@ -534,6 +589,7 @@ body.menuopen{overflow:hidden}
       }
       del.forEach(function(nm){ localStorage.removeItem(nm); });
     }catch(e){}
+    try{ indexedDB.deleteDatabase('sf-notes'); }catch(e){}
   }
   /* Frühere Testdaten (die drei Beispiel-Einträge ohne Fächerdaten) werden verworfen */
   function isOldDemo(p){
@@ -786,6 +842,7 @@ body.menuopen{overflow:hidden}
               examTime: d.examTime || S.examTime,
               ai: d.ai ? JSON.parse(JSON.stringify(d.ai)) : (S.ai || null),
               log: Array.isArray(d.log) ? JSON.parse(JSON.stringify(d.log)) : (S.log || []),
+              nb: (d.nb && typeof d.nb === 'object') ? JSON.parse(JSON.stringify(d.nb)) : S.nb,
               milestone: Math.max(typeof d.milestone === 'number' ? d.milestone : 0, S.milestone || 0),
               allGreen: (typeof d.allGreen === 'boolean') ? d.allGreen : S.allGreen,
               papi: (function(){
@@ -846,6 +903,7 @@ body.menuopen{overflow:hidden}
     if(!S.examTime || typeof S.examTime !== 'string') S.examTime = '00:00';
     if(!S.subjects || typeof S.subjects !== 'object') S.subjects = {};
     if(!Array.isArray(S.log)) S.log = [];
+    nbMeta();
     if(typeof S.milestone !== 'number' || !isFinite(S.milestone)){
       var mx = 0;
       (S.entries || []).forEach(function(e){ if(e && e.n > mx) mx = e.n; });
@@ -864,7 +922,7 @@ body.menuopen{overflow:hidden}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null
     }));
   }
   function nn(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
@@ -2252,6 +2310,7 @@ body.menuopen{overflow:hidden}
     if(typeof o.exam === 'string' && o.exam) S.exam = o.exam;
     if(typeof o.examTime === 'string' && o.examTime) S.examTime = o.examTime;
     S.ai = (o.ai && typeof o.ai === 'object') ? clone(o.ai) : null;
+    if(o.nb && typeof o.nb === 'object') S.nb = clone(o.nb);
     if(typeof o.milestone === 'number') S.milestone = o.milestone; else delete S.milestone;
     S.papi = (o.papi && typeof o.papi === 'object') ? clone(o.papi) : null;
     if(typeof o.allGreen === 'boolean') S.allGreen = o.allGreen; else delete S.allGreen;
@@ -2625,6 +2684,743 @@ body.menuopen{overflow:hidden}
   }
   $('chronBtn').addEventListener('click', showChronik);
 
+  /* ---------- Notizen und Lernpakete ---------- */
+  var nbHooks = {};
+  var NB = {packs:{}, loaded:false, persist:true};
+  var NB_TYPES = {merk:'Merkspruch', formel:'Formel', fakt:'Fakt', definition:'Definition', skizze:'Skizze'};
+  var nbv = {tab:'items', sub:'all', q:'', open:{}, limit:60, quiz:null};
+
+  function nbMeta(){
+    if(!S.nb || typeof S.nb !== 'object' || Array.isArray(S.nb)) S.nb = {};
+    ['fav', 'extra', 'stat'].forEach(function(k){
+      if(!S.nb[k] || typeof S.nb[k] !== 'object' || Array.isArray(S.nb[k])) S.nb[k] = {};
+    });
+    if(!Array.isArray(S.nb.packs)) S.nb.packs = [];
+    return S.nb;
+  }
+  function nbIdb(mode, fn){
+    return new Promise(function(res, rej){
+      var rq;
+      try{ rq = indexedDB.open('sf-notes', 1); }catch(e){ rej(e); return; }
+      rq.onupgradeneeded = function(){ try{ rq.result.createObjectStore('packs', {keyPath:'id'}); }catch(e){} };
+      rq.onerror = function(){ rej(rq.error || new Error('idb')); };
+      rq.onsuccess = function(){
+        var db = rq.result, out;
+        try{
+          var tx = db.transaction('packs', mode);
+          out = fn(tx.objectStore('packs'));
+          tx.oncomplete = function(){ db.close(); res(out ? out.result : undefined); };
+          tx.onerror = tx.onabort = function(){ db.close(); rej(tx.error || new Error('tx')); };
+        }catch(e){ try{ db.close(); }catch(x){} rej(e); }
+      };
+    });
+  }
+  function nbLoad(){
+    return nbIdb('readonly', function(st){ return st.getAll(); }).then(function(list){
+      (list || []).forEach(function(p){ if(p && p.id && !NB.packs[p.id]) NB.packs[p.id] = p; });
+    }, function(){ NB.persist = false; }).then(function(){ NB.loaded = true; nbRefresh(); });
+  }
+  function nbPackList(){
+    var m = nbMeta(), have = {}, out = m.packs.slice();
+    out.forEach(function(p){ have[p.id] = 1; });
+    Object.keys(NB.packs).forEach(function(id){
+      var p = NB.packs[id];
+      if(!have[id] && p && Array.isArray(p.items)) out.push({id:id, title:p.title, author:p.author, n:p.items.length, added:''});
+    });
+    return out;
+  }
+  function nbSubName(id){
+    if(id === 'none') return 'Ohne Fach';
+    for(var i = 0; i < SUBJECTS.length; i++) if(SUBJECTS[i].id === id) return SUBJECTS[i].name;
+    return id;
+  }
+  function nbSubIds(){ return SUBJECTS.map(function(s){ return s.id; }).concat(['none']); }
+
+  /* ---- Datei prüfen und bereinigen ---- */
+  function nbSan(v, max){
+    if(typeof v === 'number' && isFinite(v)) v = String(v);
+    return (typeof v === 'string') ? v.replace(/\u0000/g, '').trim().slice(0, max) : '';
+  }
+  function nbRid(){ return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
+  function nbClean(o){
+    if(!o || typeof o !== 'object' || o.format !== 'short-final-pack' || !Array.isArray(o.items)){
+      return {err:'Das ist keine gültige Lernpaket-Datei von Short Final!.'};
+    }
+    var ids = nbSubIds(), items = [], seen = {}, skipped = 0;
+    o.items.forEach(function(it, k){
+      if(!it || typeof it !== 'object'){ skipped++; return; }
+      var title = nbSan(it.title, 200), q = nbSan(it.q, 1500), a = nbSan(it.a, 3000);
+      var img = '', svg = '';
+      if(typeof it.img === 'string' && it.img.length < 6000000 && /^data:image\/(jpeg|png|webp|gif);base64,/.test(it.img) &&
+         /^[A-Za-z0-9+\/=]*$/.test(it.img.slice(it.img.indexOf(',') + 1))) img = it.img;
+      if(typeof it.svg === 'string' && it.svg.length < 300000 && /^\s*<svg[\s>]/i.test(it.svg) && !/<script|<foreignObject|javascript:/i.test(it.svg)){
+        svg = it.svg.trim();
+        if(!/^<svg[^>]*\sxmlns\s*=/i.test(svg)) svg = svg.replace(/^<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      if(!a && !img && !svg){ skipped++; return; }
+      if(!title && !q) title = (a || 'Skizze').slice(0, 60);
+      if(!title) title = q.slice(0, 60);
+      var id = nbSan(it.id, 40).replace(/[^\w.\-]/g, '_') || ('i' + (k + 1));
+      while(seen[id]) id += '_';
+      seen[id] = 1;
+      var sub = ids.indexOf(it.subject) >= 0 ? it.subject : 'none';
+      var also = (Array.isArray(it.also) ? it.also : []).filter(function(s, n, arr){ return ids.indexOf(s) >= 0 && s !== sub && arr.indexOf(s) === n; });
+      var type = NB_TYPES[it.type] ? it.type : 'fakt';
+      var wrong = (Array.isArray(it.wrong) ? it.wrong : []).map(function(w){ return nbSan(w, 300); }).filter(Boolean).slice(0, 5);
+      items.push({id:id, subject:sub, also:also, type:type, title:title, q:q, a:a, note:nbSan(it.note, 1200), wrong:wrong, img:img, svg:svg, imgq:!!it.imgq && !!(img || svg)});
+    });
+    if(!items.length) return {err:'Die Datei enthält keine verwertbaren Einträge.'};
+    var pid = nbSan(o.id, 40).replace(/[^\w.\-]/g, '_') || ('p' + nbRid());
+    return {pack:{format:'short-final-pack', version:1, id:pid, title:nbSan(o.title, 100) || 'Lernpaket', author:nbSan(o.author, 60), created:nbSan(o.created, 20), items:items}, skipped:skipped};
+  }
+  function nbParseText(raw){
+    var o = null;
+    try{ o = JSON.parse(String(raw).replace(/^﻿/, '').trim()); }catch(e){ return {err:'Der Text ist keine gültige JSON-Datei.'}; }
+    return nbClean(o);
+  }
+  function nbAddPack(pack){
+    var m = nbMeta(), had = !!NB.packs[pack.id], idx = -1;
+    NB.packs[pack.id] = pack;
+    m.packs.forEach(function(p, i){ if(p.id === pack.id) idx = i; });
+    var rec = {id:pack.id, title:pack.title, author:pack.author, n:pack.items.length, added:iso(new Date())};
+    if(idx >= 0){ rec.share = m.packs[idx].share; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
+    else m.packs.push(rec);
+    save();
+    return nbIdb('readwrite', function(st){ return st.put(pack); }).then(function(){ return had; }, function(){ NB.persist = false; return had; });
+  }
+  function nbImportText(raw){
+    var r = nbParseText(raw);
+    if(r.err){ toast(r.err); return Promise.resolve(false); }
+    return nbAddPack(r.pack).then(function(had){
+      toast((had ? 'Aktualisiert: ' : 'Importiert: ') + r.pack.title + ' (' + r.pack.items.length + ' Einträge' + (r.skipped ? ', ' + r.skipped + ' übersprungen' : '') + ')');
+      if(!NB.persist) toast('Hinweis: Das Paket bleibt nur bis zum Schließen der App erhalten.');
+      nbRefresh();
+      return true;
+    });
+  }
+  function nbConfirmImport(raw, from){
+    var r = nbParseText(raw);
+    if(r.err){ toast(r.err); return; }
+    var p = r.pack, subs = {};
+    p.items.forEach(function(it){ subs[it.subject] = 1; });
+    var had = !!NB.packs[p.id];
+    var sh = openSheet('<div class="shead"><h2>Lernpaket erhalten</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="nbconf"><b>' + esc(p.title) + '</b>' + (p.author ? '<div class="small">von ' + esc(p.author) + '</div>' : '') +
+      '<div class="small" style="margin-top:6px">' + p.items.length + ' Einträge in ' + Object.keys(subs).length + ' Fächern' + (had ? ' · ersetzt die vorhandene Version' : '') + '</div></div>' +
+      '<div class="row" style="margin-top:12px"><button id="nbCiYes" style="flex:1">' + (had ? 'Aktualisieren' : 'Importieren') + '</button><button class="ghost" data-sx="1">Abbrechen</button></div>');
+    sh.ov.querySelector('#nbCiYes').addEventListener('click', function(){ sh.close(); nbImportText(raw).then(function(ok){ if(ok) nbOpenPage('packs'); }); });
+  }
+
+  /* ---- Einträge ---- */
+  function nbEntries(){
+    var m = nbMeta(), out = [];
+    Object.keys(NB.packs).forEach(function(pid){
+      var p = NB.packs[pid];
+      if(!p || !Array.isArray(p.items)) return;
+      p.items.forEach(function(it){
+        var gid = pid + '~' + it.id, subs = [it.subject];
+        (it.also || []).concat(m.extra[gid] || []).forEach(function(s){ if(subs.indexOf(s) < 0) subs.push(s); });
+        out.push({gid:gid, pack:p, it:it, subs:subs});
+      });
+    });
+    return out;
+  }
+  function nbQuestion(it){
+    if(it.q) return it.q;
+    if(it.type === 'formel') return 'Wie lautet die Formel: ' + it.title + '?';
+    if(it.type === 'merk') return 'Merkspruch: ' + it.title;
+    if(it.type === 'skizze') return 'Erkläre die Skizze: ' + it.title;
+    return it.title;
+  }
+  function nbT(s){ return esc(s).replace(/\n/g, '<br>'); }
+  function nbImgHTML(it){
+    var src = it.img || (it.svg ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(it.svg) : '');
+    return src ? '<img class="nbimg" data-nbzoom="1" src="' + src + '" alt="Zeichnung zu ' + escA(it.title) + '">' : '';
+  }
+
+  /* ---- Seite ---- */
+  function nbRefresh(){ if(!$('nb').hidden){ if(nbv.quiz) return; nbDraw(); } }
+  function nbOpenPage(tab){
+    if(tab) nbv.tab = tab;
+    nbv.quiz = null;
+    $('nb').hidden = false;
+    document.body.classList.add('nbopen');
+    nbDraw();
+    $('nb').scrollTop = 0;
+  }
+  function nbClosePage(){
+    nbv.quiz = null;
+    $('nb').hidden = true;
+    document.body.classList.remove('nbopen');
+  }
+  function nbCounts(all){
+    var c = {all:all.length, fav:0}, m = nbMeta();
+    all.forEach(function(e){
+      if(m.fav[e.gid]) c.fav++;
+      e.subs.forEach(function(s){ c[s] = (c[s] || 0) + 1; });
+    });
+    return c;
+  }
+  function nbFiltered(all){
+    var m = nbMeta(), q = nbv.q.trim().toLowerCase();
+    return all.filter(function(e){
+      if(nbv.sub === 'fav' && !m.fav[e.gid]) return false;
+      if(nbv.sub !== 'all' && nbv.sub !== 'fav' && e.subs.indexOf(nbv.sub) < 0) return false;
+      if(q){
+        var it = e.it;
+        if((it.title + ' ' + it.q + ' ' + it.a + ' ' + it.note).toLowerCase().indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+  }
+  function nbCardHTML(e){
+    var m = nbMeta(), it = e.it, open = !!nbv.open[e.gid], st = m.stat[e.gid], fav = !!m.fav[e.gid];
+    var h = '<div class="nbc' + (open ? ' open' : '') + '" data-g="' + escA(e.gid) + '">' +
+      '<div class="nbh" data-nbtoggle="1" role="button" tabindex="0" aria-expanded="' + open + '"><span class="nbtag t-' + it.type + '">' + NB_TYPES[it.type] + '</span>' +
+      '<b class="nbtit">' + esc(it.title) + '</b>' +
+      '<button type="button" class="nbstar' + (fav ? ' on' : '') + '" data-nbfav="1" aria-label="' + (fav ? 'Favorit entfernen' : 'Als Favorit markieren') + '">' + (fav ? '★' : '☆') + '</button></div>';
+    if(open){
+      h += '<div class="nbbody">';
+      if(it.q) h += '<div class="nbql">' + nbT(it.q) + '</div>';
+      if(it.a) h += '<div class="nba">' + nbT(it.a) + '</div>';
+      if(it.note) h += '<div class="nbnote">' + nbT(it.note) + '</div>';
+      h += nbImgHTML(it);
+      h += '<div class="nbfoot">' + e.subs.map(function(s, n){ return '<span class="chip">' + esc(nbSubName(s)) + '</span>'; }).join('') +
+        '<button type="button" class="ghost" data-nbassign="1">Fach zuordnen</button></div>';
+      if(st && (st.ok || st.bad)) h += '<div class="small">Abfrage: ' + (st.ok || 0) + ' gewusst, ' + (st.bad || 0) + ' nicht gewusst</div>';
+      h += '<div class="small">Paket: ' + esc(e.pack.title) + '</div></div>';
+    }
+    return h + '</div>';
+  }
+  function nbListHTML(all){
+    var list = nbFiltered(all), h = '';
+    if(!list.length) return '<div class="small" style="padding:14px 2px">' + (nbv.q ? 'Keine Treffer.' : (nbv.sub === 'fav' ? 'Noch keine Favoriten. Tippe bei einem Eintrag auf den Stern.' : 'Hier ist noch nichts.')) + '</div>';
+    var shown = list.slice(0, nbv.limit), grouped = (nbv.sub === 'all' || nbv.sub === 'fav'), cur = null;
+    if(grouped){
+      var order = nbSubIds();
+      shown = shown.slice().sort(function(a, b){ return order.indexOf(a.it.subject) - order.indexOf(b.it.subject); });
+    }
+    shown.forEach(function(e){
+      if(grouped && e.it.subject !== cur){
+        cur = e.it.subject;
+        h += '<h3 class="nbgh">' + esc(nbSubName(cur)) + '</h3>';
+      }
+      h += nbCardHTML(e);
+    });
+    if(list.length > shown.length) h += '<button type="button" class="ghost" data-nbmore="1" style="width:100%;margin-top:8px;padding:9px">Mehr anzeigen (' + (list.length - shown.length) + ')</button>';
+    return h;
+  }
+  function nbDraw(){
+    var el = $('nb'), all = nbEntries(), c = nbCounts(all), m = nbMeta();
+    var h = '<div class="nbin"><div class="nbtop"><button type="button" class="ghost" data-nbact="back">← Zurück</button><h2>Notizen</h2><button type="button" class="ghost" data-nbact="prompt">Prompt</button></div>' +
+      '<div class="seg" id="nbTabs"><button type="button" data-nbtab="items" class="' + (nbv.tab === 'items' ? 'on' : '') + '">Einträge (' + all.length + ')</button><button type="button" data-nbtab="packs" class="' + (nbv.tab === 'packs' ? 'on' : '') + '">Pakete (' + nbPackList().length + ')</button></div>';
+    if(nbv.tab === 'items'){
+      if(!all.length){
+        h += '<div class="card nbempty"><h2>Deine Notizen in der App</h2><p class="small">Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen alle Merksprüche, Formeln und Skizzen nach Fächern sortiert hier und lassen sich abfragen.</p>' +
+          '<div class="row"><button type="button" data-nbact="prompt" style="flex:1">Prompt für Claude erstellen</button><button type="button" class="ghost" data-nbact="import" style="padding:9px 16px">Datei importieren</button></div></div>';
+      }else{
+        h += '<button type="button" data-nbact="quiz" style="width:100%;margin:2px 0 10px">Abfrage starten</button>' +
+          '<input type="search" id="nbSearch" placeholder="Suchen" value="' + escA(nbv.q) + '" style="width:100%" aria-label="Notizen durchsuchen">' +
+          '<div class="nbchips" id="nbChips">';
+        h += '<button type="button" class="catb' + (nbv.sub === 'all' ? ' on' : '') + '" data-nbsub="all">Alle (' + c.all + ')</button>';
+        h += '<button type="button" class="catb' + (nbv.sub === 'fav' ? ' on' : '') + '" data-nbsub="fav">★ Favoriten (' + c.fav + ')</button>';
+        nbSubIds().forEach(function(s){
+          if(c[s]) h += '<button type="button" class="catb' + (nbv.sub === s ? ' on' : '') + '" data-nbsub="' + s + '">' + esc(nbSubName(s)) + ' (' + c[s] + ')</button>';
+        });
+        h += '</div><div id="nbList">' + nbListHTML(all) + '</div>';
+      }
+    }else{
+      h += '<div class="row" style="margin:10px 0"><button type="button" data-nbact="import" style="flex:1">Datei importieren</button><button type="button" class="ghost" data-nbact="paste" style="padding:9px 14px">Text einfügen</button></div>';
+      var plist = nbPackList();
+      if(!plist.length){
+        h += '<div class="card"><p class="small" style="margin:0">Noch kein Lernpaket. Erstelle mit „Prompt“ oben rechts die Anleitung für Claude oder importiere eine Datei, die du bekommen hast.</p></div>';
+      }
+      plist.forEach(function(p){
+        var have = !!NB.packs[p.id];
+        h += '<div class="card nbpk" data-pk="' + escA(p.id) + '"><b>' + esc(p.title) + '</b><div class="small">' + (p.author ? 'von ' + esc(p.author) + ' · ' : '') + p.n + ' Einträge · ' + esc(p.added || '') + '</div>';
+        if(!have) h += '<div class="small" style="color:var(--warn);margin-top:4px">Der Inhalt fehlt auf diesem Gerät. Importiere die Datei hier noch einmal.</div>';
+        h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button>' : '') +
+          '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
+      });
+      if(!NB.persist) h += '<div class="small" style="margin-top:8px;color:var(--warn)">Dein Browser erlaubt hier keinen dauerhaften Speicher. Pakete bleiben nur bis zum Schließen der App.</div>';
+    }
+    h += '<input type="file" id="nbFile" accept=".json,application/json,text/plain" multiple hidden></div>';
+    el.innerHTML = h;
+  }
+
+  /* ---- Kopieren, Teilen ---- */
+  function nbCopy(t){
+    return new Promise(function(res){
+      function fb(){
+        var ok = false;
+        try{
+          var ta = document.createElement('textarea');
+          ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          ok = !!(document.execCommand && document.execCommand('copy'));
+          document.body.removeChild(ta);
+        }catch(e){}
+        res(ok);
+      }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ res(true); }, fb); return; }
+      }catch(e){}
+      fb();
+    });
+  }
+  function nbFileName(p){ return 'Lernpaket-' + (p.title || 'Notizen').replace(/[^\wäöüÄÖÜß\- ]+/g, '').trim().replace(/\s+/g, '-').slice(0, 40) + '.json'; }
+  function nbShareFile(p){
+    var json = JSON.stringify(p), name = nbFileName(p), blob, file = null;
+    if(window.claude && window.claude.use){
+      window.claude.use('downloads').then(function(dl){
+        if(!dl){ nbShareFileLocal(p, json, name); return; }
+        return dl.save({filename:name, data:json}).then(function(){ toast('Datei gespeichert'); }, function(e){
+          if(e && e.code === 'declined') return;
+          toast('Speichern nicht möglich. Nutze „Als Text kopieren“.');
+        });
+      }, function(){ nbShareFileLocal(p, json, name); });
+      return;
+    }
+    nbShareFileLocal(p, json, name);
+  }
+  function nbShareFileLocal(p, json, name){
+    var blob, file = null;
+    try{ blob = new Blob([json], {type:'application/json'}); }catch(e){ return nbCopy(json).then(function(ok){ toast(ok ? 'Als Text kopiert' : 'Teilen nicht möglich'); }); }
+    try{ file = new File([blob], name, {type:'application/json'}); }catch(e){}
+    function download(){
+      try{
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click();
+        setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1500);
+        toast('Datei wird gespeichert');
+      }catch(e){ toast('Speichern nicht möglich. Nutze „Als Text kopieren“.'); }
+    }
+    if(file && navigator.canShare && navigator.share){
+      try{
+        if(navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:p.title}).catch(function(e){ if(!e || e.name !== 'AbortError') download(); });
+          return;
+        }
+      }catch(e){}
+    }
+    download();
+  }
+  function nbShareSheet(pid){
+    var p = NB.packs[pid];
+    if(!p) return;
+    var link = !!nbHooks.link;
+    var sh = openSheet('<div class="shead"><h2>Paket teilen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small"><b>' + esc(p.title) + '</b> · ' + p.items.length + ' Einträge</div>' +
+      '<div class="nbshare"><button type="button" id="nbShF">Datei senden oder speichern</button>' +
+      (link ? '<button type="button" id="nbShL">Link erstellen</button>' : '') +
+      '<button type="button" class="ghost" id="nbShT" style="padding:9px 14px">Als Text kopieren</button></div>' +
+      '<div class="small" id="nbShMsg" style="margin-top:8px">' + (link ? 'Der Link funktioniert für alle, die die App unter derselben Adresse öffnen.' : 'Die Datei kann der andere in seiner App unter Notizen und Pakete importieren.') + '</div>');
+    var msg = sh.ov.querySelector('#nbShMsg');
+    sh.ov.querySelector('#nbShF').addEventListener('click', function(){ nbShareFile(p); });
+    sh.ov.querySelector('#nbShT').addEventListener('click', function(){ nbCopy(JSON.stringify(p)).then(function(ok){ msg.textContent = ok ? 'Text kopiert. Der andere kann ihn über „Text einfügen“ importieren.' : 'Kopieren nicht möglich. Nutze die Datei.'; }); });
+    if(link){
+      sh.ov.querySelector('#nbShL').addEventListener('click', function(){
+        msg.textContent = 'Link wird erstellt …';
+        nbHooks.link(p).then(function(url){
+          msg.textContent = 'Link erstellt und kopiert: ' + url;
+          nbCopy(url);
+          if(navigator.share){ try{ navigator.share({title:p.title, url:url}).catch(function(){}); }catch(e){} }
+        }, function(e){
+          msg.textContent = (e && e.message === 'notoken') ? 'Dafür muss der Geräte-Abgleich mit GitHub verbunden sein (Menü oben rechts).' : 'Link konnte nicht erstellt werden. Prüfe die Verbindung und den Token.';
+        });
+      });
+    }
+  }
+  function nbPasteSheet(){
+    var sh = openSheet('<div class="shead"><h2>Text einfügen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small">Füge den kompletten Inhalt einer Lernpaket-Datei ein.</div>' +
+      '<textarea id="nbPaste" rows="7" spellcheck="false" autocapitalize="off" autocorrect="off" class="nbta" placeholder="{ &quot;format&quot;: &quot;short-final-pack&quot;, … }"></textarea>' +
+      '<button type="button" id="nbPasteGo" style="width:100%;margin-top:10px">Importieren</button>');
+    sh.ov.querySelector('#nbPasteGo').addEventListener('click', function(){
+      var v = sh.ov.querySelector('#nbPaste').value;
+      if(!v.trim()){ toast('Erst Text einfügen'); return; }
+      sh.close(); nbConfirmImport(v);
+    });
+  }
+
+  /* ---- Prompt und Anleitung für Claude ---- */
+  function nbPromptText(){
+    var subs = SUBJECTS.map(function(s){ return s.id + ' = ' + s.name; }).join('; ') + '; none = Ohne Fach';
+    return 'Du hilfst mir, meine handschriftlichen ATPL-Notizen und Zusammenfassungen in ein Lernpaket für meine Lern-App „Short Final!“ umzuwandeln. Die Notizen hängen als Fotos oder PDF an dieser Nachricht.\n\n' +
+      'ABLAUF\n' +
+      '1) Sieh dir alle angehängten Seiten genau an. Sag mir kurz, welche Fächer und Themen du erkennst und wie viele Seiten du gelesen hast.\n' +
+      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen, am besten als Auswahlfragen:\n' +
+      '   a) Was soll ins Paket: alles oder nur bestimmte Fächer oder Themen? Welche Arten: Merksprüche, Formeln, Fakten und Definitionen, Skizzen?\n' +
+      '   b) Wie soll abgefragt werden: nur Multiple Choice (dann erfindest du zu jedem Eintrag 3 plausible falsche Antworten), nur freie Antwort oder beides?\n' +
+      '   c) Wie sollen Zeichnungen behandelt werden: als Ausschnitt aus meinem Foto oder von dir sauber als SVG nachgezeichnet? Frag pro Zeichnung nach oder gib mir eine Sammelauswahl.\n' +
+      '   d) Wie soll das Paket heißen und wer ist der Autor?\n' +
+      '3) Erst nach meinen Antworten baust du die Datei.\n\n' +
+      'REGELN FÜR DEN INHALT\n' +
+      '- Übernimm meine Notizen inhaltlich genau und korrigiere nichts stillschweigend. Ist etwas unleserlich oder fachlich zweifelhaft, schreibe im Feld "note" den Hinweis "(unsicher)" und sag es mir am Ende.\n' +
+      '- Ein Eintrag ist eine abfragbare Einheit. Teile lange Zusammenfassungen in mehrere kleine Einträge.\n' +
+      '- Ordne jeden Eintrag genau einem Fach zu (Kürzel unten). Passt er auch zu anderen Fächern, trage diese in "also" ein.\n' +
+      '- "q" ist eine klare Frage oder Aufgabe, "a" eine kurze, eindeutige Antwort. Formeln stehen in einer Zeile mit Einheiten. Bei Merksprüchen beschreibt "q", wofür der Spruch steht, und "a" enthält Spruch und Auflösung.\n' +
+      '- Nimm nur auf, was ich oben ausgewählt habe, und erfinde keine Inhalte dazu.\n\n' +
+      'DATEIFORMAT (JSON, UTF-8)\n' +
+      '{"format":"short-final-pack","version":1,"id":"<kurze eindeutige ID>","title":"<Titel>","author":"<Autor>","created":"<JJJJ-MM-TT>","items":[\n' +
+      ' {"id":"1","subject":"met","also":["perf"],"type":"formel","title":"<Kurztitel>","q":"<Frage>","a":"<Antwort>","note":"<optional: Eselsbrücke, Hinweis>","wrong":["<falsch 1>","<falsch 2>","<falsch 3>"],"img":"data:image/jpeg;base64,...","imgq":false}\n' +
+      ']}\n' +
+      'type ist merk, formel, fakt, definition oder skizze. "wrong", "img", "svg", "also", "note" sind optional. Statt "img" kann "svg" stehen (ein sauberes, kompaktes SVG mit xmlns und viewBox, ohne Skripte und externe Verweise). Mit "imgq": true wird das Bild schon bei der Frage gezeigt, sonst erst bei der Antwort.\n' +
+      'Fächer-Kürzel für "subject" und "also": ' + subs + '.\n\n' +
+      'TECHNIK\n' +
+      '- Erzeuge die Datei per Code (Python), nicht von Hand getippt. Prüfe, dass sie mit json.load lesbar ist und jeder Eintrag ein gültiges Fächerkürzel hat.\n' +
+      '- Foto-Ausschnitte: schneide die Zeichnung aus dem Foto (Pillow), skaliere auf höchstens 900 Pixel Kantenlänge, speichere als JPEG mit Qualität 72 und schreibe das Ergebnis als data-URL in "img".\n' +
+      '- Die Datei soll höchstens etwa 8 MB groß sein. Wird sie größer, teile sie in mehrere Pakete.\n' +
+      '- Dateiname: Lernpaket-<Titel>.json. Gib sie mir als herunterladbare Datei.\n\n' +
+      'Zum Schluss: Liste mir knapp, wie viele Einträge je Fach entstanden sind und was unsicher ist.';
+  }
+  function nbPromptSheet(){
+    var text = nbPromptText(), web = !!nbHooks.openClaude;
+    var sh = openSheet('<div class="shead"><h2>Notizen mit Claude umwandeln</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<ol class="nbsteps"><li><b>Notizen fotografieren.</b> Eine Seite pro Foto, flach, gut beleuchtet, scharf. Auch ein PDF geht.</li>' +
+      '<li><b>Prompt kopieren</b> und unten in einem neuen Chat bei Claude einfügen' + (web ? ' (der Button öffnet Claude)' : '') + '.</li>' +
+      '<li><b>Fotos anhängen</b> und senden. Claude fragt dich, was ins Paket soll, wie abgefragt wird und wie Zeichnungen behandelt werden.</li>' +
+      '<li><b>Datei herunterladen.</b> Claude liefert eine Datei „Lernpaket-….json“.</li>' +
+      '<li><b>Hier importieren</b> unter Notizen › Pakete › Datei importieren.</li></ol>' +
+      '<textarea id="nbPrTxt" class="nbta" rows="6" readonly spellcheck="false" aria-label="Prompt für Claude">' + esc(text) + '</textarea>' +
+      '<div class="row" style="margin-top:10px"><button type="button" id="nbPrCopy" style="flex:1">Prompt kopieren</button>' + (web ? '<button type="button" id="nbPrOpen" style="flex:1">In Claude öffnen</button>' : '') + '</div>' +
+      '<div class="small" id="nbPrMsg" style="margin-top:8px"></div>');
+    var msg = sh.ov.querySelector('#nbPrMsg');
+    sh.ov.querySelector('#nbPrCopy').addEventListener('click', function(){
+      nbCopy(text).then(function(ok){
+        if(!ok){ var ta = sh.ov.querySelector('#nbPrTxt'); ta.focus(); ta.select(); }
+        msg.textContent = ok ? 'Prompt kopiert. Füge ihn bei Claude ein und hänge deine Fotos an.' : 'Der Text ist markiert. Bitte manuell kopieren.';
+      });
+    });
+    if(web) sh.ov.querySelector('#nbPrOpen').addEventListener('click', function(){
+      nbHooks.openClaude(text);
+      msg.textContent = 'Claude wird geöffnet. Ist das Textfeld leer, füge den kopierten Prompt ein und hänge deine Fotos an.';
+    });
+  }
+
+  /* ---- Fach zuordnen ---- */
+  function nbAssignSheet(gid){
+    var all = nbEntries(), e = null;
+    all.forEach(function(x){ if(x.gid === gid) e = x; });
+    if(!e) return;
+    var m = nbMeta(), ex = (m.extra[gid] || []).slice(), fixed = [e.it.subject].concat(e.it.also || []);
+    var rows = nbSubIds().map(function(s){
+      var isFixed = fixed.indexOf(s) >= 0;
+      return '<label class="tg"><span>' + esc(nbSubName(s)) + (isFixed ? ' <span class="small">(vorgegeben)</span>' : '') + '</span><input type="checkbox" class="sw" data-asg="' + s + '"' + ((isFixed || ex.indexOf(s) >= 0) ? ' checked' : '') + (isFixed ? ' disabled' : '') + '></label>';
+    }).join('');
+    var sh = openSheet('<div class="shead"><h2>Fach zuordnen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small"><b>' + esc(e.it.title) + '</b><br>Der Eintrag erscheint dann auch in den gewählten Fächern und in der Abfrage dazu.</div>' + rows);
+    sh.ov.addEventListener('change', function(ev){
+      var t = ev.target, s = t && t.getAttribute && t.getAttribute('data-asg');
+      if(!s) return;
+      var cur = (m.extra[gid] || []).slice(), i = cur.indexOf(s);
+      if(t.checked && i < 0) cur.push(s);
+      if(!t.checked && i >= 0) cur.splice(i, 1);
+      if(cur.length) m.extra[gid] = cur; else delete m.extra[gid];
+      save(); nbDraw();
+    });
+  }
+
+  /* ---- Abfrage ---- */
+  function nbShuffle(a){
+    var r = a.slice();
+    for(var i = r.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+  function nbNorm(s){
+    return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/²/g, '^2').replace(/³/g, '^3').replace(/[^a-z0-9+\-*\/^=<>%()√∆δρΔλπμ]/g, '');
+  }
+  function nbSimilar(a, b){
+    a = nbNorm(a).slice(0, 400); b = nbNorm(b).slice(0, 400);
+    if(!a || !b) return 0;
+    if(a === b) return 1;
+    var n = a.length, m = b.length, prev = [], cur = [], i, j;
+    for(j = 0; j <= m; j++) prev[j] = j;
+    for(i = 1; i <= n; i++){
+      cur = [i];
+      for(j = 1; j <= m; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+      prev = cur;
+    }
+    var r = 1 - prev[m] / Math.max(n, m);
+    if((a.indexOf(b) >= 0 || b.indexOf(a) >= 0) && Math.min(n, m) / Math.max(n, m) >= 0.6) r = Math.max(r, 0.9);
+    return r;
+  }
+  function nbChoices(e, all){
+    var it = e.it, correct = it.a;
+    if(!correct || correct.length > 220) return null;
+    var opts = [correct], seen = {};
+    seen[nbNorm(correct)] = 1;
+    function add(t){
+      var k = nbNorm(t);
+      if(!t || !k || seen[k] || t.length > Math.max(160, correct.length * 2)) return;
+      seen[k] = 1; opts.push(t);
+    }
+    (it.wrong || []).forEach(add);
+    if(opts.length < 4){
+      var pool = nbShuffle(all.filter(function(x){ return x.gid !== e.gid && x.it.a; }));
+      pool.sort(function(x, y){
+        function sc(z){ return (z.it.subject === it.subject ? 2 : 0) + (z.it.type === it.type ? 1 : 0); }
+        return sc(y) - sc(x);
+      });
+      for(var i = 0; i < pool.length && opts.length < 4; i++) add(pool[i].it.a);
+    }
+    if(opts.length < 2) return null;
+    var list = nbShuffle(opts.map(function(t){ return {t:t, ok:t === correct}; }));
+    return list;
+  }
+  function nbQuizSetup(){
+    var all = nbEntries();
+    if(!all.length){ toast('Erst ein Lernpaket importieren'); return; }
+    var c = nbCounts(all), m = nbMeta(), sel = {};
+    var avail = nbSubIds().filter(function(s){ return c[s]; });
+    if(nbv.sub !== 'all' && nbv.sub !== 'fav' && c[nbv.sub]) sel[nbv.sub] = 1;
+    else avail.forEach(function(s){ sel[s] = 1; });
+    var cfg = {mode:'mix', ev:'self', count:20, fav:nbv.sub === 'fav', weak:false};
+    function poolOf(){
+      return all.filter(function(e){
+        if(cfg.fav && !m.fav[e.gid]) return false;
+        if(cfg.weak){ var st = m.stat[e.gid]; if(!st || st.last !== 0) return false; }
+        return e.subs.some(function(s){ return sel[s]; });
+      });
+    }
+    var sh = openSheet('<div class="shead"><h2>Abfrage starten</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<label>Fächer</label><div class="cats" id="nqSubs"></div>' +
+      '<label class="tg"><span>Nur Favoriten</span><input type="checkbox" class="sw" id="nqFav"' + (cfg.fav ? ' checked' : '') + '></label>' +
+      '<label class="tg"><span>Nur Schwächen (zuletzt nicht gewusst)</span><input type="checkbox" class="sw" id="nqWeak"></label>' +
+      '<label>Fragenart</label><div class="seg" id="nqMode"><button type="button" data-nqm="mc">Multiple Choice</button><button type="button" data-nqm="ans">Antwort</button><button type="button" data-nqm="mix" class="on">Gemischt</button></div>' +
+      '<div id="nqEvBox"><label>Antworten bewerten</label><div class="seg" id="nqEv"><button type="button" data-nqe="self" class="on">Selbstbewertung</button><button type="button" data-nqe="auto">Tippen und Abgleich</button></div></div>' +
+      '<label>Anzahl<select id="nqCount"><option value="10">10 Einträge</option><option value="20" selected>20 Einträge</option><option value="50">50 Einträge</option><option value="0">Alle</option></select></label>' +
+      '<div class="small" id="nqInfo" style="margin-top:8px"></div>' +
+      '<button type="button" id="nqGo" style="width:100%;margin-top:10px">Los geht’s</button>');
+    var o = sh.ov;
+    function paint(){
+      o.querySelector('#nqSubs').innerHTML = avail.map(function(s){ return '<button type="button" class="catb' + (sel[s] ? ' on' : '') + '" data-nqs="' + s + '">' + esc(nbSubName(s)) + ' (' + c[s] + ')</button>'; }).join('');
+      Array.prototype.forEach.call(o.querySelectorAll('[data-nqm]'), function(b){ b.classList.toggle('on', b.getAttribute('data-nqm') === cfg.mode); });
+      Array.prototype.forEach.call(o.querySelectorAll('[data-nqe]'), function(b){ b.classList.toggle('on', b.getAttribute('data-nqe') === cfg.ev); });
+      o.querySelector('#nqEvBox').hidden = (cfg.mode === 'mc');
+      var n = poolOf().length;
+      o.querySelector('#nqInfo').textContent = n ? (n + ' Einträge passen zur Auswahl.') : 'Keine Einträge passen zur Auswahl.';
+      o.querySelector('#nqGo').disabled = !n;
+    }
+    paint();
+    o.addEventListener('click', function(ev){
+      var t = ev.target.closest ? ev.target.closest('button') : null;
+      if(!t) return;
+      var s = t.getAttribute('data-nqs'), md = t.getAttribute('data-nqm'), e2 = t.getAttribute('data-nqe');
+      if(s){ if(sel[s]) delete sel[s]; else sel[s] = 1; paint(); }
+      else if(md){ cfg.mode = md; paint(); }
+      else if(e2){ cfg.ev = e2; paint(); }
+      else if(t.id === 'nqGo'){
+        var list = nbShuffle(poolOf()), n = +o.querySelector('#nqCount').value;
+        if(n > 0) list = list.slice(0, n);
+        sh.close();
+        nbStartQuiz(list, cfg, all);
+      }
+    });
+    o.addEventListener('change', function(ev){
+      var t = ev.target;
+      if(t.id === 'nqFav'){ cfg.fav = t.checked; paint(); }
+      else if(t.id === 'nqWeak'){ cfg.weak = t.checked; paint(); }
+    });
+  }
+  function nbStartQuiz(list, cfg, all){
+    var items = list.map(function(e){
+      var ch = null;
+      if(cfg.mode === 'mc' || (cfg.mode === 'mix' && Math.random() < 0.5)) ch = nbChoices(e, all);
+      return {e:e, ch:ch};
+    });
+    nbv.quiz = {items:items, k:0, ok:0, wrong:[], cfg:cfg, all:all, st:'ask', pick:-1, verdict:'', typed:'', done:false};
+    nbDrawQuiz();
+    $('nb').scrollTop = 0;
+  }
+  function nbRecord(ok){
+    var qz = nbv.quiz, e = qz.items[qz.k].e, m = nbMeta();
+    var st = m.stat[e.gid] || {ok:0, bad:0, last:null, t:0};
+    if(ok) st.ok = (st.ok || 0) + 1; else st.bad = (st.bad || 0) + 1;
+    st.last = ok ? 1 : 0; st.t = Date.now();
+    m.stat[e.gid] = st;
+    if(ok) qz.ok++; else qz.wrong.push(qz.items[qz.k]);
+  }
+  function nbQuizNext(){
+    var qz = nbv.quiz;
+    qz.k++; qz.st = 'ask'; qz.pick = -1; qz.verdict = ''; qz.typed = '';
+    if(qz.k >= qz.items.length){ qz.done = true; save(); }
+    nbDrawQuiz();
+    $('nb').scrollTop = 0;
+  }
+  function nbQuitQuiz(redraw){
+    if(nbv.quiz){ save(); nbv.quiz = null; }
+    if(redraw !== false) nbDraw();
+  }
+  function nbDrawQuiz(){
+    var qz = nbv.quiz, el = $('nb');
+    if(!qz) return;
+    if(qz.done){
+      var n = qz.items.length, pct = Math.round(qz.ok / n * 100);
+      var msg = pct >= 90 ? 'Sehr stark.' : pct >= 75 ? 'Gut, das sitzt weitgehend.' : pct >= 50 ? 'Da ist noch Luft nach oben.' : 'Wiederholen lohnt sich.';
+      var h = '<div class="nbin"><div class="nbtop"><span></span><h2>Ergebnis</h2><span></span></div><div class="card nbres"><div class="nbbig">' + qz.ok + ' / ' + n + '</div><div class="small">' + pct + ' % gewusst · ' + msg + '</div></div>';
+      if(qz.wrong.length){
+        h += '<h3 class="nbgh">Nicht gewusst (' + qz.wrong.length + ')</h3>';
+        qz.wrong.forEach(function(x){
+          h += '<div class="nbc open"><div class="nbh"><span class="nbtag t-' + x.e.it.type + '">' + NB_TYPES[x.e.it.type] + '</span><b class="nbtit">' + esc(x.e.it.title) + '</b></div><div class="nbbody"><div class="nbql">' + nbT(nbQuestion(x.e.it)) + '</div><div class="nba">' + nbT(x.e.it.a || '') + '</div></div></div>';
+        });
+      }
+      h += '<div class="row" style="margin-top:12px">' + (qz.wrong.length ? '<button type="button" data-nbact="qredo" style="flex:1">Fehler wiederholen</button>' : '') + '<button type="button" class="ghost" data-nbact="qquit" style="padding:9px 18px">Fertig</button></div></div>';
+      el.innerHTML = h;
+      return;
+    }
+    var cur = qz.items[qz.k], e = cur.e, it = e.it, rev = qz.st === 'rev', ch = cur.ch;
+    var h2 = '<div class="nbin"><div class="nbtop"><button type="button" class="ghost" data-nbact="qquit">✕ Beenden</button><b>' + (qz.k + 1) + ' / ' + qz.items.length + '</b><span class="small">✓ ' + qz.ok + '</span></div>' +
+      '<div class="nbbar"><i style="width:' + Math.round(qz.k / qz.items.length * 100) + '%"></i></div>' +
+      '<div class="card nbq"><div class="small">' + esc(nbSubName(it.subject)) + ' · ' + NB_TYPES[it.type] + '</div>' +
+      '<div class="nbqt">' + nbT(nbQuestion(it)) + '</div>' + ((it.imgq || rev) ? nbImgHTML(it) : '');
+    if(ch){
+      h2 += '<div class="nbopts">' + ch.map(function(o, i){
+        var cls = 'nbopt' + (rev ? (o.ok ? ' good' : (i === qz.pick ? ' bad' : '')) : '');
+        return '<button type="button" class="' + cls + '" data-nbpick="' + i + '"' + (rev ? ' disabled' : '') + '>' + nbT(o.t) + '</button>';
+      }).join('') + '</div>';
+      if(rev){
+        h2 += (it.note ? '<div class="nbnote">' + nbT(it.note) + '</div>' : '') + '<button type="button" data-nbact="qnext" style="width:100%;margin-top:12px">' + (qz.k + 1 >= qz.items.length ? 'Ergebnis' : 'Weiter') + '</button>';
+      }
+    }else if(!rev){
+      if(qz.cfg.ev === 'auto'){
+        h2 += '<textarea id="nbTyped" class="nbta" rows="3" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Deine Antwort"></textarea>' +
+          '<div class="row" style="margin-top:10px"><button type="button" data-nbact="qcheck" style="flex:1">Prüfen</button><button type="button" class="ghost" data-nbact="qshow" style="padding:9px 14px">Weiß ich nicht</button></div>';
+      }else{
+        h2 += '<button type="button" data-nbact="qshow" style="width:100%;margin-top:12px">Antwort zeigen</button>';
+      }
+    }else{
+      if(qz.cfg.ev === 'auto' && qz.typed){
+        var vt = qz.verdict === 'ok' ? 'Stimmt überein.' : qz.verdict === 'near' ? 'Fast richtig, du entscheidest.' : 'Weicht ab.';
+        h2 += '<div class="nbyou"><span class="small">Deine Antwort</span><div>' + nbT(qz.typed) + '</div><div class="small nbv-' + qz.verdict + '">' + vt + '</div></div>';
+      }
+      h2 += '<div class="nbsol"><span class="small">Richtige Antwort</span><div class="nba">' + nbT(it.a || '') + '</div></div>' + (it.note ? '<div class="nbnote">' + nbT(it.note) + '</div>' : '') +
+        '<div class="row" style="margin-top:12px"><button type="button" class="nbgood' + (qz.verdict === 'ok' ? ' pre' : '') + '" data-nbact="qyes" style="flex:1">Gewusst</button><button type="button" class="nbbadb' + (qz.verdict === 'bad' ? ' pre' : '') + '" data-nbact="qno" style="flex:1">Nicht gewusst</button></div>';
+    }
+    h2 += '</div></div>';
+    el.innerHTML = h2;
+    var ta = $('nbTyped');
+    if(ta){ try{ ta.focus({preventScroll:true}); }catch(x){} }
+  }
+
+  /* ---- Ereignisse ---- */
+  function nbCardOf(t){ var c = t.closest ? t.closest('.nbc') : null; return c ? c.getAttribute('data-g') : null; }
+  $('nbBtn').addEventListener('click', function(){ nbOpenPage('items'); });
+  $('nb').addEventListener('click', function(ev){
+    var t = ev.target, b;
+    if(!t.closest) return;
+    var qz = nbv.quiz;
+    if((b = t.closest('[data-nbpick]')) && qz && qz.st === 'ask'){
+      var i = +b.getAttribute('data-nbpick'), cur = qz.items[qz.k];
+      qz.pick = i; qz.st = 'rev';
+      nbRecord(!!cur.ch[i].ok);
+      nbDrawQuiz();
+      return;
+    }
+    if((b = t.closest('[data-nbact]'))){
+      var a = b.getAttribute('data-nbact');
+      if(a === 'back'){ nbClosePage(); }
+      else if(a === 'prompt'){ nbPromptSheet(); }
+      else if(a === 'import'){ var f = $('nbFile'); if(f) f.click(); }
+      else if(a === 'paste'){ nbPasteSheet(); }
+      else if(a === 'quiz'){ nbQuizSetup(); }
+      else if(a === 'share'){ var pk = b.closest('.nbpk'); if(pk) nbShareSheet(pk.getAttribute('data-pk')); }
+      else if(a === 'delpk'){
+        var pk2 = b.closest('.nbpk'), pid = pk2 && pk2.getAttribute('data-pk');
+        if(!pid) return;
+        if(b.getAttribute('data-arm') !== '1'){
+          b.setAttribute('data-arm', '1'); b.textContent = 'Wirklich löschen?';
+          setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = 'Löschen'; } }, 3000);
+          return;
+        }
+        var m = nbMeta();
+        m.packs = m.packs.filter(function(p){ return p.id !== pid; });
+        [m.fav, m.extra, m.stat].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.indexOf(pid + '~') === 0) delete o[k]; }); });
+        delete NB.packs[pid];
+        nbIdb('readwrite', function(st){ return st.delete(pid); }).catch(function(){});
+        save(); nbDraw(); toast('Paket gelöscht');
+      }
+      else if(qz && a === 'qquit'){ nbQuitQuiz(true); }
+      else if(qz && a === 'qredo'){
+        var wl = nbShuffle(qz.wrong.map(function(x){ return x.e; }));
+        nbStartQuiz(wl, qz.cfg, qz.all);
+      }
+      else if(qz && a === 'qshow' && qz.st === 'ask'){ qz.st = 'rev'; qz.verdict = ''; nbDrawQuiz(); }
+      else if(qz && a === 'qcheck' && qz.st === 'ask'){
+        var ta = $('nbTyped'), v = ta ? ta.value.trim() : '';
+        if(!v){ toast('Erst eine Antwort eingeben'); return; }
+        var s = nbSimilar(v, qz.items[qz.k].e.it.a || '');
+        qz.typed = v; qz.verdict = s >= 0.85 ? 'ok' : (s >= 0.6 ? 'near' : 'bad');
+        qz.st = 'rev'; nbDrawQuiz();
+      }
+      else if(qz && a === 'qyes' && qz.st === 'rev'){ nbRecord(true); nbQuizNext(); }
+      else if(qz && a === 'qno' && qz.st === 'rev'){ nbRecord(false); nbQuizNext(); }
+      else if(qz && a === 'qnext' && qz.st === 'rev'){ nbQuizNext(); }
+      return;
+    }
+    if((b = t.closest('[data-nbtab]'))){ nbv.tab = b.getAttribute('data-nbtab'); nbDraw(); return; }
+    if((b = t.closest('[data-nbsub]'))){ nbv.sub = b.getAttribute('data-nbsub'); nbv.limit = 60; nbDraw(); return; }
+    if((b = t.closest('[data-nbmore]'))){ nbv.limit += 60; nbDraw(); return; }
+    var gid = nbCardOf(t);
+    if(!gid) return;
+    if(t.closest('[data-nbfav]')){
+      var m2 = nbMeta();
+      if(m2.fav[gid]) delete m2.fav[gid]; else m2.fav[gid] = 1;
+      save(); nbDraw(); return;
+    }
+    if(t.closest('[data-nbassign]')){ nbAssignSheet(gid); return; }
+    if(t.closest('[data-nbzoom]')){
+      var img = t.closest('[data-nbzoom]');
+      openSheet('<div class="shead"><h2>Zeichnung</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><img src="' + escA(img.getAttribute('src')) + '" alt="" style="width:100%;height:auto;border-radius:12px;background:#fff">');
+      return;
+    }
+    if(t.closest('[data-nbtoggle]')){
+      if(nbv.open[gid]) delete nbv.open[gid]; else nbv.open[gid] = 1;
+      nbDraw();
+    }
+  });
+  $('nb').addEventListener('keydown', function(ev){
+    if((ev.key === 'Enter' || ev.key === ' ') && ev.target.getAttribute && ev.target.getAttribute('data-nbtoggle')){
+      ev.preventDefault();
+      var gid = nbCardOf(ev.target);
+      if(gid){ if(nbv.open[gid]) delete nbv.open[gid]; else nbv.open[gid] = 1; nbDraw(); }
+    }
+  });
+  $('nb').addEventListener('input', function(ev){
+    if(ev.target && ev.target.id === 'nbSearch'){
+      nbv.q = ev.target.value; nbv.limit = 60;
+      var l = $('nbList');
+      if(l) l.innerHTML = nbListHTML(nbEntries());
+    }
+  });
+  $('nb').addEventListener('change', function(ev){
+    var f = ev.target;
+    if(!f || f.id !== 'nbFile' || !f.files || !f.files.length) return;
+    var files = Array.prototype.slice.call(f.files), chain = Promise.resolve();
+    files.forEach(function(file){
+      chain = chain.then(function(){
+        return new Promise(function(res){
+          var fr = new FileReader();
+          fr.onload = function(){ nbImportText(fr.result).then(res, res); };
+          fr.onerror = function(){ toast('Datei konnte nicht gelesen werden'); res(); };
+          fr.readAsText(file);
+        });
+      });
+    });
+    chain.then(function(){ f.value = ''; nbv.tab = 'packs'; nbDraw(); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !$('nb').hidden && !tourSt && !document.querySelector('.sheetov')){
+      if(nbv.quiz) nbQuitQuiz(true); else nbClosePage();
+    }
+  });
+  setTimeout(function(){
+    nbMeta();
+    nbLoad();
+    if(nbHooks.boot) nbHooks.boot();
+  }, 0);
+
   /* ---------- Menü ---------- */
   function buildMenu(){
     var body = $('menuBody');
@@ -2654,6 +3450,7 @@ body.menuopen{overflow:hidden}
       {c:true, t:'Willkommen an Bord', x:'Eine kurze Tour durch Short Final!. Dauert etwa eine Minute und lässt sich jederzeit überspringen.'},
       {tab:'home', sel:'#cdCard', t:'Countdown', x:'So viel Zeit bleibt bis zur Prüfung. Den Termin änderst du im Menü oben rechts.'},
       {tab:'home', sel:'#addQBtn', t:'Fragen hinzufügen', x:'Nach dem Lernen trägst du hier ein, wie viele Fragen du geklickt hast, optional mit Fach und Trefferquote. Mit dem Schalter erhöht sich auch die Gesamtzahl.'},
+      {tab:'home', sel:'#nbBtn', t:'Notizen und Lernpakete', x:'Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen sie nach Fächern sortiert hier, mit Favoriten, Zuordnung zu weiteren Fächern und Abfrage.'},
       {tab:'home', sel:'#homeStats', t:'Dein Stand', x:'Stand, Vorsprung zum Plan und was heute noch fehlt. Die PAPI-Lichter zeigen, ob du auf dem Gleitpfad bist.'},
       {tab:'home', sel:'#fcCard', t:'Prognose', x:'Reicht dein Fragenziel, damit alle Fächer sicher bestehen? Wenn nicht, empfiehlt die App ein höheres Ziel.'},
       {tab:'home', sel:'#aiCard', t:web ? 'Analyse mit Claude' : 'KI-Tagesübersicht', x:web ? 'Dein Lernstand wird als Text kopiert und Claude öffnet sich. Dort bekommst du Bewertung und Tagesempfehlung.' : 'Bewertung deiner Performance und Empfehlung für heute, erstellt von Claude.'},
@@ -2753,11 +3550,12 @@ body.menuopen{overflow:hidden}
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-6';
+  var APP_VER = '2026.10.10-7';
   var CHANGELOG = [
-    {t:'Menü oben rechts', x:'Alle Einstellungen liegen jetzt im Menü: Ziel, Termin, Gewichtung, Datensicherung, Chronik und Tutorial.'},
-    {t:'iPad und Laptop', x:'Auf größeren Bildschirmen nutzt die App mehrere Spalten.'},
-    {t:'Cloud-Status', x:'Mit Geräte-Abgleich zeigt die App statt „nur auf diesem Gerät“ die letzte Synchronisierung.', web:true}
+    {t:'Notizen und Lernpakete', x:'Lade deine Zusammenfassungen als Lernpaket hoch: sortiert nach Fächern, mit Zeichnungen, Favoriten und weiteren Fächern pro Eintrag.'},
+    {t:'Abfrage', x:'Lass dich zu Merksprüchen, Formeln und Fakten abfragen, per Multiple Choice oder mit freier Antwort. Fächer und Favoriten wählst du vorher aus.'},
+    {t:'Prompt für Claude', x:'Die App erstellt den Prompt und die Anleitung, mit der Claude deine Fotos in ein Lernpaket umwandelt.'},
+    {t:'Pakete teilen', x:'Teile ein Lernpaket als Datei, als Text oder in der GitHub-Version auch per Link.'}
   ];
   function changelogScene(still){
     var path = 'M-14,12 C70,10 150,50 286,78';
@@ -2803,7 +3601,7 @@ body.menuopen{overflow:hidden}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log]); }
+  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S) return;
     var h = dataHash();
@@ -2863,6 +3661,7 @@ body.menuopen{overflow:hidden}
       S.weights = d.weights ? cp(d.weights) : S.weights;
       S.exam = d.exam || S.exam; S.examTime = d.examTime || S.examTime;
       S.log = Array.isArray(d.log) ? cp(d.log) : [];
+      if(d.nb && typeof d.nb === 'object') S.nb = cp(d.nb);
       if(d.ai) S.ai = cp(d.ai);
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
       S.updatedAt = d.updatedAt || Date.now();
@@ -2935,6 +3734,23 @@ body.menuopen{overflow:hidden}
     });
   });
   $('syncNowBtn').addEventListener('click', function(){ syncNow(true); });
+  $('syncCopy').addEventListener('click', function(){
+    if(!syncCfg || !syncCfg.token) return;
+    var ok = copyText(syncCfg.token);
+    syncMsg(ok ? 'Token kopiert. Füge ihn auf dem anderen Gerät unter „Geräte-Abgleich“ ein.' : 'Kopieren nicht möglich.');
+  });
+  $('syncPaste').addEventListener('click', function(){
+    if(navigator.clipboard && navigator.clipboard.readText){
+      navigator.clipboard.readText().then(function(t){
+        t = (t || '').trim();
+        if(t){ $('syncTok').value = t; syncMsg('Token eingefügt. Tippe auf „Verbinden“.'); }
+        else syncMsg('Die Zwischenablage ist leer.');
+      }, function(){ syncMsg('Einfügen nicht erlaubt. Halte das Feld gedrückt und wähle „Einsetzen“.'); });
+    }else{
+      syncMsg('Halte das Feld gedrückt und wähle „Einsetzen“.');
+      $('syncTok').focus();
+    }
+  });
   $('syncOffBtn').addEventListener('click', function(){
     var b = $('syncOffBtn');
     if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Wirklich trennen?'; setTimeout(function(){ b.removeAttribute('data-arm'); b.textContent = 'Trennen'; }, 3000); return; }
@@ -2946,6 +3762,51 @@ body.menuopen{overflow:hidden}
   syncCfg = syncLoad();
   if(syncCfg && syncCfg.gistId){ syncHash = dataHash(); setTimeout(function(){ syncNow(false); }, 900); }
   syncUI();
+
+  /* ---------- Notizen: Link teilen, Claude öffnen, Link importieren (nur GitHub-Version) ---------- */
+  nbHooks.openClaude = function(text){
+    var url = 'https://claude.ai/new?q=' + encodeURIComponent(text);
+    copyText(text);
+    window.open(url.length > 7000 ? 'https://claude.ai/new' : url, '_blank');
+  };
+  nbHooks.link = function(pack){
+    if(!syncCfg || !syncCfg.token) return Promise.reject(new Error('notoken'));
+    var m = nbMeta(), rec = null;
+    m.packs.forEach(function(p){ if(p.id === pack.id) rec = p; });
+    var files = {'short-final-pack.json': {content: JSON.stringify(pack)}};
+    function mk(id){ return location.origin + location.pathname + '?pack=' + id; }
+    function create(){
+      return gh('/gists', {method:'POST', body:{description:'Short Final! Lernpaket: ' + pack.title, public:false, files:files}}).then(function(g){
+        if(rec){ rec.share = g.id; save(); }
+        return mk(g.id);
+      });
+    }
+    if(rec && rec.share) return gh('/gists/' + rec.share, {method:'PATCH', body:{files:files}}).then(function(){ return mk(rec.share); }, create);
+    return create();
+  };
+  nbHooks.boot = function(){
+    var id = null;
+    try{ id = new URLSearchParams(location.search).get('pack'); }catch(e){}
+    if(!id || !/^[0-9a-f]{16,40}$/i.test(id)) return;
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    fetch('https://api.github.com/gists/' + id, {headers:{'Accept':'application/vnd.github+json'}, cache:'no-store'}).then(function(r){
+      if(!r.ok) throw new Error('http');
+      return r.json();
+    }).then(function(g){
+      var f = null;
+      Object.keys(g.files || {}).forEach(function(k){ if(!f) f = g.files[k]; });
+      if(!f) throw new Error('nofile');
+      if(f.truncated && f.raw_url) return fetch(f.raw_url, {cache:'no-store'}).then(function(r){ return r.text(); });
+      return f.content;
+    }).then(function(text){
+      var n = 0;
+      (function tryShow(){
+        var busy = !$('onb').hidden || tourSt || document.querySelector('.celeb');
+        if(busy && n++ < 900){ setTimeout(tryShow, 1000); return; }
+        nbConfirmImport(text);
+      })();
+    }).catch(function(){ toast('Das Lernpaket konnte nicht geladen werden.'); });
+  };
 
   maybeChangelog();
   connect(0);

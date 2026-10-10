@@ -402,6 +402,59 @@ body.nbopen{overflow:hidden}
 .cdln i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
 .cdln span{position:absolute;top:50%;width:0;height:0}
 .cdpl{position:absolute;left:-14px;top:-14px;width:28px;height:28px;color:var(--accent);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+
+/* Zustandsanzeigen (Alternativen zum PAPI) */
+.stbox{background:#070b18;border:1px solid #1f2b4f;border-radius:18px;padding:12px 16px;display:flex;justify-content:center;align-items:center}
+.sfm{transform:translate(calc(var(--tx,0) * 1px),calc(var(--ty,0) * 1px)) rotate(calc(var(--tr,0) * 1deg))}
+.sfm.sfa{animation:sfmv 1.7s ease-in-out backwards;animation-delay:calc(.2s + var(--x,0s))}
+@keyframes sfmv{0%{transform:translate(calc((var(--tx,0) + (var(--fx,0) - var(--tx,0)) * 1) * 1px),calc((var(--ty,0) + (var(--fy,0) - var(--ty,0)) * 1) * 1px)) rotate(calc((var(--tr,0) + (var(--fr,0) - var(--tr,0)) * 1) * 1deg))}40%{transform:translate(calc((var(--tx,0) + (var(--fx,0) - var(--tx,0)) * -.25) * 1px),calc((var(--ty,0) + (var(--fy,0) - var(--ty,0)) * -.25) * 1px)) rotate(calc((var(--tr,0) + (var(--fr,0) - var(--tr,0)) * -.25) * 1deg))}65%{transform:translate(calc((var(--tx,0) + (var(--fx,0) - var(--tx,0)) * .1) * 1px),calc((var(--ty,0) + (var(--fy,0) - var(--ty,0)) * .1) * 1px)) rotate(calc((var(--tr,0) + (var(--fr,0) - var(--tr,0)) * .1) * 1deg))}82%{transform:translate(calc((var(--tx,0) + (var(--fx,0) - var(--tx,0)) * -.04) * 1px),calc((var(--ty,0) + (var(--fy,0) - var(--ty,0)) * -.04) * 1px)) rotate(calc((var(--tr,0) + (var(--fr,0) - var(--tr,0)) * -.04) * 1deg))}100%{transform:translate(calc((var(--tx,0) + (var(--fx,0) - var(--tx,0)) * 0) * 1px),calc((var(--ty,0) + (var(--fy,0) - var(--ty,0)) * 0) * 1px)) rotate(calc((var(--tr,0) + (var(--fr,0) - var(--tr,0)) * 0) * 1deg))}}
+.sfpair{display:grid}.sfpair>*{grid-area:1/1}
+.sfo{animation:sfout .5s ease-in forwards;animation-delay:calc(.2s + var(--x,0s))}
+.sfi{animation:sfin .9s cubic-bezier(.2,1.4,.4,1) backwards;animation-delay:calc(.7s + var(--x,0s))}
+@keyframes sfout{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(.8)}}
+@keyframes sfin{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none}}
+.flipx .sfo{animation-name:sfoutx}.flipx .sfi{animation-name:sfinx;animation-timing-function:ease-out}
+@keyframes sfoutx{0%{opacity:1;transform:rotateX(0)}100%{opacity:0;transform:rotateX(90deg)}}
+@keyframes sfinx{0%{opacity:0;transform:rotateX(-90deg)}100%{opacity:1;transform:rotateX(0)}}
+@media (prefers-reduced-motion: reduce){.sfm.sfa,.sfo,.sfi{animation:none}.sfo{display:none}}
+.ils{position:relative;width:120px;height:84px}
+.ils .hz{position:absolute;left:10px;right:10px;top:41px;height:2px;background:#5b6aa0;border-radius:1px}
+.ils .tk{position:absolute;left:50%;margin-left:-5px;width:10px;height:10px;border-radius:50%;border:2px solid #8a97c8;box-sizing:border-box}
+.ils .dia{position:absolute;left:50%;top:34px;margin-left:-8px;width:16px;height:16px;background:#ff4fd8;transform-origin:50% 50%;border-radius:2px;box-shadow:0 0 10px rgba(255,79,216,.7)}
+.ils .dia.sfm{transform:translate(calc(var(--tx,0) * 1px),calc(var(--ty,0) * 1px)) rotate(45deg)}
+.pfl{position:relative;width:200px;height:84px}
+.pfl svg.pfs{position:absolute;left:0;top:0;width:200px;height:84px}
+.pfl .plw{position:absolute;left:82px;top:34px;width:36px;height:20px}
+.pfl .plw svg{width:36px;height:20px;display:block;overflow:visible}
+.hzn{position:relative;width:84px;height:84px;border-radius:50%;overflow:hidden;border:2px solid #3a4770;box-sizing:content-box}
+.hzn .hzs{position:absolute;left:-30%;width:160%;top:-50%;height:200%;background:linear-gradient(#3b8fe0 50%,#8a5a2b 50%)}
+.hzn .hzs:after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:#fff}
+.hzn svg.hzp{position:absolute;left:0;top:0;width:84px;height:84px}
+.wsk{position:relative;width:110px;height:84px}
+.wsk svg.wpole{position:absolute;left:0;top:0;width:110px;height:84px}
+.wsk .wss{position:absolute;left:16px;top:6px;width:64px;height:24px;transform-origin:0 50%}
+.wsk .wss svg{width:64px;height:24px;display:block}
+.rdr{position:relative;width:84px;height:84px}
+.rdr svg.rdrb{position:absolute;left:0;top:0;width:84px;height:84px}
+.rdr .blp{position:absolute;left:38px;top:38px;width:8px;height:8px;border-radius:50%;background:var(--bc,#4dff7a);box-shadow:0 0 8px 2px var(--bc,#4dff7a)}
+.stw svg{width:96px;height:64px;display:block}
+.stbd{font-family:var(--mono);min-width:176px}
+.stbd .r1{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:#ffb21e;opacity:.7;margin-bottom:6px}
+.stbd .r2{font-size:15px;font-weight:700;letter-spacing:.06em;text-align:center;white-space:nowrap}
+.sfpair.flipx{perspective:300px}
+.lkhr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}
+.lkhr .lkh{margin:0}
+.lkrs{font-size:12px;padding:5px 11px;border-radius:999px;background:transparent;color:var(--accent);border:1px solid var(--line);font-weight:600}
+.lkrs[disabled]{opacity:.45;cursor:default;color:var(--muted)}
+.lkdef{font-size:10.5px;font-weight:700;color:var(--accent);margin-top:2px}
+.lksw.lkdefsw:after{content:"\2605";position:absolute;right:-5px;top:-6px;font-size:13px;color:var(--accent);text-shadow:0 0 3px var(--card)}
+.lkleg{font-size:11.5px;color:var(--muted);margin:-2px 0 8px}
+.lkall{width:100%;margin-top:16px}
+.lkpv.st{position:relative;height:56px;width:100%;overflow:visible}
+.lkpv.st .stp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.38);transform-origin:50% 50%;pointer-events:none;white-space:nowrap}
+.lkcd.st{grid-template-columns:repeat(2,1fr)}
+.nbnewimg{max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;display:block}
+.nbnewrow{display:flex;gap:8px;flex-wrap:wrap}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;background:#141a33;color:#fff;border:1px solid rgba(255,79,216,.5);padding:10px 18px;border-radius:999px;font-size:13.5px;animation:cfade .25s ease-out both;max-width:90vw;text-align:center}
 .tour{position:fixed;left:0;right:0;top:0;bottom:0;z-index:150}
 .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,8,20,.8),0 0 0 2px var(--accent),0 0 22px 2px var(--accent);transition:all .35s ease;pointer-events:none}
@@ -680,6 +733,17 @@ body.menuopen{overflow:hidden}
     ['route', 'Flugroute', 'Flugzeug auf dem Weg'],
     ['text', 'Minimal', 'Nur Tage und Uhrzeit']
   ];
+  var ST_STYLES = [
+    ['papi', 'PAPI-Lichter', 'Vier Lichter wie am Flugplatz'],
+    ['ils', 'Gleitpfadanzeige', 'Raute auf der Skala'],
+    ['profile', 'Anflugprofil', 'Flugzeug über der Linie'],
+    ['weather', 'Wetterlage', 'Von Gewitter bis Sonne'],
+    ['board', 'Departure Board', 'Status wie am Flughafen'],
+    ['horizon', 'Horizont', 'Künstlicher Horizont'],
+    ['windsock', 'Windsack', 'Gestreckt heißt im Plan'],
+    ['radar', 'Radar', 'Blip auf dem Schirm']
+  ];
+  var LOOK_DEF = {accent:'magenta', cd:'flap', st:'papi'};
   var appStart = Date.now();
   var STANDALONE = true;
 
@@ -1543,10 +1607,15 @@ body.menuopen{overflow:hidden}
       var ob = (typeof overlayEnd === 'number') ? overlayEnd - Date.now() : 0;
       x = Math.max(2500 - (Date.now() - appStart), ob, 0) / 1000;
     }
-    papiCur[ctx] = {w:w, lo:lo, hi:hi, x:x, vis:true};
+    papiCur[ctx] = {w:w, lo:lo, hi:hi, x:x, vis:true, from:(lo >= 0 && ch) ? ch.from : w};
     return papiCur[ctx];
   }
-  function papiHTML(w, pl){
+  function lookSt(){
+    var v = S && S.look && S.look.st;
+    for(var i = 0; i < ST_STYLES.length; i++) if(ST_STYLES[i][0] === v) return v;
+    return 'papi';
+  }
+  function papiLights(w, pl){
     var lights = '', idx = 0;
     for(var k = 0; k < 4; k++){
       var now = k < w ? PAPI_W : PAPI_R, was = k < w ? PAPI_R : PAPI_W;
@@ -1557,7 +1626,91 @@ body.menuopen{overflow:hidden}
         lights += '<i class="' + (k < w ? 'w' : 'r') + '"></i>';
       }
     }
-    return '<div class="papi" role="img" aria-label="' + PAPI_LABELS[w] + '"><div class="lights">' + lights + '</div><div class="plbl">' + PAPI_LABELS[w] + '</div></div>';
+    return '<div class="lights">' + lights + '</div>';
+  }
+  var BD_TXT = ['VERSPÄTET', 'LEICHTE VERSPÄTUNG', 'ON TIME', 'LEICHT VORAUS', 'VORAUS'];
+  var BD_COL = ['#ff5b6b', '#ffb21e', '#4dff7a', '#4dff7a', '#4dd2ff'];
+  var WX_NAME = ['Gewitter', 'Regen', 'Leicht bewölkt', 'Sonnig', 'Sonne und Regenbogen'];
+  function wxSVG(w){
+    var sun = function(cx, cy, r, rays){
+      var h = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#ffc93c"/>';
+      if(rays) for(var a = 0; a < 8; a++){
+        var an = a * Math.PI / 4, c = Math.cos(an), sn = Math.sin(an);
+        h += '<line x1="' + (cx + c * (r + 4)).toFixed(1) + '" y1="' + (cy + sn * (r + 4)).toFixed(1) + '" x2="' + (cx + c * (r + 9)).toFixed(1) + '" y2="' + (cy + sn * (r + 9)).toFixed(1) + '" stroke="#ffc93c" stroke-width="2.4" stroke-linecap="round"/>';
+      }
+      return h;
+    };
+    var cloud = function(x, y, fill){
+      return '<g fill="' + fill + '"><circle cx="' + (x + 12) + '" cy="' + (y + 12) + '" r="10"/><circle cx="' + (x + 26) + '" cy="' + (y + 8) + '" r="13"/><circle cx="' + (x + 40) + '" cy="' + (y + 13) + '" r="9"/><rect x="' + (x + 6) + '" y="' + (y + 12) + '" width="40" height="10" rx="5"/></g>';
+    };
+    var b = '<svg viewBox="0 0 96 64" aria-hidden="true">';
+    if(w === 0){
+      b += cloud(20, 6, '#566086') + '<polygon points="50,30 42,44 49,44 45,58 60,38 52,38 56,30" fill="#ffd84a"/>';
+    }else if(w === 1){
+      b += cloud(20, 6, '#8d97b8') + '<g stroke="#5aa2ff" stroke-width="2.6" stroke-linecap="round"><line x1="36" y1="36" x2="33" y2="46"/><line x1="48" y1="36" x2="45" y2="46"/><line x1="60" y1="36" x2="57" y2="46"/></g>';
+    }else if(w === 2){
+      b += sun(34, 26, 12, true) + cloud(38, 18, '#c9d0ee');
+    }else if(w === 3){
+      b += sun(48, 32, 14, true);
+    }else{
+      var cols = ['#ff4d4d', '#ffa23d', '#ffe14d', '#4dd96a', '#4da8ff'];
+      cols.forEach(function(c, i){ var r = 42 - i * 4; b += '<path d="M' + (48 - r) + ' 58 A' + r + ' ' + r + ' 0 0 1 ' + (48 + r) + ' 58" fill="none" stroke="' + c + '" stroke-width="3.2"/>'; });
+      b += sun(80, 14, 7, false);
+    }
+    return b + '</svg>';
+  }
+  function stInst(st, w, pl){
+    var anim = !!(pl && pl.lo >= 0 && pl.from >= 0 && pl.from !== w), from = anim ? pl.from : w;
+    var dly = '--x:' + ((pl && pl.x) || 0).toFixed(2) + 's';
+    function P(fn){
+      var a = fn(w), b = fn(from);
+      return dly + ';--tx:' + a[0] + ';--ty:' + a[1] + ';--tr:' + a[2] + ';--fx:' + b[0] + ';--fy:' + b[1] + ';--fr:' + b[2];
+    }
+    var mc = 'sfm' + (anim ? ' sfa' : '');
+    function pair(fn, extra){
+      if(anim) return '<div class="sfpair ' + (extra || '') + '"><div class="sfo" style="' + dly + '">' + fn(from) + '</div><div class="sfi" style="' + dly + '">' + fn(w) + '</div></div>';
+      return '<div class="sfpair ' + (extra || '') + '">' + fn(w) + '</div>';
+    }
+    var h;
+    if(st === 'ils'){
+      h = '<div class="ils"><i class="hz"></i>';
+      [-30, -15, 15, 30].forEach(function(o){ h += '<i class="tk" style="top:' + (37 + o) + 'px"></i>'; });
+      return h + '<span class="dia ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 15, 0]; }) + '"></span></div>';
+    }
+    if(st === 'profile'){
+      var plane = '<svg viewBox="-22 -12 44 24"><path d="M-19 0C-19 -3 -13 -4.5 -3 -4.5L11 -4.5C17 -4.5 20 -2 20 0C20 2 17 3.5 11 3.5L-3 3.5C-13 3.5 -19 3 -19 0Z" fill="#f3f6ff"/><path d="M-17 -1L-21 -11L-14 -11L-8 -1Z" fill="#ff4fd8"/><path d="M-3 1L-9 9L-4 9L8 1Z" fill="#c9d0ee"/></svg>';
+      return '<div class="pfl"><svg class="pfs" viewBox="0 0 200 84" aria-hidden="true"><line x1="6" y1="76" x2="194" y2="12" stroke="#ff4fd8" stroke-width="1.6" stroke-dasharray="5 4"/><rect x="0" y="78" width="200" height="6" fill="#1f2b4f"/></svg><span class="plw ' + mc + '" style="' + P(function(v){ return [0, -(v - 2) * 11, 8 + (v - 2) * 3]; }) + '">' + plane + '</span></div>';
+    }
+    if(st === 'weather'){
+      return '<div class="stw">' + pair(wxSVG, 'wx') + '</div>';
+    }
+    if(st === 'board'){
+      var bd = function(v){ return '<div class="stbd"><div class="r1"><span>PRÜFUNG</span><span>STATUS</span></div><div class="r2" style="color:' + BD_COL[v] + ';text-shadow:0 0 10px ' + BD_COL[v] + '66">' + BD_TXT[v] + '</div></div>'; };
+      return pair(bd, 'flipx');
+    }
+    if(st === 'horizon'){
+      return '<div class="hzn"><div class="hzs ' + mc + '" style="' + P(function(v){ return [0, (v - 2) * 9, -(v - 2) * 3]; }) + '"></div>' +
+        '<svg class="hzp" viewBox="0 0 84 84" aria-hidden="true"><path d="M8 42H30M54 42H76M42 42m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" fill="none" stroke="#ffd04a" stroke-width="3" stroke-linecap="round"/></svg></div>';
+    }
+    if(st === 'windsock'){
+      var seg = '';
+      for(var i = 0; i < 5; i++){
+        var x0 = i * 12.8, x1 = x0 + 12.8, h0 = 11 - x0 * 0.075, h1 = 11 - x1 * 0.075;
+        seg += '<polygon points="' + x0.toFixed(1) + ',' + (12 - h0).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 - h1).toFixed(1) + ' ' + x1.toFixed(1) + ',' + (12 + h1).toFixed(1) + ' ' + x0.toFixed(1) + ',' + (12 + h0).toFixed(1) + '" fill="' + (i % 2 ? '#f4f6ff' : '#ff7a1f') + '"/>';
+      }
+      return '<div class="wsk"><svg class="wpole" viewBox="0 0 110 84" aria-hidden="true"><rect x="13" y="6" width="4" height="78" rx="2" fill="#aeb8dc"/><circle cx="15" cy="18" r="4" fill="#aeb8dc"/></svg>' +
+        '<span class="wss ' + mc + '" style="' + P(function(v){ return [0, 0, (4 - v) * 19.5]; }) + '"><svg viewBox="0 0 64 24" aria-hidden="true">' + seg + '</svg></span></div>';
+    }
+    if(st === 'radar'){
+      return '<div class="rdr"><svg class="rdrb" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="40" fill="#08180f" stroke="#2f6b46" stroke-width="1.5"/><circle cx="42" cy="42" r="27" fill="none" stroke="#2f6b46"/><circle cx="42" cy="42" r="14" fill="none" stroke="#2f6b46"/><line x1="2" y1="42" x2="82" y2="42" stroke="#2f6b46"/><line x1="42" y1="2" x2="42" y2="82" stroke="#2f6b46"/><path d="M42 42L42 2A40 40 0 0 1 70 13Z" fill="rgba(77,255,122,.16)"/></svg>' +
+        '<span class="blp ' + mc + '" style="--bc:' + ['#ff5b6b', '#ffb21e', '#4dff7a', '#4dd2ff', '#4dd2ff'][w] + ';' + P(function(v){ return [(v - 2) * 9, -(v - 2) * 12, 0]; }) + '"></span></div>';
+    }
+    return '';
+  }
+  function papiHTML(w, pl){
+    var st = lookSt();
+    var inner = st === 'papi' ? papiLights(w, pl) : '<div class="stbox">' + stInst(st, w, pl) + '</div>';
+    return '<div class="papi" role="img" aria-label="' + PAPI_LABELS[w] + '">' + inner + '<div class="plbl">' + PAPI_LABELS[w] + '</div></div>';
   }
   /* Zeichnet die Lichter nur neu, wenn sich Zustand oder Animationsplan geändert haben */
   function papiMount(id, r, ctx){
@@ -1566,7 +1719,7 @@ body.menuopen{overflow:hidden}
     if(r === null){ el.innerHTML = ''; el.removeAttribute('data-sig'); el.hidden = true; return; }
     el.hidden = false;
     var w = papiW(r), pl = papiPlan(w, ctx);
-    var sig = w + ':' + pl.lo + ':' + pl.hi + ':' + pl.x.toFixed(2) + ':' + (pl.vis ? 1 : 0);
+    var sig = lookSt() + ':' + w + ':' + pl.lo + ':' + pl.hi + ':' + pl.x.toFixed(2) + ':' + (pl.vis ? 1 : 0);
     if(el.getAttribute('data-sig') === sig && el.firstChild) return;
     el.setAttribute('data-sig', sig);
     el.innerHTML = papiHTML(w, pl);
@@ -3092,9 +3245,9 @@ body.menuopen{overflow:hidden}
     if(nbv.tab === 'items'){
       if(!all.length){
         h += '<div class="card nbempty"><h2>Deine Notizen in der App</h2><p class="small">Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen alle Merksprüche, Formeln und Skizzen nach Fächern sortiert hier und lassen sich abfragen.</p>' +
-          '<div class="row"><button type="button" data-nbact="prompt" style="flex:1">Prompt für Claude erstellen</button><button type="button" class="ghost" data-nbact="import" style="padding:9px 16px">Datei importieren</button></div></div>';
+          '<div class="row"><button type="button" data-nbact="prompt" style="flex:1">Prompt für Claude erstellen</button><button type="button" class="ghost" data-nbact="import" style="padding:9px 16px">Datei importieren</button></div><div class="row" style="margin-top:8px"><button type="button" class="ghost" data-nbact="new" style="flex:1">Eintrag selbst erstellen</button></div></div>';
       }else{
-        h += '<button type="button" data-nbact="quiz" style="width:100%;margin:2px 0 10px">Abfrage starten</button>' +
+        h += '<div class="row" style="margin:2px 0 10px"><button type="button" data-nbact="quiz" style="flex:1">Abfrage starten</button><button type="button" class="ghost" data-nbact="new" style="padding:9px 16px">+ Eintrag</button></div>' +
           '<input type="search" id="nbSearch" placeholder="Suchen" value="' + escA(nbv.q) + '" style="width:100%" aria-label="Notizen durchsuchen">' +
           '<div class="nbfil"><label>Fach<select id="nbFSub"><option value="all">Alle Fächer (' + c.all + ')</option>';
         nbSubIds().forEach(function(s){ if(c[s]) h += '<option value="' + s + '"' + (nbv.sub === s ? ' selected' : '') + '>' + esc(nbSubName(s)) + ' (' + c[s] + ')</option>'; });
@@ -3106,7 +3259,7 @@ body.menuopen{overflow:hidden}
         h += '</div><div id="nbList">' + nbListHTML(all) + '</div>';
       }
     }else{
-      h += '<div class="row" style="margin:10px 0"><button type="button" data-nbact="import" style="flex:1">Datei importieren</button><button type="button" class="ghost" data-nbact="paste" style="padding:9px 14px">Text einfügen</button></div>';
+      h += '<div class="row" style="margin:10px 0 0"><button type="button" data-nbact="new" style="flex:1">Eintrag erstellen</button></div><div class="row" style="margin:8px 0 10px"><button type="button" data-nbact="import" style="flex:1">Datei importieren</button><button type="button" class="ghost" data-nbact="paste" style="padding:9px 14px">Text einfügen</button></div>';
       if(nbHooks.syncPacks) h += '<div class="nbsyncbar"><button type="button" class="ghost" data-nbact="psync" style="padding:7px 14px">Mit GitHub abgleichen</button><span class="small" id="nbSyncMsg">' + esc(nbv.syncMsg || 'Pakete werden automatisch auf alle Geräte deines GitHub-Kontos übertragen.') + '</span></div>';
       var plist = nbPackList();
       if(!plist.length){
@@ -3117,7 +3270,7 @@ body.menuopen{overflow:hidden}
         h += '<div class="card nbpk" data-pk="' + escA(p.id) + '"><b>' + esc(p.title) + '</b><div class="small">' + (p.author ? 'von ' + esc(p.author) + ' · ' : '') + p.n + ' Einträge · ' + esc(p.added || '') + '</div>';
         if(!have) h += '<div class="small" style="color:var(--warn);margin-top:4px">Der Inhalt fehlt auf diesem Gerät. Importiere die Datei hier noch einmal.</div>';
         if(have) h += nbDocsHTML(NB.packs[p.id]);
-        h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button>' : '') +
+        h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button><button type="button" class="ghost" data-nbact="newin" style="padding:8px 14px">+ Eintrag</button>' : '') +
           '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
       });
       if(!NB.persist) h += '<div class="small" style="margin-top:8px;color:var(--warn)">Dein Browser erlaubt hier keinen dauerhaften Speicher. Pakete bleiben nur bis zum Schließen der App.</div>';
@@ -3594,6 +3747,89 @@ body.menuopen{overflow:hidden}
       nbPersist(e.pack); save(); sh.close(); nbDraw(); toast('Eintrag gelöscht');
     });
   }
+  function nbResizeImg(file, cb){
+    var fr = new FileReader();
+    fr.onerror = function(){ cb(''); };
+    fr.onload = function(){
+      var src = String(fr.result || '');
+      var im = new Image();
+      im.onload = function(){
+        try{
+          var m = 1400, sc = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          cb(c.toDataURL('image/jpeg', 0.82));
+        }catch(e){ cb(src.length < 4000000 && /^data:image\/(jpeg|png|webp|gif);base64,/.test(src) ? src : ''); }
+      };
+      im.onerror = function(){ cb(''); };
+      im.src = src;
+    };
+    fr.readAsDataURL(file);
+  }
+  function nbNewSheet(prefPid){
+    var ids = Object.keys(NB.packs).filter(function(id){ return NB.packs[id] && Array.isArray(NB.packs[id].items); });
+    var def = prefPid && NB.packs[prefPid] ? prefPid : (nbv.newPack && (nbv.newPack === '__own' || NB.packs[nbv.newPack]) ? nbv.newPack : (NB.packs.own ? 'own' : '__own'));
+    var pkOpts = ids.map(function(id){ return '<option value="' + escA(id) + '"' + (def === id ? ' selected' : '') + '>' + esc(NB.packs[id].title) + '</option>'; }).join('');
+    if(!NB.packs.own) pkOpts = '<option value="__own"' + (def === '__own' ? ' selected' : '') + '>Meine Einträge (neu)</option>' + pkOpts;
+    var dsub = nbv.newSub || (nbv.sub !== 'all' ? nbv.sub : 'none');
+    var tyOpts = Object.keys(NB_TYPES).map(function(k){ return '<option value="' + k + '"' + ((nbv.newTyp || 'fakt') === k ? ' selected' : '') + '>' + NB_TYPES[k] + '</option>'; }).join('');
+    var suOpts = nbSubIds().map(function(s){ return '<option value="' + s + '"' + (dsub === s ? ' selected' : '') + '>' + esc(nbSubName(s)) + '</option>'; }).join('');
+    var sh = openSheet('<div class="shead"><h2>Eintrag erstellen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<label>Paket<select id="nwPk">' + pkOpts + '</select></label>' +
+      '<div class="f2"><label>Art<select id="nwTy">' + tyOpts + '</select></label><label>Fach<select id="nwSu">' + suOpts + '</select></label></div>' +
+      '<label>Titel<input id="nwT" maxlength="200" placeholder="z. B. Dichte der Luft"></label>' +
+      '<label>Frage (optional)<textarea id="nwQ" class="nbta" rows="2"></textarea></label>' +
+      '<label>Antwort<textarea id="nwA" class="nbta" rows="3"></textarea></label>' +
+      '<label>Hinweis oder Eselsbrücke (optional)<textarea id="nwN" class="nbta" rows="2"></textarea></label>' +
+      '<label>Falsche Antworten für Multiple Choice (optional, eine pro Zeile)<textarea id="nwW" class="nbta" rows="3"></textarea></label>' +
+      '<div class="nbnewrow" style="margin-top:8px"><button type="button" class="ghost" id="nwImgB" style="padding:8px 14px">Bild oder Foto hinzufügen</button><input type="file" id="nwImg" accept="image/*" hidden></div>' +
+      '<div id="nwImgBox"></div>' +
+      '<button type="button" id="nwSave" style="width:100%;margin-top:12px">Speichern</button>' +
+      '<button type="button" class="ghost" id="nwMore" style="width:100%;margin-top:8px">Speichern und nächsten Eintrag</button>');
+    var o = sh.ov, img = '', imgq = false;
+    function g(id){ return o.querySelector('#' + id); }
+    function paintImg(){
+      g('nwImgBox').innerHTML = img ? '<img class="nbnewimg" src="' + escA(img) + '" alt="Vorschau"><div class="nbnewrow" style="margin-top:6px"><label class="tg" style="flex:1"><span>Bild gehört zur Frage</span><input type="checkbox" class="sw" id="nwImgQ"' + (imgq ? ' checked' : '') + '></label><button type="button" class="ghost" id="nwImgX" style="padding:6px 12px">Entfernen</button></div>' : '';
+      var x = g('nwImgX'), q = g('nwImgQ');
+      if(x) x.addEventListener('click', function(){ img = ''; imgq = false; paintImg(); });
+      if(q) q.addEventListener('change', function(){ imgq = q.checked; });
+    }
+    g('nwImgB').addEventListener('click', function(){ g('nwImg').click(); });
+    g('nwImg').addEventListener('change', function(){
+      var f = this.files && this.files[0];
+      if(!f) return;
+      nbResizeImg(f, function(d){ if(!d){ toast('Das Bild konnte nicht gelesen werden'); return; } img = d; paintImg(); });
+    });
+    function save(more){
+      var title = nbSan(g('nwT').value, 200), q = nbSan(g('nwQ').value, 1500), a = nbSan(g('nwA').value, 3000);
+      if(!a && !img){ toast('Die Antwort fehlt'); return; }
+      if(!title) title = (q || a || 'Skizze').slice(0, 60);
+      var pid = g('nwPk').value, pack = NB.packs[pid] || NB.packs.own;
+      if(!pack){
+        pack = {format:'short-final-pack', version:1, id:'own', title:'Meine Einträge', author:nbSan(S.uname, 60), created:iso(new Date()), rev:0, items:[], docs:[]};
+      }
+      var item = {id:'m' + nbRid(), subject:g('nwSu').value, also:[], type:g('nwTy').value, title:title, q:q, a:a, note:nbSan(g('nwN').value, 1200),
+        wrong:g('nwW').value.split('\n').map(function(w){ return nbSan(w, 300); }).filter(Boolean).slice(0, 5), img:img, svg:'', imgq:!!img && imgq};
+      pack.items.push(item);
+      nbv.newPack = pack.id; nbv.newSub = item.subject; nbv.newTyp = item.type;
+      nbAddPack(pack).then(function(){
+        toast('Eintrag gespeichert');
+        nbRefresh();
+      });
+      if(more){
+        ['nwT', 'nwQ', 'nwA', 'nwN', 'nwW'].forEach(function(id){ g(id).value = ''; });
+        img = ''; imgq = false; paintImg();
+        var opt = g('nwPk');
+        if(!opt.querySelector('option[value="' + pack.id + '"]')){ var op = document.createElement('option'); op.value = pack.id; op.textContent = pack.title; opt.appendChild(op); }
+        opt.value = pack.id;
+        g('nwT').focus();
+      }else{
+        sh.close();
+      }
+    }
+    g('nwSave').addEventListener('click', function(){ save(false); });
+    g('nwMore').addEventListener('click', function(){ save(true); });
+  }
   function nbDrawQuiz(){
     var qz = nbv.quiz, el = $('nb');
     if(!qz) return;
@@ -3679,6 +3915,8 @@ body.menuopen{overflow:hidden}
       else if(a === 'prompt'){ nbPromptSheet(); }
       else if(a === 'import'){ var f = $('nbFile'); if(f) f.click(); }
       else if(a === 'paste'){ nbPasteSheet(); }
+      else if(a === 'new'){ nbNewSheet(); }
+      else if(a === 'newin'){ var pkn = b.closest('.nbpk'); if(pkn) nbNewSheet(pkn.getAttribute('data-pk')); }
       else if(a === 'psync'){ if(nbHooks.syncPacks) nbHooks.syncPacks(true); }
       else if(a === 'docadd'){ var pk3 = b.closest('.nbpk'); if(pk3) nbDocAddSheet(pk3.getAttribute('data-pk')); }
       else if(a === 'quiz'){ nbQuizSetup(); }
@@ -3795,6 +4033,7 @@ body.menuopen{overflow:hidden}
     var okc = typeof a === 'string' && (/^#[0-9a-fA-F]{6}$/.test(a) || LOOK_COLORS.some(function(c){ return c[0] === a; }));
     if(!okc) S.look.accent = 'magenta';
     if(!CD_STYLES.some(function(c){ return c[0] === S.look.cd; })) S.look.cd = 'flap';
+    if(!ST_STYLES.some(function(c){ return c[0] === S.look.st; })) S.look.st = 'papi';
     return S.look;
   }
   function hexRgb(h){ return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
@@ -3833,19 +4072,30 @@ body.menuopen{overflow:hidden}
     if(k === 'route') return '<span class="pvroute"><i></i><b></b></span>';
     return '<span class="pvtxt">36 Tage</span>';
   }
+  function stPreview(k){
+    var inner = k === 'papi' ? '<div class="papi">' + papiLights(3, {lo:-1, hi:-1, x:0}) + '</div>' : '<div class="stbox">' + stInst(k, 3, null) + '</div>';
+    return '<span class="stp">' + inner + '</span>';
+  }
   function lookInner(){
     lookNorm();
-    var cur = S.look.accent, h = '<h3 class="lkh">App-Farbe</h3><div class="lkcol">';
+    var L = S.look, cur = L.accent;
+    var rs = function(key){ return '<button type="button" class="lkrs" data-lkreset="' + key + '"' + (L[key] === LOOK_DEF[key] ? ' disabled' : '') + '>Auf Standard</button>'; };
+    var h = '<div class="lkhr"><h3 class="lkh">App-Farbe</h3>' + rs('accent') + '</div><div class="lkleg">★ = Standard</div><div class="lkcol">';
     LOOK_COLORS.forEach(function(c){
-      h += '<button type="button" class="lksw' + (cur === c[0] ? ' on' : '') + '" data-lkacc="' + c[0] + '" style="background:' + lookSwatchColor(c) + '" aria-label="' + escA(c[1]) + '" title="' + escA(c[1]) + '"></button>';
+      h += '<button type="button" class="lksw' + (cur === c[0] ? ' on' : '') + (c[0] === LOOK_DEF.accent ? ' lkdefsw' : '') + '" data-lkacc="' + c[0] + '" style="background:' + lookSwatchColor(c) + '" aria-label="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '" title="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '"></button>';
     });
     var custom = /^#[0-9a-fA-F]{6}$/.test(cur);
     h += '<label class="lksw lkcustom' + (custom ? ' on' : '') + '" title="Eigene Farbe"><input type="color" data-lkcustom="1" value="' + (custom ? cur : '#c4189b') + '" aria-label="Eigene Farbe wählen"><span>+</span></label></div>';
-    h += '<h3 class="lkh">Countdown-Anzeige</h3><div class="lkcd">';
+    h += '<div class="lkhr"><h3 class="lkh">Countdown-Anzeige</h3>' + rs('cd') + '</div><div class="lkcd">';
     CD_STYLES.forEach(function(c){
-      h += '<button type="button" class="lkopt' + (S.look.cd === c[0] ? ' on' : '') + '" data-lkcd="' + c[0] + '"><span class="lkpv">' + cdPreview(c[0]) + '</span><b>' + c[1] + '</b><span class="small">' + c[2] + '</span></button>';
+      h += '<button type="button" class="lkopt' + (L.cd === c[0] ? ' on' : '') + '" data-lkcd="' + c[0] + '"><span class="lkpv">' + cdPreview(c[0]) + '</span><b>' + c[1] + '</b><span class="small">' + c[2] + '</span>' + (c[0] === LOOK_DEF.cd ? '<span class="lkdef">★ Standard</span>' : '') + '</button>';
     });
-    return h + '</div>';
+    h += '</div><div class="lkhr"><h3 class="lkh">Zustandsanzeige</h3>' + rs('st') + '</div><div class="lkcd st">';
+    ST_STYLES.forEach(function(c){
+      h += '<button type="button" class="lkopt' + (L.st === c[0] ? ' on' : '') + '" data-lkst="' + c[0] + '"><span class="lkpv st">' + stPreview(c[0]) + '</span><b>' + c[1] + '</b><span class="small">' + c[2] + '</span>' + (c[0] === LOOK_DEF.st ? '<span class="lkdef">★ Standard</span>' : '') + '</button>';
+    });
+    var allDef = L.accent === LOOK_DEF.accent && L.cd === LOOK_DEF.cd && L.st === LOOK_DEF.st;
+    return h + '</div><button type="button" class="ghost lkall" data-lkreset="all"' + (allDef ? ' disabled' : '') + '>Alles auf Standard zurücksetzen</button>';
   }
   function lookRefresh(){
     var a = $('lookBody'), b = document.getElementById('lkSheetBody');
@@ -3856,11 +4106,29 @@ body.menuopen{overflow:hidden}
     lookNorm();
     S.look[key] = val;
     save(); applyLook(); cdMode = null; renderCountdown(); lookRefresh();
+    if(key === 'st') stRedraw();
+  }
+  function stRedraw(){
+    papiCur.home = null; papiCur.main = null;
+    ['papiHome', 'papiMain'].forEach(function(id){ var e = $(id); if(e) e.removeAttribute('data-sig'); });
+    try{ renderHomeStats(); }catch(e){}
+    try{ render(); }catch(e){}
+  }
+  function lookReset(key){
+    lookNorm();
+    if(key === 'all'){
+      S.look.accent = LOOK_DEF.accent; S.look.cd = LOOK_DEF.cd; S.look.st = LOOK_DEF.st;
+      save(); applyLook(); cdMode = null; renderCountdown(); lookRefresh(); stRedraw();
+    }else if(LOOK_DEF[key]){
+      lookSet(key, LOOK_DEF[key]);
+    }
   }
   document.addEventListener('click', function(ev){
     var t = ev.target, b;
     if(!t || !t.closest) return;
     if((b = t.closest('[data-lkacc]'))){ lookSet('accent', b.getAttribute('data-lkacc')); return; }
+    if((b = t.closest('[data-lkreset]'))){ if(!b.disabled) lookReset(b.getAttribute('data-lkreset')); return; }
+    if((b = t.closest('[data-lkst]'))){ lookSet('st', b.getAttribute('data-lkst')); return; }
     if((b = t.closest('[data-lkcd]'))){ lookSet('cd', b.getAttribute('data-lkcd')); }
   });
   document.addEventListener('input', function(ev){
@@ -3913,6 +4181,7 @@ body.menuopen{overflow:hidden}
 
   /* Fragen nach Name und Aussehen (einmal nach dem Update, nach der Einrichtung) */
   function showLookSheet(done){
+    lookNorm(); S.look.asked = true; save();
     var needName = (typeof STANDALONE !== 'undefined' && STANDALONE) && !(S.uname);
     var sh = openSheet('<div class="shead"><h2>Mach die App zu deiner</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       (needName ? '<label>Wie sollen wir dich nennen?<input id="lkName" type="text" maxlength="24" placeholder="Dein Name" autocomplete="nickname" autocapitalize="words" spellcheck="false"></label><div class="small" style="margin-top:4px">Damit begrüßt dich die App auf dem Startbildschirm.</div>' : '') +
@@ -3933,7 +4202,7 @@ body.menuopen{overflow:hidden}
   function maybeLook(done){
     var asked = null;
     try{ asked = localStorage.getItem(KEY + '-look-asked'); }catch(e){}
-    if(asked === '1' || (S && S.fresh === true)){ if(done) done(); return; }
+    if(asked === '1' || (S && S.fresh === true) || (S && S.look && S.look.asked === true)){ if(done) done(); return; }
     try{ localStorage.setItem(KEY + '-look-asked', '1'); }catch(e){}
     showLookSheet(done);
   }
@@ -3977,7 +4246,7 @@ body.menuopen{overflow:hidden}
       {tab:'subj', sel:'#sc-0 .blk', open:'#sc-0', t:'Geklickt und offen', x:'Trage ein, wie viele Fragen du geklickt hast, wie viele davon falsch waren und wie viele noch offen sind.'},
       {tab:'subj', sel:'#sc-0 [data-rfopen]', open:'#sc-0', t:'Bericht erstellen', x:'Wähle die Art (falsche Fragen, Last 100 bis 500, Simulation oder generell) und gib das Ergebnis als Richtig, Falsch oder Prozent ein.'},
       {tab:'home', sel:'#menuBtn', t:'Menü', x:'Hier oben rechts liegen alle Einstellungen: Ziel, Prüfungstermin, Gewichtung, Datensicherung und mehr.'},
-      {menu:true, sel:'#lookCard summary', t:'Individualisierung', x:'Wähle deine App-Farbe und eine von fünf Countdown-Anzeigen.'},
+      {menu:true, sel:'#lookCard summary', t:'Individualisierung', x:'Wähle App-Farbe, Countdown-Anzeige und Zustandsanzeige. Alles lässt sich auf Standard zurücksetzen.'},
       {menu:true, sel:'#chronBtn', open:'#settingsMain', t:'Chronik und Tutorial', x:'Die Chronik macht Einträge rückgängig. Hier startest du auch dieses Tutorial neu.'},
       {c:true, t:'Klar zur Landung', x:'Das war’s. Viel Erfolg beim Lernen!'}
     ];
@@ -4069,8 +4338,10 @@ body.menuopen{overflow:hidden}
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-11';
+  var APP_VER = '2026.10.10-12';
   var CHANGELOG = [
+    {t:'Mehr Zustandsanzeigen', x:'Statt der PAPI-Lichter kannst du jetzt Gleitpfadanzeige, Anflugprofil, Wetterlage, Departure Board, Horizont, Windsack oder Radar wählen. Dazu gibt es überall die Option „Auf Standard“, und deine Auswahl gilt auf allen Geräten.'},
+    {t:'Eigene Einträge', x:'Im Lernzentrum kannst du Einträge jetzt auch direkt in der App schreiben, ohne Datei.'},
     {t:'Individualisierung', x:'Im Menü wählst du deine App-Farbe und eine von fünf Countdown-Anzeigen: Fallblatt, Anzeigetafel, Ringe, Flugroute oder Minimal.'},
     {t:'Dein Name', x:'Die App fragt dich einmal nach einem Benutzernamen für die persönliche Begrüßung.', web:true}
   ];

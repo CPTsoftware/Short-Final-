@@ -446,6 +446,21 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
       </div>
       <div class="small" id="dataMsg" style="margin-top:6px"></div>
     </details>
+    <details class="card settings" id="syncCard">
+      <summary>Geräte-Abgleich (GitHub)</summary>
+      <div id="syncOff1">
+        <div class="small" style="margin:8px 0 10px">Hält deinen Stand auf allen Geräten gleich. Er liegt in einem privaten Gist in deinem GitHub-Konto. Einrichten: 1) Token bei GitHub erzeugen (nur Berechtigung „gist“), 2) hier einfügen, 3) auf jedem Gerät wiederholen.</div>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Short%20Final" target="_blank" rel="noopener" style="color:var(--accent);font-weight:650;font-size:13px">Token bei GitHub erstellen</a>
+        <input type="password" id="syncTok" placeholder="Token einfügen (ghp_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;margin-top:10px">
+        <div class="row" style="margin-top:8px"><button id="syncConnect">Verbinden</button></div>
+      </div>
+      <div id="syncOn1" hidden>
+        <div class="small" style="margin:8px 0 10px">Verbunden. Änderungen werden automatisch hochgeladen. Beim Öffnen der App holt sie den neuesten Stand.</div>
+        <div class="row"><button class="ghost" id="syncNowBtn">Jetzt abgleichen</button><button class="ghost" id="syncOffBtn">Trennen</button></div>
+      </div>
+      <div class="small" id="syncMsg" style="margin-top:8px"></div>
+      <div id="syncChoice"></div>
+    </details>
   </div>
 
   <div id="tabSubj" hidden>
@@ -514,6 +529,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   var dbDoc = null;
   function setStatus(t){ var el=document.getElementById('status'); if(el) el.textContent=t; }
   function save(){
+    syncTouch();
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
     if(dbDoc){
       try{
@@ -2675,12 +2691,10 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
   }
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
-  var APP_VER = '2026.10.10-4';
+  var APP_VER = '2026.10.10-5';
   var CHANGELOG = [
-    {t:'Fragen hinzufügen', x:'Neuer Button auf Heute: Fragen mit Fach, Kategorie und Ergebnis eintragen, die Gesamtzahl wächst auf Wunsch mit.'},
-    {t:'Berichte flexibler', x:'Ergebnis als Richtig, Falsch oder Prozent eingeben, mit Schalter für die Gesamtzahl.'},
-    {t:'Chronik', x:'In den Einstellungen: alle Einträge ansehen und rückgängig machen.'},
-    {t:'Tutorial', x:'Kurze Tour durch die App, in den Einstellungen jederzeit neu startbar.'}
+    {t:'Geräte-Abgleich', x:'Optional: Stand über ein privates GitHub-Gist auf allen Geräten gleich halten (Einstellungen).'},
+    {t:'Kategorie bei „Fragen hinzufügen“', x:'Auch Berichte wie Last 500 oder Falsche wiederholt direkt von Heute eintragen.'}
   ];
   function changelogScene(still){
     var path = 'M-14,12 C70,10 150,50 286,78';
@@ -2720,6 +2734,143 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
     if(S && S.fresh === true) return;
     setTimeout(showChangelog, 900);
   }
+
+  /* ---------- Geräte-Abgleich über ein privates GitHub-Gist ---------- */
+  var SYNC_FILE = 'short-final-data.json', SYNC_LS = KEY + '-sync';
+  var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
+  function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+  function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
+  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log]); }
+  function syncTouch(){
+    if(!syncCfg || syncApplying || !S) return;
+    var h = dataHash();
+    if(h === syncHash) return;
+    syncHash = h; S.updatedAt = Date.now();
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function(){ syncNow(false); }, 3000);
+  }
+  function syncMsg(t){ var el = $('syncMsg'); if(el) el.textContent = t || ''; }
+  function syncUI(){
+    var on = !!(syncCfg && syncCfg.gistId);
+    $('syncOff1').hidden = on; $('syncOn1').hidden = !on;
+    if(on && syncCfg.last){ var d = new Date(syncCfg.last); syncMsg('Zuletzt abgeglichen: ' + fd(d) + ' ' + (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ' Uhr'); }
+  }
+  function gh(path, opts){
+    opts = opts || {};
+    return fetch('https://api.github.com' + path, {
+      method: opts.method || 'GET', cache: 'no-store',
+      headers: {'Authorization': 'Bearer ' + syncCfg.token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'},
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function(r){
+      if(r.status === 401 || r.status === 403 || r.status === 404 && opts.auth) throw new Error('auth');
+      if(!r.ok) throw new Error('http' + r.status);
+      return r.json();
+    });
+  }
+  function syncParse(t){ try{ var o = JSON.parse(t); return (o && Array.isArray(o.entries) && o.entries.length) ? o : null; }catch(e){ return null; } }
+  function syncBody(){ var o = payload(); o.updatedAt = S.updatedAt || Date.now(); return JSON.stringify(o); }
+  function syncFiles(){ var f = {}; f[SYNC_FILE] = {content: syncBody()}; return f; }
+  function syncRead(){
+    return gh('/gists/' + syncCfg.gistId).then(function(g){
+      var f = g.files && g.files[SYNC_FILE];
+      if(!f) return null;
+      if(f.truncated && f.raw_url) return fetch(f.raw_url, {cache:'no-store'}).then(function(r){ return r.text(); }).then(syncParse);
+      return syncParse(f.content);
+    });
+  }
+  function syncPush(){ return gh('/gists/' + syncCfg.gistId, {method:'PATCH', body:{files:syncFiles()}}); }
+  function syncApply(d){
+    syncApplying = true;
+    try{
+      var cp = function(x){ return JSON.parse(JSON.stringify(x)); };
+      S.target = d.target || S.target; S.deadline = d.deadline || S.deadline;
+      S.entries = d.entries.map(function(e){ return {d:String(e.d), n:Number(e.n)}; });
+      S.subjects = d.subjects ? cp(d.subjects) : S.subjects;
+      S.weights = d.weights ? cp(d.weights) : S.weights;
+      S.exam = d.exam || S.exam; S.examTime = d.examTime || S.examTime;
+      S.log = Array.isArray(d.log) ? cp(d.log) : [];
+      if(d.ai) S.ai = cp(d.ai);
+      S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
+      S.updatedAt = d.updatedAt || Date.now();
+      delete S.fresh;
+      ensureS();
+      syncHash = dataHash();
+      save();
+      render(); renderSubjects(); renderHome();
+    }finally{ syncApplying = false; }
+  }
+  function syncNow(manual){
+    if(!syncCfg || !syncCfg.gistId || syncBusy) return Promise.resolve();
+    syncBusy = true;
+    if(manual) syncMsg('Gleiche ab …');
+    return syncRead().then(function(remote){
+      var lt = S.updatedAt || 0;
+      if(!remote){ if(!S.updatedAt) S.updatedAt = Date.now(); return syncPush().then(function(){ return 'hochgeladen'; }); }
+      if((remote.updatedAt || 0) > lt){ syncApply(remote); return 'geladen'; }
+      if(lt > (remote.updatedAt || 0)) return syncPush().then(function(){ return 'hochgeladen'; });
+      return 'aktuell';
+    }).then(function(what){
+      syncCfg.last = Date.now(); syncStore(); syncUI();
+      if(manual) syncMsg(({'hochgeladen':'Stand hochgeladen.', 'geladen':'Neuester Stand geladen.', 'aktuell':'Alles aktuell.'})[what]);
+    }).catch(function(e){
+      syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“. Bitte neu verbinden.' : 'Abgleich nicht möglich, vermutlich offline. Es wird später erneut versucht.');
+    }).then(function(){ syncBusy = false; });
+  }
+  function hasLocalData(){
+    if(S.fresh === true) return false;
+    if(S.entries.length > 1 || (S.entries[0] && S.entries[0].n > 0)) return true;
+    return Object.keys(S.subjects || {}).some(function(k){
+      var x = S.subjects[k];
+      return x && (nn(x.clicked) !== null || nn(x.todo) !== null || (x.rep && x.rep.length) || (x.last && x.last.length) || (x.sim && x.sim.length) || (x.gen && x.gen.length));
+    });
+  }
+  function syncDone(msg){
+    syncCfg.last = Date.now(); syncStore();
+    $('syncChoice').innerHTML = ''; $('syncTok').value = '';
+    syncUI(); syncMsg(msg);
+  }
+  $('syncConnect').addEventListener('click', function(){
+    var tok = $('syncTok').value.trim();
+    if(!tok){ syncMsg('Bitte den Token einfügen.'); return; }
+    syncCfg = {token:tok, gistId:null, last:0};
+    syncMsg('Verbinde …');
+    gh('/gists?per_page=100', {auth:true}).then(function(list){
+      var g = (list || []).filter(function(x){ return x.files && x.files[SYNC_FILE]; })[0];
+      if(g){
+        syncCfg.gistId = g.id;
+        return syncRead().then(function(remote){
+          if(!remote || !hasLocalData()){
+            if(remote){ syncApply(remote); syncDone('Verbunden. Stand aus deinem Konto geladen.'); }
+            else{ S.updatedAt = Date.now(); return syncPush().then(function(){ syncDone('Verbunden. Stand hochgeladen.'); }); }
+            return;
+          }
+          syncMsg('Auf diesem Gerät und im Konto gibt es schon Daten. Welchen Stand behalten?');
+          $('syncChoice').innerHTML = '<div class="row" style="margin-top:8px"><button id="syncTake">Gespeicherten Stand laden</button><button class="ghost" id="syncKeep">Diesen Stand hochladen</button></div>';
+          $('syncTake').onclick = function(){ syncApply(remote); syncDone('Stand aus deinem Konto geladen.'); };
+          $('syncKeep').onclick = function(){ S.updatedAt = Date.now(); syncHash = dataHash(); syncPush().then(function(){ syncDone('Dieser Stand wurde hochgeladen.'); }, function(){ syncMsg('Hochladen fehlgeschlagen.'); }); };
+        });
+      }
+      return gh('/gists', {method:'POST', body:{description:'Short Final! Daten (automatisch)', public:false, files:(S.updatedAt = Date.now(), syncFiles())}}).then(function(created){
+        syncCfg.gistId = created.id; syncHash = dataHash();
+        syncDone('Verbunden. Stand hochgeladen. Auf dem nächsten Gerät denselben Token einfügen.');
+      });
+    }).catch(function(e){
+      syncCfg = null;
+      syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“.' : 'Verbindung fehlgeschlagen. Bist du online?');
+    });
+  });
+  $('syncNowBtn').addEventListener('click', function(){ syncNow(true); });
+  $('syncOffBtn').addEventListener('click', function(){
+    var b = $('syncOffBtn');
+    if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Wirklich trennen?'; setTimeout(function(){ b.removeAttribute('data-arm'); b.textContent = 'Trennen'; }, 3000); return; }
+    syncCfg = null; syncStore(); syncUI(); syncMsg('Getrennt. Deine Daten bleiben auf diesem Gerät.');
+    b.removeAttribute('data-arm'); b.textContent = 'Trennen';
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) syncNow(false); });
+  window.addEventListener('online', function(){ syncNow(false); });
+  syncCfg = syncLoad();
+  if(syncCfg && syncCfg.gistId){ syncHash = dataHash(); setTimeout(function(){ syncNow(false); }, 900); }
+  syncUI();
 
   maybeChangelog();
   connect(0);

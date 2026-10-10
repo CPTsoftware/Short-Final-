@@ -472,6 +472,10 @@ body.nbopen{overflow:hidden}
 @keyframes wxbow{0%,100%{opacity:.78}50%{opacity:1}}
 .stw .wxf{animation:wxdrift 4.2s ease-in-out infinite;animation-delay:calc(var(--dd,0s))}
 .stw .wxq{animation:stxb 2.4s ease-in-out infinite}
+.coach{margin:-2px 0 12px;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);font-size:13.5px;line-height:1.5}
+.coach .ch{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.coach p{margin:0 0 6px}.coach p:last-child{margin-bottom:0}
+.coach .cp{color:var(--muted);font-size:13px}
 .stbd{font-family:var(--mono);min-width:176px}
 .stbd .r1{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:#ffb21e;opacity:.7;margin-bottom:6px}
 .fcr{display:flex;justify-content:center;gap:1px}
@@ -689,6 +693,7 @@ body.menuopen{overflow:hidden}
     <button class="addq" id="addQBtn">Fragen Tracken</button>
     <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
+    <div class="coach" id="coach" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
     <div class="card" id="planCard"></div>
     <div class="card" id="aiCard">
@@ -814,7 +819,7 @@ body.menuopen{overflow:hidden}
     <div id="subjBox"></div>
     <details class="card settings">
       <summary>Gewichtung des Gesamt-Scores</summary>
-      <div class="small" style="margin:8px 0 10px">Gesamt-Score = gewichteter Durchschnitt aller eingetragenen Teile. Standard: Prüfungssimulation am niedrigsten, dann falsche Fragen, dann Last 100 &lt; 200 &lt; 300 &lt; 500. Farben: ab 75 % grün, ab 65 % orange. Die Durchgeklickt-Quote zählt zu Beginn mit dem Startgewicht und wird mit jedem Bericht linear ausgeblendet (nach der eingestellten Zahl von Berichten ist sie weg). Startgewicht 0 schaltet sie ab. Bei „Falsche wiederholt“ werden die Prozente aufgewertet: Standardmäßig zählen 50 % richtig wie 75 %.</div>
+      <div class="small" style="margin:8px 0 10px">Gesamt-Score = gewichteter Durchschnitt aller eingetragenen Teile. Berichte, die älter als 14 Tage sind, verlieren langsam an Gewicht (bis 40 % nach acht Wochen). Kleine Berichte (Durchgeklickt, falsche Fragen, generell, Simulation) zählen nach Umfang weniger, bis sie ihre volle Größe erreichen (300, 60, 120 bzw. 100 Fragen); die Last-Berichte zählen immer voll. Standard: Prüfungssimulation am niedrigsten, dann falsche Fragen, dann Last 100 &lt; 200 &lt; 300 &lt; 500. Farben: ab 75 % grün, ab 65 % orange. Die Durchgeklickt-Quote zählt zu Beginn mit dem Startgewicht und wird mit jedem Bericht linear ausgeblendet (nach der eingestellten Zahl von Berichten ist sie weg). Startgewicht 0 schaltet sie ab. Bei „Falsche wiederholt“ werden die Prozente aufgewertet: Standardmäßig zählen 50 % richtig wie 75 %.</div>
       <div class="f2" id="wBox"></div>
       <div style="margin-top:10px"><button class="ghost" id="wReset">Standard-Gewichte</button></div>
     </details>
@@ -1291,20 +1296,36 @@ body.menuopen{overflow:hidden}
     var k = Math.log(x) / Math.log(0.5);
     return 100 * Math.pow(Math.max(0, Math.min(100, raw)) / 100, k);
   }
-  function partsOf(state, s, r){
+  /* Umfang-Faktor: kleine Berichte zählen weniger (Quote schwankt), ab dem Referenzumfang voll, nie mehr als das Gewicht.
+     Die „Last“-Berichte behalten ihr volles Gewicht, die Verhältnisse der Kategorien bleiben bei vollem Umfang unverändert. */
+  var SIZE_REF = {click:300, rep:60, gen:120, sim:100};
+  function sizeF(k, n){
+    var ref = SIZE_REF[k];
+    if(!ref) return 1;
+    return Math.max(0.15, Math.min(1, Math.sqrt(Math.max(0, n) / ref)));
+  }
+  /* Zeitfaktor: Berichte bis 14 Tage alt zählen voll, danach sinkt das Gewicht linear bis auf 40 % bei 56 Tagen */
+  function ageF(d, ref){
+    if(!d) return 1;
+    var a = Math.round((parse(ref) - parse(d)) / 86400000);
+    if(!isFinite(a) || a <= 14) return 1;
+    return Math.max(0.4, 1 - 0.6 * (a - 14) / 42);
+  }
+  function partsOf(state, s, r, ref){
+    ref = ref || iso(new Date());
     var out = [];
     var cl = s ? nn(s.clicked) : null, wr = s ? nn(s.wrong) : null;
     if(cl !== null && cl > 0 && wr !== null){
       /* Durchgeklickt-Quote zählt am Anfang voll und verliert mit jedem Bericht Gewicht (linear bis 'fade' Berichte) */
       var fade = Math.max(0, 1 - r / Math.max(1, S.weights.fade));
-      var cw = S.weights.click * fade, okc = Math.max(0, cl - wr);
+      var cw = S.weights.click * fade * sizeF('click', cl), okc = Math.max(0, cl - wr);
       if(cw > 0) out.push({k:'click', label:'Durchgeklickt', ok:okc, n:cl, d:null, w:cw, p:okc / cl * 100});
     }
     ORDER.forEach(function(o){
       var e = state[o[0]];
       if(e && e.n > 0){
         var raw = e.ok / e.n * 100;
-        out.push({k:o[0], label:o[1], ok:e.ok, n:e.n, d:e.d, w:S.weights[o[0]], raw:raw, p:(o[0] === 'rep') ? repBoost(raw) : raw});
+        out.push({k:o[0], label:o[1], ok:e.ok, n:e.n, d:e.d, w:S.weights[o[0]] * sizeF(o[0], e.n) * ageF(e.d, ref), raw:raw, p:(o[0] === 'rep') ? repBoost(raw) : raw});
       }
     });
     return out;
@@ -1319,7 +1340,7 @@ body.menuopen{overflow:hidden}
     var s = getSub(id), ev = events(s), st = {}, hist = [];
     ev.forEach(function(e, idx){
       st[e.k] = {ok:e.ok, n:e.n, d:e.d};
-      var sc = score(partsOf(st, s, idx + 1));
+      var sc = score(partsOf(st, s, idx + 1, e.d));
       if(sc !== null){
         if(hist.length && hist[hist.length - 1].d === e.d) hist[hist.length - 1].sc = sc;
         else hist.push({d:e.d, sc:sc});
@@ -1966,6 +1987,98 @@ body.menuopen{overflow:hidden}
     }
     el.innerHTML = h;
   }
+  /* ---------- Coach unter der Gleitpfadanzeige ---------- */
+  function coachCalc(){
+    var n = homeNums();
+    if(stIsStandby() || n.last.n >= S.target) return null;
+    var now = new Date(), h = now.getHours() + now.getMinutes() / 60, todayISO = iso(now);
+    var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    var before = es.filter(function(e){ return e.d < todayISO; }), tod = es.filter(function(e){ return e.d === todayISO; })[0];
+    var lb = before.length ? before[before.length - 1] : es[0], ref = lb;
+    for(var i = before.length - 1; i >= 0; i--){ ref = before[i]; if(days(parse(before[i].d), parse(lb.d)) >= 7) break; }
+    var pace7 = days(parse(ref.d), parse(lb.d)) > 0 ? (lb.n - ref.n) / days(parse(ref.d), parse(lb.d)) : 0;
+    var cap = Math.max(pace7, n.planPerDay, 50);
+    var cT = tod ? Math.max(0, tod.n - lb.n) : 0;
+    var gap = n.needToday;
+    var tomorrow = new Date(n.today.getTime()); tomorrow.setDate(tomorrow.getDate() + 1);
+    var ahead = gap > 0 ? 0 : Math.max(0, n.diff - n.planPerDay * days(n.lastD, tomorrow));
+    /* Ermüdung: Quote der heutigen Berichte, nach Fragenzahl gewichtet, frühe gegen späte Hälfte */
+    var reps = [];
+    SUBJECTS.forEach(function(sj){ events(getSub(sj.id)).forEach(function(e){ if(e.d === todayISO && e.n > 0) reps.push({t:e.t, ok:e.ok, n:e.n}); }); });
+    reps.sort(function(a, b){ return a.t - b.t; });
+    var totalN = reps.reduce(function(a, r){ return a + r.n; }, 0), tired = false, q1 = null, q2 = null;
+    if(reps.length >= 2 && totalN >= 100){
+      var half = Math.ceil(reps.length / 2), f = reps.slice(0, half), l = reps.slice(half);
+      var qq = function(a){ var ok = 0, nn2 = 0; a.forEach(function(r){ ok += r.ok; nn2 += r.n; }); return nn2 ? ok / nn2 * 100 : null; };
+      q1 = qq(f); q2 = qq(l);
+      var thr = Math.max(3.5, 10 - 0.8 * reps.length - totalN / 250);
+      tired = q1 !== null && q2 !== null && (q1 - q2) > thr;
+    }
+    /* Prüfungsprognose: aktueller Ø-Score und Trend der letzten drei Wochen, gedämpft */
+    var ed = null, dToExam = null;
+    try{ var ea = S.exam.split('-'); ed = new Date(+ea[0], +ea[1] - 1, +ea[2]); dToExam = days(n.today, ed); }catch(e){}
+    var cs = 0, ps = 0, cnt = 0, weak = null, weakSc = 101;
+    SUBJECTS.forEach(function(sj){
+      var a = analyze(sj.id);
+      if(a.sc === null) return;
+      var pts = a.hist.filter(function(x){ return days(parse(x.d), n.today) <= 21; });
+      var slope = 0;
+      if(pts.length >= 2){
+        var x0 = parse(pts[0].d), mx = 0, my = 0, i2;
+        pts.forEach(function(x){ mx += days(x0, parse(x.d)); my += x.sc; }); mx /= pts.length; my /= pts.length;
+        var sxy = 0, sxx = 0;
+        pts.forEach(function(x){ var dx = days(x0, parse(x.d)) - mx; sxy += dx * (x.sc - my); sxx += dx * dx; });
+        slope = sxx > 0 ? sxy / sxx : 0;
+      }
+      var pr = a.sc + (dToExam > 0 ? Math.max(-12, Math.min(12, slope * dToExam * 0.5)) : 0);
+      cs += a.sc; ps += Math.max(0, Math.min(100, pr)); cnt++;
+      if(a.sc < weakSc){ weakSc = a.sc; weak = sj.name; }
+    });
+    return {n:n, h:h, cap:cap, cT:cT, gap:gap, ahead:ahead, tired:tired, q1:q1, q2:q2, reps:reps.length,
+            cur:cnt ? cs / cnt : null, proj:cnt ? ps / cnt : null, cnt:cnt, weak:weak, ed:ed, dToExam:dToExam};
+  }
+  function coachText(c){
+    var f = function(x){ return fmt(Math.round(x)); }, r10 = function(x){ return Math.max(10, Math.ceil(x / 10) * 10); };
+    var night = c.h >= 22 || c.h < 5, out = [];
+    var tiredByVolume = c.cT >= 1.4 * c.cap && c.cT >= 100;
+    var spread = function(g){
+      var k = Math.max(1, Math.min(4, Math.ceil(g / (0.2 * c.cap)))), e = r10(g / k);
+      return k === 1 ? 'morgen +' + f(e) + ' Fragen' : (k === 2 ? 'morgen und übermorgen je +' + f(e) + ' Fragen' : 'in den nächsten ' + k + ' Tagen je +' + f(e) + ' Fragen');
+    };
+    var qtxt = c.tired ? 'Deine Quote ist heute von ' + Math.round(c.q1) + ' % auf ' + Math.round(c.q2) + ' % gefallen.' : '';
+    if(c.gap <= 0){
+      if(c.tired) out.push('Du bist heute im Soll. ' + qtxt + ' Qualität schlägt jetzt Menge: Mach lieber Schluss, statt noch mehr nachzulegen.');
+      else if(c.ahead >= 0.5 * c.cap) out.push('Du bist heute schon im Soll und hast etwa ' + f(c.ahead) + ' Fragen Vorsprung. Locker bleiben, der Rest ist Bonus.');
+      else out.push('Du bist heute im Soll. Weiter wie bisher.');
+    }else if(c.tired || tiredByVolume){
+      out.push('Für heute reicht es. ' + (c.tired ? qtxt : 'Du hast heute schon ' + f(c.cT) + ' Fragen geklickt.') + ' Dir fehlen noch ' + f(c.gap) + ' zum Soll: Hänge ' + spread(c.gap) + ' an dein Pensum (etwa ' + f(c.cap) + ' am Tag), dann bist du wieder im Soll.');
+    }else if(!night && c.gap <= Math.max(120, 0.45 * c.cap) && c.h < 21){
+      out.push('Noch ' + f(c.gap) + ' Fragen, dann bist du heute im Soll. ' + (c.gap <= 0.3 * c.cap ? 'Klick weiter, das ist locker machbar.' : 'Das schaffst du noch, wenn du jetzt dranbleibst.'));
+    }else if(night){
+      out.push('Heute fehlen noch ' + f(c.gap) + ' Fragen' + (c.gap <= 0.35 * c.cap ? ', das wäre noch drin.' : ', rechnerisch wird das knapp.') + ' Wenn du fit bist, macht es Sinn weiterzuklicken. Wenn du müde bist, geh schlafen und hol es nach: ' + spread(c.gap) + '.');
+    }else{
+      out.push('Heute fehlen noch ' + f(c.gap) + ' Fragen. Das ist viel für den Rest des Tages. Klick, was gut geht, und verteile den Rest: ' + spread(c.gap) + '.');
+    }
+    if(c.proj !== null && c.dToExam !== null && c.dToExam > 0){
+      var ds = fd(c.ed) + c.ed.getFullYear(), pr = c.proj.toFixed(0), cu = c.cur.toFixed(0), part = c.cnt < SUBJECTS.length ? ' (aus ' + c.cnt + ' von ' + SUBJECTS.length + ' Fächern)' : '';
+      var lab = c.proj >= 80 ? 'Das sieht gut aus.' : (c.proj >= 75 ? 'Das ist knapp über der Grenze, bleib dran.' : 'Stand jetzt reicht das nicht ganz.');
+      var tail = '';
+      if(c.proj < 75 && c.weak) tail = ' Mehr Wiederholung als Neues, vor allem in ' + c.weak + '.';
+      out.push('<span class="cp">Prüfungsprognose: etwa ' + pr + ' % am ' + ds + ' (jetzt ' + cu + ' %)' + part + '. ' + lab + tail + '</span>');
+    }
+    return out;
+  }
+  function coachRender(){
+    var el = $('coach');
+    if(!el || !S || !S.entries || !S.entries.length) return;
+    var c = null;
+    try{ c = coachCalc(); }catch(e){ c = null; }
+    if(!c){ el.hidden = true; el.innerHTML = ''; return; }
+    var t = coachText(c);
+    var h = '<div class="ch">Coach</div>' + t.map(function(x, i){ return i === 0 ? '<p>' + x + '</p>' : '<p>' + x + '</p>'; }).join('');
+    if(el.innerHTML !== h) el.innerHTML = h;
+    el.hidden = false;
+  }
   function renderHomeStats(){
     var n = homeNums();
     var scs = [], sum = 0;
@@ -1984,6 +2097,7 @@ body.menuopen{overflow:hidden}
       return '<div class="stat"><div class="v">' + x[1] + '</div><div class="k">' + x[0] + '</div></div>';
     }).join('');
     runCountUps($('homeStats'));
+    coachRender();
   }
 
   function aiStamp(ts){
@@ -3535,7 +3649,7 @@ body.menuopen{overflow:hidden}
   renderHome();
   cuReplay.home = false;
   tickClock();
-  setInterval(function(){ renderCountdown(); tickClock(); rollDay(); }, 20000);
+  setInterval(function(){ renderCountdown(); tickClock(); rollDay(); coachRender(); }, 20000);
   function rollDay(){
     if(!fillGaps()) return;
     save(); render(); renderHome();
@@ -5191,6 +5305,15 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-20', items:[
+      {t:'Coach unter dem Gleitpfad', x:'Ab dem zweiten Eintrag sagt dir ein kurzer Text, wie viele Fragen heute noch fehlen und ob sich Weiterklicken lohnt. Er achtet auf Uhrzeit, heute geklickte Fragen und ob deine Ergebnisse im Lauf des Tages schlechter werden, und nennt eine Prognose für deinen Score am Prüfungstermin.', tab:'home', sel:'#coach'}
+    ]},
+    {v:'2026.10.10-19', items:[
+      {t:'Zeitfaktor im Score', x:'Berichte, die älter als zwei Wochen sind, zählen im Score langsam weniger (bis 40 % nach acht Wochen). Aktuelle Ergebnisse bestimmen den Score stärker.'}
+    ]},
+    {v:'2026.10.10-18', items:[
+      {t:'Score nach Umfang', x:'Kleine Berichte und kleine Durchgeklickt-Zahlen beeinflussen den Score weniger, große voll. Die Last-Berichte behalten ihr hohes Gewicht, die Verhältnisse der Kategorien bleiben gleich.'}
+    ]},
     {v:'2026.10.10-17', items:[
       {t:'Zustandsanzeigen mit Standby und Idle', x:'Mit nur einem Eintrag ist noch keine Prognose möglich: Die Anzeige zeigt einen Standby (z. B. PAPI aus, „Signal not found“, Holding, „No departures today“). Ab dem zweiten Eintrag geht sie an und bewegt sich im Ruhezustand leicht.'},
       {t:'Anzeigen in deiner Farbe', x:'Claude-Analyse, Anfunken, Anflugprofil, Gleitpfadanzeige und Radar nutzen jetzt deine gewählte Farbe. Der Gleitpfad im Anflugprofil sinkt nun von links nach rechts, die Gleitpfad-Raute bleibt immer eine Raute.'}

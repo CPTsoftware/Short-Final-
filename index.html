@@ -8161,7 +8161,7 @@ body.menuopen{overflow:hidden}
       /* Freigabe-ID gehört dort einem anderen Gerätetoken: Eigentum über das Beschreiben des Gists neu belegen */
       if(!noRetry && em === 'nicht erlaubt' && path !== '/claim' && body && body.tok && g0 && syncCfg && syncCfg.token && !pushClaimTried[g0]){
         pushClaimTried[g0] = 1;
-        try{ await pushClaim(g0, body.tok); }catch(e){ throw new Error(em); }
+        try{ await pushClaim(g0, body.tok); }catch(e){ var er = new Error(em); er.detail = (e && e.message) || ''; throw er; }
         return pushApi(path, body, true);
       }
       throw new Error(em);
@@ -8169,9 +8169,14 @@ body.menuopen{overflow:hidden}
     return j;
   }
   async function pushClaim(g, tok){
-    var a = await pushApi('/claim', {gist: g}, true);
-    await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': {content: a.nonce}}}});
-    await pushApi('/claim', {gist: g, tok: tok, nonce: a.nonce}, true);
+    var a, st = 'Schritt 1';
+    try{
+      a = await pushApi('/claim', {gist: g}, true);
+      st = 'Schritt 2 (GitHub)';
+      await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': {content: a.nonce}}}});
+      st = 'Schritt 3';
+      await pushApi('/claim', {gist: g, tok: tok, nonce: a.nonce}, true);
+    }catch(e){ throw new Error(st + ': ' + ((e && e.message) || 'Fehler')); }
     try{ await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': null}}}); }catch(e){}
   }
   /* SHA-256 (synchron), damit alle Geräte eines Kontos denselben Token ableiten */
@@ -8360,7 +8365,7 @@ body.menuopen{overflow:hidden}
       return r;
     }catch(e){
       var em = (e && e.message) || '';
-      pushErr = em === 'unbekannt' || /^Fehler 404/.test(em) ? 'Der Server (Worker) kennt diese Funktion noch nicht. Spiele die neue worker.js in Cloudflare ein.' : em === 'blockiert' ? 'Du hast diese Person blockiert.' : em === 'nicht erlaubt' ? 'Der Server lehnt deine Freigabe-ID ab (sie gehört dort einem anderen Token).' : /Failed to fetch|NetworkError|Load failed/i.test(em) ? 'Der Server ist nicht erreichbar. Bist du online?' : em;
+      pushErr = (e && e.detail) ? 'Der Server lehnt deine Freigabe-ID ab, und die automatische Neu-Zuordnung ist gescheitert (' + e.detail + ').' + (/^Schritt 1: (unbekannt|Fehler 404)/.test(e.detail) ? ' Der Worker ist noch nicht aktualisiert: Spiele die neue worker.js in Cloudflare ein.' : /Schritt 2/.test(e.detail) ? ' Prüfe, ob dein GitHub-Token die Berechtigung „gist“ hat.' : /Schritt 3: nicht erlaubt/.test(e.detail) ? ' Der Server konnte die Datei bei GitHub nicht lesen. Versuche es in einer Minute noch einmal.' : '') : em === 'unbekannt' || /^Fehler 404/.test(em) ? 'Der Server (Worker) kennt diese Funktion noch nicht. Spiele die neue worker.js in Cloudflare ein.' : em === 'blockiert' ? 'Du hast diese Person blockiert.' : em === 'nicht erlaubt' ? 'Der Server lehnt deine Freigabe-ID ab (sie gehört dort einem anderen Token).' : /Failed to fetch|NetworkError|Load failed/i.test(em) ? 'Der Server ist nicht erreichbar. Bist du online?' : em;
       return null;
     }
   }

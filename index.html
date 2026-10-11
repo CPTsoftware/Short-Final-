@@ -257,16 +257,16 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .obsum{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card2);font-size:14px;line-height:1.7}
 
 /* Fallblatt-Countdown */
-.flaps{display:flex;justify-content:center;gap:16px;margin:12px 0 10px}.flaps.s6{gap:9px}.flaps.s6 .fl{width:27px;height:46px;font-size:31px}
+.flaps{display:flex;justify-content:center;gap:16px;margin:12px 0 10px}.flaps.s6{gap:9px}.flaps.s6 .fl{width:27px;--fh:46px;font-size:31px}
 .fg{text-align:center}
 .fr{display:flex;gap:4px;justify-content:center;margin-bottom:5px}
-.fl{position:relative;width:34px;height:56px;perspective:260px;font-family:var(--mono);font-weight:700;font-size:38px;color:#f3f6ff}
-.fl i{position:absolute;left:0;right:0;height:28px;overflow:hidden;background:#0b1329;display:block}
+.fl{position:relative;width:34px;height:var(--fh,56px);perspective:420px;font-family:var(--mono);font-weight:700;font-size:38px;color:#f3f6ff}
+.fl i{position:absolute;left:0;right:0;height:calc(var(--fh,56px) / 2);overflow:hidden;background:#0b1329;display:block}
 .fl .st,.fl .ft{top:0;border-radius:7px 7px 0 0;border-bottom:1px solid #02050f;transform-origin:50% 100%}
 .fl .sb,.fl .fbm{bottom:0;border-radius:0 0 7px 7px;transform-origin:50% 0}
-.fl i span{position:absolute;left:0;right:0;height:56px;line-height:56px;text-align:center}
+.fl i span{position:absolute;left:0;right:0;height:var(--fh,56px);line-height:var(--fh,56px);text-align:center}
 .fl .st span,.fl .ft span{top:0}
-.fl .sb span,.fl .fbm span{top:-28px}
+.fl .sb span,.fl .fbm span{top:calc(var(--fh,56px) / -2)}
 .fl .ft,.fl .fbm{z-index:2;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .fl .fbm{transform:rotateX(90deg)}
 .fl.go .ft{animation:flapTop .24s ease-in var(--fd,0ms) forwards}
@@ -750,7 +750,7 @@ body.menuopen{overflow:hidden}
 <div id="onb" class="onb" hidden></div>
 <main>
   <header class="top">
-    <svg class="logo" id="appLogo" viewBox="-16 0 80 64" role="img" aria-label="Short Final! Logo, die Lichter zeigen deinen Gleitpfad"><path class="ln" d="M26 4C25 22 18 42 5 60M38 4C39 22 46 42 59 60"/><path class="ln" d="M32 6V16M32 24V34M32 41V46" style="stroke-width:3.4"/><path class="ln" d="M15 51V58M19.2 51V58M23.4 51V58M40.6 51V58M44.8 51V58M49 51V58" style="stroke-width:2"/><text class="lt" x="32" y="58.2" text-anchor="middle">75</text><rect class="lp" x="-13.5" y="19" width="31" height="13" rx="6.5"/><circle class="pl" cx="-7.5" cy="25.5" r="3.1"/><circle class="pl" cx="-0.7" cy="25.5" r="3.1"/><circle class="pl" cx="6.1" cy="25.5" r="3.1"/><circle class="pl" cx="12.9" cy="25.5" r="3.1"/></svg>
+    <svg class="logo" id="appLogo" viewBox="-16 0 80 64" role="img" aria-label="Short Final! Logo, die Lichter zeigen deinen Gleitpfad"><path class="ln" d="M26 4C25 22 18 42 5 60M38 4C39 22 46 42 59 60"/><path class="ln" d="M32 6V16M32 24V34M32 41V46" style="stroke-width:3.4"/><path class="ln" d="M15.7 51L12.7 58M19.5 51L16.5 58M23.3 51L20.3 58M40.7 51L43.7 58M44.5 51L47.5 58M48.3 51L51.3 58" style="stroke-width:2"/><path class="ln" style="stroke-width:1.4" d="M26.2 51H30.2L27.9 58M37.8 51H34.4V54C39 52.8 39.6 58.8 33.8 57.6"/><rect class="lp" x="-15.5" y="19" width="33" height="13" rx="6.5"/><circle class="pl" cx="-9.2" cy="25.5" r="2.9"/><circle class="pl" cx="-2.4" cy="25.5" r="2.9"/><circle class="pl" cx="4.4" cy="25.5" r="2.9"/><circle class="pl" cx="11.2" cy="25.5" r="2.9"/></svg>
     <h1>Short Final!</h1>
     <button class="iconbtn bd" id="bdIcon" aria-label="Abzeichen" title="Abzeichen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.6 13.6 7 21l5-2.6 5 2.6-1.6-7.4"/></svg></button>
     <button class="iconbtn fi" id="frIcon" aria-label="Freunde" title="Freunde"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.5 2 4.5 4.9"/></svg></button>
@@ -6273,7 +6273,8 @@ body.menuopen{overflow:hidden}
       {t:'Test angefangen am', x:'Beim Tracken und beim Testbericht gibst du an, wann der Test begonnen wurde. Die Fragen werden gleichmäßig auf die Tage verteilt (Verlauf, Tempo, Tagesziel, Abzeichen).', tab:'main', sel:'#routeCard'},
       {t:'Kompakteres Menü', x:'Das Burgermenü ist in Gruppen sortiert, kompakter, und jeder Punkt hat ein Symbol in deiner Farbe.', menu:true, sel:'#menuBtn'},
       {t:'Handy-Kopfzeile', x:'Auf dem Handy bleiben oben nur Abzeichen, Hell/Dunkel und Menü. Freunde und Account sitzen darunter, der Titel bleibt lesbar.', tab:'home', sel:'#menuBtn'},
-      {t:'Logo überarbeitet', x:'Die PAPI-Lichter haben Abstand zur Landebahn, und unten steht die Schwellenmarkierung mit der 75.', tab:'home', sel:'#appLogo'}
+      {t:'Logo überarbeitet', x:'Die PAPI-Lichter sitzen mittig im Gehäuse und haben Abstand zur Landebahn. Unten steht die Schwellenmarkierung mit der 75, die Streifen sind wie der Bahnrand geneigt.', tab:'home', sel:'#appLogo'},
+      {t:'Fallblatt-Countdown repariert', x:'Mit eingeblendeten Sekunden waren die Ziffern abgeschnitten und das Umklappen sah kaputt aus. Jetzt klappen alle Ziffern sauber, auch bei den kleineren Sekunden-Kacheln.', menu:true, sel:'#lookCard summary', open:'#lookCard'}
     ]},
     {v:'2026.10.11-28', items:[
       {t:'Wochen- und Monats-Rewind', x:'Jeden Montag und zum Monatsanfang gibt es einen Rückblick: Fragen im Vergleich zum Zeitraum davor, dein Klickverhalten, lustige Fakten und ein Ausblick. Du kannst ihn überspringen und im Menü unter „Rewind“ jederzeit nochmal ansehen.', menu:true, sel:'#rwCard summary', open:'#rwCard'},

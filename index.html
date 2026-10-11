@@ -8632,7 +8632,7 @@ body.menuopen{overflow:hidden}
         if(c.brief.on && aikOn() && !nIns) parts.push('Briefing um ' + c.brief.t + ' Uhr'); if(c.debrief.on && aikOn() && !nIns) parts.push('Debriefing um ' + c.debrief.t + ' Uhr');
         if(friendsOn) parts.push('Freund-Meldungen');
         msg.textContent = 'Aktiv: ' + parts.join(', ') + '.';
-      }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler'); }
+      }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler') + (e && e.detail ? ' (Neu-Zuordnung gescheitert: ' + e.detail + (/Schritt 2/.test(e.detail) ? '. Dein GitHub-Token auf diesem Gerät darf die Freigabe-Datei nicht ändern, vermutlich ist es ein anderes GitHub-Konto als am PC' : '') + ')' : (e && e.message === 'nicht erlaubt' ? (syncCfg && syncCfg.token ? ' (Neu-Zuordnung wurde in dieser Sitzung schon versucht, App schließen und neu öffnen)' : ' (auf diesem Gerät ist keine Cloud-Synchronisierung verbunden, dafür brauchst du den GitHub-Token wie am PC)') : '')); }
     });
     $('pushOff').addEventListener('click', async function(){
       msg.textContent = 'Einen Moment …';

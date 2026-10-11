@@ -56,8 +56,11 @@ main{max-width:560px;margin:0 auto;padding:70px 14px 32px}
 /* Kopfzeile */
 .top{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
 .top h1{flex:1;font-size:24px;font-weight:700;margin:0;letter-spacing:-.4px}
-.clock{font-family:var(--mono);font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
-.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px;border-radius:50%;line-height:0}
+.clock{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;flex:none}
+.subrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px}.subrow .sub{margin-bottom:0;min-width:0}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px;border-radius:50%;line-height:0;position:relative}
+.iconbtn .dotb{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;box-sizing:border-box}
+.iconbtn.fi svg,.iconbtn.ai svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .iconbtn svg{width:18px;height:18px}
 .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
 
@@ -362,6 +365,7 @@ body.nbopen{overflow:hidden}
 .nbsyncbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
 .greet{font-size:17px;font-weight:600;line-height:1.35;margin:0 2px 12px;color:var(--text)}
 .greet .gname{color:var(--accent)}
+.greet .gleft{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
 .statrow a{color:var(--accent);font-weight:650;margin-left:4px}
 .acct{margin:8px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .acct input{margin-top:4px}
@@ -587,7 +591,7 @@ body.menuopen{overflow:hidden}
   .grid{grid-template-columns:repeat(4,1fr)}
   #tabHome,#tabMain{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #tabHome>*,#tabMain>*{margin:0 !important}
-  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#frBtn,#tabHome>#bdBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
+  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#bdBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
   #subjBox{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #subjBox>.card{margin:0}
   .sheetov{align-items:center}
@@ -682,11 +686,12 @@ body.menuopen{overflow:hidden}
 <main>
   <header class="top">
     <h1>Short Final!</h1>
-    <span class="clock" id="clock"></span>
+    <button class="iconbtn fi" id="frIcon" aria-label="Freunde" title="Freunde"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.5 2 4.5 4.9"/></svg></button>
+    <button class="iconbtn ai" id="acIcon" aria-label="Account" title="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg></button>
     <button class="iconbtn" id="themeBtn" aria-label="Tag- oder Nachtmodus wechseln"></button>
     <button class="iconbtn burger" id="menuBtn" aria-label="Menü und Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
   </header>
-  <div class="sub" id="sub"></div>
+  <div class="subrow"><div class="sub" id="sub"></div><span class="clock" id="clock"></span></div>
   <div class="small statrow" style="margin:-8px 0 12px"><span id="status"></span> <a href="#" id="syncLink" hidden>Cloud-Synchronisierung einrichten</a></div>
 
   <div class="tabs"><button class="tab on" id="tabBtnHome">Heute</button><button class="tab" id="tabBtnMain">Fragen-Ziel</button><button class="tab" id="tabBtnSubj">Fächer</button></div>
@@ -696,7 +701,6 @@ body.menuopen{overflow:hidden}
     <div class="card cdc" id="cdCard"></div>
     <button class="addq" id="addQBtn">Fragen Tracken</button>
     <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
-    <button class="addq" id="frBtn"><b>Freunde</b><span>Fortschritt vergleichen</span></button>
     <button class="addq" id="bdBtn"><b>Abzeichen</b><span id="bdSub">&nbsp;</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="coach" id="coach" hidden></div>
@@ -803,6 +807,7 @@ body.menuopen{overflow:hidden}
     </details>
     <details class="card settings" id="syncCard">
       <summary>Cloud-Synchronisierung und Account</summary>
+      <div id="acWrap">
       <div class="acct"><label>Benutzername<input id="acName" type="text" maxlength="24" placeholder="Dein Name" autocomplete="nickname" autocapitalize="words" spellcheck="false"></label><div class="small" style="margin-top:4px">Damit begrüßt dich die App auf dem Startbildschirm. Mit Cloud-Synchronisierung gilt er auf allen Geräten.</div></div>
       <h3 class="achd">Cloud-Synchronisierung</h3>
       <div id="syncOff1">
@@ -817,6 +822,8 @@ body.menuopen{overflow:hidden}
       </div>
       <div class="small" id="syncMsg" style="margin-top:8px"></div>
       <div id="syncChoice"></div>
+      <div id="acShare"></div>
+      </div>
     </details>
   </div>
 
@@ -2162,6 +2169,7 @@ body.menuopen{overflow:hidden}
     runCountUps($('homeStats'));
     coachRender();
     bdSoon();
+    if(typeof GREET_TIME !== 'undefined' && typeof renderGreeting === 'function') renderGreeting();
   }
 
   function aiStamp(ts){
@@ -4235,7 +4243,7 @@ body.menuopen{overflow:hidden}
     var m = nbMeta(), idx = -1;
     m.packs.forEach(function(p, i){ if(p.id === pack.id) idx = i; });
     var rec = {id:pack.id, title:pack.title, author:pack.author, n:pack.items.length, added:iso(new Date())};
-    if(idx >= 0){ rec.share = m.packs[idx].share; rec.src = m.packs[idx].src; rec.log = m.packs[idx].log; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
+    if(idx >= 0){ rec.share = m.packs[idx].share; rec.src = m.packs[idx].src; rec.log = m.packs[idx].log; rec.fr = m.packs[idx].fr; rec.fh = m.packs[idx].fh; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
     else m.packs.push(rec);
   }
   function nbChanged(){ if(nbHooks.changed) nbHooks.changed(); }
@@ -4320,6 +4328,7 @@ body.menuopen{overflow:hidden}
     nbDraw();
     $('nb').scrollTop = 0;
     if(nbHooks.syncPacks) nbHooks.syncPacks(false);
+    if(nbHooks.open) nbHooks.open();
   }
   function nbClosePage(){
     nbv.quiz = null;
@@ -4577,6 +4586,7 @@ body.menuopen{overflow:hidden}
       '<button type="button" class="ghost" id="nbShT" style="padding:9px 14px">Als Text kopieren</button></div>' +
       '<div class="small" id="nbShMsg" style="margin-top:8px">' + (link ? 'Der Link funktioniert für alle, die die App unter derselben Adresse öffnen.' : 'Die Datei kann der andere in seiner App unter Notizen und Pakete importieren.') + '</div>');
     var msg = sh.ov.querySelector('#nbShMsg');
+    if(nbHooks.shareExtra) nbHooks.shareExtra(sh.ov, p);
     sh.ov.querySelector('#nbShF').addEventListener('click', function(){ nbShareFile(p); });
     sh.ov.querySelector('#nbShT').addEventListener('click', function(){ nbCopy(JSON.stringify(p)).then(function(ok){ msg.textContent = ok ? 'Text kopiert. Der andere kann ihn über „Text einfügen“ importieren.' : 'Kopieren nicht möglich. Nutze die Datei.'; }); });
     if(link){
@@ -5566,6 +5576,13 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-26', items:[
+      {t:'Kopfzeile aufgeräumt', x:'Die Uhr steht jetzt klein in der Zeile unter dem Titel. Oben rechts ist Platz für die runden Symbole.', tab:'home', sel:'#clock'},
+      {t:'Freunde und Account als Symbole', x:'Oben rechts öffnet das Freunde-Symbol Vergleich, Freunde hinzufügen und Hinweise. Das Account-Symbol enthält Name, Token, deinen Freundecode, die Freigabe und die Popup-Einstellungen.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Heute geklickt und Popups', x:'Im Freunde-Vergleich siehst du, wie viele Fragen ein Freund heute geklickt hat. Ein Popup meldet, wenn ein Freund Fragen einträgt oder ein Abzeichen erhält (etwa jede Minute geprüft, nur bei offener App). Im Account lassen sich die Popups ausschalten.', web:true, tab:'home', sel:'#acIcon'},
+      {t:'Heute noch bei der Begrüßung', x:'Neben Name und Begrüßung steht, wie viele Fragen du heute noch klicken solltest.', web:true, tab:'home', sel:'#greet'},
+      {t:'Pakete mit Freunden teilen', x:'Im Fenster „Paket teilen“ wählst du einen Freund und tippst auf „Teilen“ oder „Zusammenarbeiten“. Beim Öffnen des Lernzentrums wird auf beiden Seiten geprüft, was neu oder geändert ist (auch Dokumente), und du entscheidest, was du übernimmst. Dein Freund muss dich ebenfalls als Freund hinzugefügt haben.', web:true, tab:'home', sel:'#nbBtn'}
+    ]},
     {v:'2026.10.11-25', items:[
       {t:'Plan-Linie, Raute und Gleitpfad', x:'Die gestrichelte Linie im Verlauf führt jetzt von deinem Stand direkt zum Ziel (dein Tagesziel als Steigung), die ursprüngliche Soll-Linie bleibt blass im Hintergrund. Die Raute auf der Flugroute und die Gleitpfadanzeige richten sich nach deinem Tagesziel für heute. Darunter steht, wie viele Fragen noch bis zum nächsten Licht fehlen.', tab:'main', sel:'#chart'},
       {t:'Abzeichen', x:'Auf dem Startbildschirm findest du jetzt „Abzeichen“: Meilensteine bei Fragen, Serien, Gleitpfad, Fächern, Berichten und Lernzentrum. Neue Abzeichen werden mit einem Hinweis freigeschaltet, gesperrte zeigen deinen Fortschritt.', tab:'home', sel:'#bdBtn'},
@@ -5780,12 +5797,12 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Cloud-Synchronisierung über ein privates GitHub-Gist ---------- */
   var SYNC_FILE = 'short-final-data.json', SYNC_LS = KEY + '-sync';
-  var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
+  var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false, syncReady = true;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
   function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.share ? [S.share.gist, S.share.f] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
-    if(!syncCfg || syncApplying || !S) return;
+    if(!syncCfg || syncApplying || !S || !syncReady) return;
     var h = dataHash();
     if(h === syncHash) return;
     syncHash = h; S.updatedAt = Date.now();
@@ -5877,7 +5894,7 @@ body.menuopen{overflow:hidden}
     }).catch(function(e){
       syncStatus(true);
       syncMsg(e && e.message === 'auth' ? 'Token ungültig oder ohne Berechtigung „gist“. Bitte neu verbinden.' : 'Abgleich nicht möglich, vermutlich offline. Es wird später erneut versucht.');
-    }).then(function(){ syncBusy = false; if(nbHooks.syncPacks) nbHooks.syncPacks(false); });
+    }).then(function(){ syncBusy = false; if(!syncReady){ syncReady = true; syncHash = dataHash(); } if(nbHooks.syncPacks) nbHooks.syncPacks(false); });
   }
   function hasLocalData(){
     if(S.fresh === true) return false;
@@ -5965,7 +5982,7 @@ body.menuopen{overflow:hidden}
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) syncNow(false); });
   window.addEventListener('online', function(){ syncNow(false); });
   syncCfg = syncLoad();
-  if(syncCfg && syncCfg.gistId){ syncHash = dataHash(); setTimeout(function(){ syncNow(false); }, 900); }
+  if(syncCfg && syncCfg.gistId){ syncReady = false; syncHash = dataHash(); setTimeout(function(){ syncNow(false); }, 900); }
   syncUI();
 
   /* ---------- Notizen: Link teilen, Claude öffnen, Link importieren (nur GitHub-Version) ---------- */
@@ -6154,19 +6171,20 @@ body.menuopen{overflow:hidden}
     if(!nm || (S && S.fresh === true)){ el.hidden = true; el.textContent = ''; return; }
     var key = greetBucket(new Date()) + '|' + new Date().getDay();
     if(!greetText || key !== greetKey){ greetKey = key; greetText = greetPick(); }
+    var left = '';
+    try{ var hn = homeNums(); if(!stIsStandby() && hn.last.n < S.target) left = hn.needToday > 0 ? 'heute noch ' + fmt(hn.needToday) : 'Tagesziel geschafft ✓'; }catch(e){}
+    var sig = greetText + '|' + nm + '|' + left;
+    if(el.getAttribute('data-sig') === sig && !el.hidden) return;
+    el.setAttribute('data-sig', sig);
     el.textContent = '';
     var a = document.createElement('span'); a.className = 'gtx'; a.textContent = greetText + ', ';
     var b = document.createElement('b'); b.className = 'gname'; b.textContent = nm + '!';
     el.appendChild(a); el.appendChild(b);
+    if(left){ var c = document.createElement('span'); c.className = 'gleft'; c.textContent = left; el.appendChild(c); }
     el.hidden = false;
   }
   function openSyncSettings(){
-    openMenu();
-    var c = $('syncCard');
-    if(c){
-      c.open = true;
-      setTimeout(function(){ try{ c.scrollIntoView({block:'start', behavior:'smooth'}); }catch(e){} var t = $('syncTok'); if(t && !t.closest('[hidden]')) try{ t.focus({preventScroll:true}); }catch(e){} }, 350);
-    }
+    if(typeof openAccount === 'function') openAccount();
   }
   function updateSyncLink(){
     var l = $('syncLink');
@@ -6186,7 +6204,7 @@ body.menuopen{overflow:hidden}
   var FR_FILE = 'short-final-share.json', frBusy = false, frLast = 0, frTimer = null, frView = null, frPrefill = '', frNote = '';
   (function(){
     var st = document.createElement('style');
-    st.textContent = '#frBtn{background:transparent;color:var(--text);border:1.5px solid var(--accent);display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 18px}#frBtn b{font-size:16px;letter-spacing:.02em}#frBtn span{font-size:12px;font-weight:600;opacity:.75}' +
+    st.textContent = '.frpops{position:fixed;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));z-index:260;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}.frpop{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:420px;width:100%;background:#141c33;color:#fff;border:1px solid var(--accent);border-radius:16px;padding:10px 14px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:13.5px;line-height:1.35;animation:cfade .25s ease-out both;cursor:pointer}.frpop b{font-weight:700}.frpop small{display:block;opacity:.7;font-size:11.5px}' +
       '.frt{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.frt th,.frt td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;font-weight:600}.frt th{color:var(--muted);font-weight:650;font-size:12px}.frt td:first-child,.frt th:first-child{text-align:left;color:var(--muted);font-weight:500}' +
       '.frc{margin-top:10px}.frh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.frcode{font-family:var(--mono);word-break:break-all;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin:8px 0}' +
       '.frs{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line)}.frs h3{margin:0 0 6px;font-size:14px}.pdr{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}.pdr .d{color:var(--muted);font-size:12px;margin-top:3px;word-break:break-word}';
@@ -6205,7 +6223,7 @@ body.menuopen{overflow:hidden}
   function frMine(all){
     var c = frCfg(), f = all ? {stand:1, tempo:1, score:1, faecher:1, verlauf:0, badges:1} : c.f, n = homeNums();
     var o = {format:'short-final-share', v:1, name:frTxt(S.uname, 24) || 'Pilot', t:Date.now()};
-    if(f.stand){ o.stand = n.last.n; o.stand_d = n.last.d; o.ziel = S.target; o.ziel_datum = S.deadline; o.diff = Math.round(n.diff); }
+    if(f.stand){ o.stand = n.last.n; o.stand_d = n.last.d; o.ziel = S.target; o.ziel_datum = S.deadline; o.diff = Math.round(n.diff); o.heute = n.clicked; o.heute_d = iso(new Date()); }
     if(f.tempo){ o.tempo = Math.round(n.paceR); o.tempo_gesamt = Math.round(n.pace); }
     var scs = [], fa = [];
     SUBJECTS.forEach(function(sj){
@@ -6243,8 +6261,9 @@ body.menuopen{overflow:hidden}
   function frClean(o){
     if(!o || typeof o !== 'object' || o.format !== 'share' && o.format !== 'short-final-share') return null;
     var r = {name:frTxt(o.name, 24) || 'Pilot', t:frN(o.t)};
-    ['stand', 'ziel', 'diff', 'tempo', 'tempo_gesamt', 'score', 'score_n'].forEach(function(k){ var v = frN(o[k]); if(v !== null) r[k] = v; });
+    ['stand', 'ziel', 'diff', 'tempo', 'tempo_gesamt', 'score', 'score_n', 'heute'].forEach(function(k){ var v = frN(o[k]); if(v !== null) r[k] = v; });
     if(frDate(o.stand_d)) r.stand_d = o.stand_d;
+    if(frDate(o.heute_d)) r.heute_d = o.heute_d;
     if(frDate(o.ziel_datum)) r.ziel_datum = o.ziel_datum;
     if(Array.isArray(o.faecher)) r.faecher = o.faecher.slice(0, 20).map(function(x){ x = x || {}; return {id:frTxt(x.id, 20), name:frTxt(x.name, 40), sc:frN(x.sc), clicked:frN(x.clicked)}; });
     if(Array.isArray(o.badges)){
@@ -6282,12 +6301,17 @@ body.menuopen{overflow:hidden}
   function frPull(force){
     frCfg();
     if(frBusy || !S.friends.length) return Promise.resolve();
-    if(!force && Date.now() - frLast < 300000) return Promise.resolve();
+    if(!force && Date.now() - frLast < frEvery()) return Promise.resolve();
     frBusy = true; frLast = Date.now();
     var chain = Promise.resolve();
     S.friends.forEach(function(fr){
       chain = chain.then(function(){
         return frFetchShare(fr.gist).then(function(d){
+          var prev = fr.data, nmF = fr.alias || d.name || 'Freund';
+          if(prev && prev.stand !== undefined && d.stand !== undefined && d.stand > prev.stand && Date.now() - (fr.last || 0) < 900000){
+            var dl = d.stand - prev.stand;
+            frPop('fragen', '<b>' + esc(nmF) + '</b> hat ' + fmt(dl) + (dl === 1 ? ' Frage' : ' Fragen') + ' eingetragen' + (d.heute_d === iso(new Date()) && d.heute ? '<small>heute insgesamt ' + fmt(d.heute) + '</small>' : ''));
+          }
           if(d.badges){
             var ids = d.badges.map(function(x){ return x.id; });
             if(Array.isArray(fr.bseen)){
@@ -6314,13 +6338,30 @@ body.menuopen{overflow:hidden}
     frNewsDot();
     if(!frFresh.length) return;
     var f = frFresh.splice(0, frFresh.length);
-    toast(f.length === 1 ? f[0].n + ' hat das Abzeichen „' + f[0].b.name + '“ erhalten' : f.length + ' neue Abzeichen bei Freunden');
+    f.forEach(function(x){ frPop('badges', '<b>' + esc(x.n) + '</b> hat das Abzeichen „' + esc(x.b.name) + '“ erhalten'); });
+  }
+  /* Popups: nur bei offener App, abschaltbar im Account */
+  var FR_AL = KEY + '-fralerts';
+  function frAlerts(){ var o = {badges:true, fragen:true}; try{ var x = JSON.parse(localStorage.getItem(FR_AL) || 'null'); if(x && typeof x === 'object'){ if(x.badges === false) o.badges = false; if(x.fragen === false) o.fragen = false; } }catch(e){} return o; }
+  function frEvery(){ return (syncCfg && syncCfg.token) ? 55000 : 300000; }
+  function frPop(kind, html){
+    if(!frAlerts()[kind]) return;
+    var box = document.getElementById('frPops');
+    if(!box){ box = document.createElement('div'); box.id = 'frPops'; box.className = 'frpops'; document.body.appendChild(box); }
+    var el = document.createElement('div'); el.className = 'frpop'; el.setAttribute('role', 'status'); el.innerHTML = '<div>' + html + '</div>';
+    function gone(){ if(el.parentNode) el.parentNode.removeChild(el); }
+    el.addEventListener('click', gone);
+    box.appendChild(el);
+    while(box.children.length > 3) box.removeChild(box.firstChild);
+    setTimeout(gone, 7000);
   }
   function frNewsDot(){
-    var b = $('frBtn'), sp = b && b.querySelector('span'), n = frNewsLoad().length;
-    if(!sp) return;
-    var t = 'Fortschritt vergleichen' + (n ? ' · ' + n + ' neu' : '');
-    if(sp.textContent !== t) sp.textContent = t;
+    var b = $('frIcon'), n = frNewsLoad().length;
+    if(!b) return;
+    var dot = b.querySelector('.dotb');
+    if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
+    if(!dot){ dot = document.createElement('span'); dot.className = 'dotb'; b.appendChild(dot); }
+    if(dot.textContent !== String(n)) dot.textContent = String(n);
   }
   function frDel(gid){
     if(!gid || !syncCfg || !syncCfg.token) return Promise.resolve();
@@ -6330,7 +6371,7 @@ body.menuopen{overflow:hidden}
     var files = {}; files[FR_FILE] = {content:JSON.stringify(frMine(false))};
     return gh('/gists', {method:'POST', body:{description:'Short Final! Freigabe (Fortschritt für Freunde)', public:false, files:files}});
   }
-  function frMsg(t){ frNote = t || ''; var el = frView && frView.ov.querySelector('#frMsg'); if(el) el.textContent = frNote; }
+  function frMsg(t){ frNote = t || ''; Array.prototype.forEach.call(document.querySelectorAll('#frMsg, #acShMsg'), function(el){ el.textContent = frNote; }); }
   function frF1(v){ return v === null || v === undefined ? '–' : (Math.round(v * 10) / 10).toString().replace('.', ','); }
   function frWhen(ts){
     if(!ts) return 'noch nie';
@@ -6348,6 +6389,7 @@ body.menuopen{overflow:hidden}
       rows.push('<tr><td>' + label + '</td><td' + (win === 1 ? ' class="good"' : '') + '>' + (a === null || a === undefined ? '–' : hi === 'f1' || hi === 'f1h' ? frF1(a) : fmt(a)) + '</td><td' + (win === 2 ? ' class="good"' : '') + '>' + (hi === 'f1' || hi === 'f1h' ? frF1(b) : fmt(b)) + '</td></tr>');
     }
     row('Gesamtstand', me.stand, d.stand, 1);
+    if(d.heute !== undefined) row('Heute geklickt', me.heute, d.heute_d === iso(new Date()) ? d.heute : 0, 1);
     if(d.stand !== undefined && d.ziel){ var pa = Math.round(me.stand / S.target * 100), pb = Math.round(d.stand / d.ziel * 100); row('Zum Ziel in %', pa, pb, 1); }
     row('Vorsprung zur Soll-Linie', me.diff, d.diff, 1);
     row('Aktuelles Tempo pro Tag', me.tempo, d.tempo, 1);
@@ -6381,8 +6423,8 @@ body.menuopen{overflow:hidden}
   var FR_LAB = {stand:'Gesamtstand, Ziel und Vorsprung/Rückstand', tempo:'Tempo', score:'Ø Fächer-Score', faecher:'Score und Anzahl je Fach', verlauf:'Verlaufskurve (letzte 90 Einträge)', badges:'Abzeichen'};
   function frRender(){
     if(!frView || !frView.ov.parentNode) return;
-    var c = frCfg(), b = frView.ov.querySelector('#frBody'), h = '';
-    var hasTok = !!(syncCfg && syncCfg.token);
+    var b = frView.ov.querySelector('#frBody'), h = '';
+    frShareRender();
     var news = frNewsLoad();
     if(news.length){
       h += '<div class="card frc" style="margin-top:0;border-color:var(--accent)"><b>Neu bei deinen Freunden</b>' + news.slice(-6).reverse().map(function(x){
@@ -6391,20 +6433,7 @@ body.menuopen{overflow:hidden}
       }).join('') + '</div>';
       frNewsSave([]); frNewsDot();
     }
-    h += '<div class="card frc"' + (news.length ? '' : ' style="margin-top:0"') + '><b>Meine Freigabe</b>';
-    if(!c.gist){
-      h += '<div class="small" style="margin-top:6px">Teile deinen Fortschritt mit Freunden. Sie bekommen einen Freigabe-Code, nie deinen Token. Du wählst, was sichtbar ist.</div>';
-    }else{
-      var code = 'SF-' + c.gist;
-      h += '<div class="frcode" id="frCodeTxt">' + esc(code) + '</div><div class="row"><button type="button" class="ghost" data-fract="copy">Code kopieren</button><button type="button" class="ghost" data-fract="copylink">Link kopieren</button></div>';
-    }
-    h += '<div style="margin-top:8px">' + Object.keys(FR_LAB).map(function(k){
-      return '<label class="tg"><span>' + FR_LAB[k] + '</span><input type="checkbox" class="sw" data-frf="' + k + '"' + (c.f[k] ? ' checked' : '') + '></label>';
-    }).join('') + '</div>';
-    if(!c.gist) h += '<button type="button" data-fract="start" style="width:100%;margin-top:10px"' + (hasTok ? '' : ' disabled') + '>Freigabe starten</button>' + (hasTok ? '' : '<div class="small" style="margin-top:6px">Dafür brauchst du die Cloud-Synchronisierung (Menü › Cloud-Synchronisierung und Account).</div>');
-    else h += '<div class="row" style="margin-top:10px"><button type="button" class="ghost" data-fract="renew">Code erneuern</button><button type="button" class="ghost" data-fract="stop">Freigabe beenden</button></div><div class="small" style="margin-top:6px">Mit „Code erneuern“ verlieren alle bisherigen Freunde den Zugriff.</div>';
-    h += '</div>';
-    h += '<div class="card frc"><b>Freund hinzufügen</b><div class="small" style="margin:6px 0">Füge den Freigabe-Code oder Link deines Freundes ein.</div>' +
+    h += '<div class="card frc"' + (news.length ? '' : ' style="margin-top:0"') + '><b>Freund hinzufügen</b><div class="small" style="margin:6px 0">Füge den Freundecode oder Link deines Freundes ein. Deinen eigenen Code findest du im Account (Icon oben rechts).</div>' +
       '<input type="text" id="frCode" placeholder="SF-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%" value="' + escA(frPrefill) + '">' +
       '<input type="text" id="frAlias" placeholder="Name (optional)" maxlength="24" style="width:100%;margin-top:8px">' +
       '<button type="button" data-fract="add" style="width:100%;margin-top:8px">Hinzufügen</button></div>';
@@ -6419,6 +6448,26 @@ body.menuopen{overflow:hidden}
     b.innerHTML = h;
     if(cv !== null && b.querySelector('#frCode')) b.querySelector('#frCode').value = cv;
     if(av !== null && b.querySelector('#frAlias')) b.querySelector('#frAlias').value = av;
+  }
+  function frShareRender(){
+    var el = document.getElementById('acShare');
+    if(!el) return;
+    var c = frCfg(), hasTok = !!(syncCfg && syncCfg.token), h = '';
+    h += '<h3 class="achd" style="margin-top:14px">Freunde und Freigabe</h3>';
+    if(!c.gist){
+      h += '<div class="small" style="margin:6px 0">Teile deinen Fortschritt mit Freunden. Sie bekommen einen Freundecode, nie deinen Token. Du wählst, was sichtbar ist.</div>';
+    }else{
+      h += '<div class="small" style="margin-top:6px">Dein Freundecode</div><div class="frcode" id="frCodeTxt">' + esc('SF-' + c.gist) + '</div><div class="row"><button type="button" class="ghost" data-fract="copy">Code kopieren</button><button type="button" class="ghost" data-fract="copylink">Link kopieren</button></div>';
+    }
+    h += '<div style="margin-top:8px">' + Object.keys(FR_LAB).map(function(k){
+      return '<label class="tg"><span>' + FR_LAB[k] + '</span><input type="checkbox" class="sw" data-frf="' + k + '"' + (c.f[k] ? ' checked' : '') + '></label>';
+    }).join('') + '</div>';
+    if(!c.gist) h += '<button type="button" data-fract="start" style="width:100%;margin-top:10px"' + (hasTok ? '' : ' disabled') + '>Freigabe starten</button>' + (hasTok ? '' : '<div class="small" style="margin-top:6px">Dafür brauchst du die Cloud-Synchronisierung (Token oben).</div>');
+    else h += '<div class="row" style="margin-top:10px"><button type="button" class="ghost" data-fract="renew">Code erneuern</button><button type="button" class="ghost" data-fract="stop">Freigabe beenden</button></div><div class="small" style="margin-top:6px">Mit „Code erneuern“ verlieren alle bisherigen Freunde den Zugriff.</div>';
+    var al = frAlerts();
+    h += '<h3 class="achd" style="margin-top:14px">Hinweise von Freunden (Popup)</h3><label class="tg"><span>Neues Abzeichen</span><input type="checkbox" class="sw" data-fral="badges"' + (al.badges ? ' checked' : '') + '></label><label class="tg"><span>Fragen eingetragen</span><input type="checkbox" class="sw" data-fral="fragen"' + (al.fragen ? ' checked' : '') + '></label>' +
+      '<div class="small" style="margin-top:6px">Popups erscheinen nur bei geöffneter App, etwa jede Minute geprüft.</div><div class="small" id="acShMsg" style="margin-top:6px">' + esc(frNote) + '</div>';
+    if(el.innerHTML !== h) el.innerHTML = h;
   }
   function frAdd(){
     var o = frView.ov, raw = o.querySelector('#frCode').value, m = /([0-9a-f]{20,40})/i.exec(raw.replace(/\s+/g, ''));
@@ -6445,16 +6494,16 @@ body.menuopen{overflow:hidden}
     if(a === 'start'){
       if(!syncCfg || !syncCfg.token){ frMsg('Dafür brauchst du die Cloud-Synchronisierung.'); return; }
       frMsg('Erstelle Freigabe …');
-      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); frNote = 'Freigabe aktiv. Gib den Code an deine Freunde weiter.'; frRender(); }, function(){ frMsg('Konnte die Freigabe nicht erstellen. Prüfe die Verbindung und den Token.'); });
+      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); frNote = 'Freigabe aktiv. Gib den Code an deine Freunde weiter.'; frShareRender(); frRender(); }, function(){ frMsg('Konnte die Freigabe nicht erstellen. Prüfe die Verbindung und den Token.'); });
     }else if(a === 'copy'){ frMsg(copyText('SF-' + c.gist) ? 'Code kopiert.' : 'Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.');
     }else if(a === 'copylink'){ var url = location.origin + location.pathname + '?friend=' + c.gist; frMsg(copyText(url) ? 'Link kopiert.' : 'Kopieren nicht möglich.');
     }else if(a === 'renew'){
       if(!arm('Code erneuern')) return;
       var old = c.gist; frMsg('Erneuere …');
-      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); return frDel(old); }).then(function(){ frNote = 'Neuer Code erstellt. Der alte ist ungültig.'; frRender(); }, function(){ frMsg('Konnte den Code nicht erneuern.'); });
+      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); return frDel(old); }).then(function(){ frNote = 'Neuer Code erstellt. Der alte ist ungültig.'; frShareRender(); frRender(); }, function(){ frMsg('Konnte den Code nicht erneuern.'); });
     }else if(a === 'stop'){
       if(!arm('Freigabe beenden')) return;
-      var old2 = c.gist; c.gist = null; c.h = ''; save(); frDel(old2); frNote = 'Freigabe beendet. Freunde sehen deine Daten nicht mehr.'; frRender();
+      var old2 = c.gist; c.gist = null; c.h = ''; save(); frDel(old2); frNote = 'Freigabe beendet. Freunde sehen deine Daten nicht mehr.'; frShareRender(); frRender();
     }else if(a === 'add'){ frAdd();
     }else if(a === 'refresh'){ frMsg(''); frPull(true); frRender();
     }else if(a === 'rm'){
@@ -6462,23 +6511,41 @@ body.menuopen{overflow:hidden}
       if(!arm('Entfernen')) return;
       S.friends.splice(i, 1); save(); frRender();
     }
+    if(a === 'start' || a === 'stop' || a === 'renew') setTimeout(frShareRender, 0);
   }
   function frOpen(){
     var sh = openSheet('<div class="shead"><h2>Freunde</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div id="frBody"></div>');
     frView = sh; frNote = '';
     sh.ov.addEventListener('click', frClick);
-    sh.ov.addEventListener('change', function(ev){
-      var k = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-frf');
-      if(!k) return;
-      frCfg().f[k] = !!ev.target.checked; save(); frTouch();
-    });
     frRender(); frPull(false);
   }
-  var frB = $('frBtn');
-  if(frB) frB.addEventListener('click', frOpen);
+  /* Account-Fenster: bringt Name, Cloud-Synchronisierung und Freigabe in ein Fenster (verschiebt den Inhalt der Menükarte) */
+  function acChange(ev){
+    var t = ev.target, k = t && t.getAttribute && t.getAttribute('data-frf'), k2 = t && t.getAttribute && t.getAttribute('data-fral');
+    if(k){ frCfg().f[k] = !!t.checked; save(); frTouch(); }
+    else if(k2){ var al = frAlerts(); al[k2] = !!t.checked; try{ localStorage.setItem(FR_AL, JSON.stringify(al)); }catch(e){} }
+  }
+  var acW = $('acWrap');
+  if(acW){ acW.addEventListener('click', frClick); acW.addEventListener('change', acChange); }
+  function openAccount(){
+    var w = $('acWrap');
+    if(!w) return;
+    var home = w.parentNode;
+    var sh = openSheet('<div class="shead"><h2>Account</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div id="acHost"></div>');
+    sh.ov.querySelector('#acHost').appendChild(w);
+    frShareRender();
+    sh.ov.addEventListener('click', function(e){
+      if(e.target === sh.ov || (e.target.closest && e.target.closest('[data-sx]'))) home.appendChild(w);
+    });
+    return sh;
+  }
+  var frI = $('frIcon'), acI = $('acIcon');
+  if(frI) frI.addEventListener('click', frOpen);
+  if(acI) acI.addEventListener('click', openAccount);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) frPull(false); });
-  setInterval(function(){ if(!document.hidden) frPull(false); }, 600000);
+  setInterval(function(){ if(!document.hidden) frPull(false); }, 30000);
   frNewsDot();
+  frShareRender();
   setTimeout(function(){
     var id = null;
     try{ id = new URLSearchParams(location.search).get('friend'); }catch(e){}
@@ -6592,6 +6659,314 @@ body.menuopen{overflow:hidden}
     };
   })();
 
+
+  /* ---------- Pakete mit Freunden teilen oder gemeinsam bearbeiten (nur GitHub-Version) ---------- */
+  var PK_PACKS = 'short-final-packs.json', pkBusy = false, pkLast = 0, pkTimer = null, pkQ = [], pkShowing = false;
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '.pkfr{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:8px}.pkfr b{font-size:14px}.pkfr .row{margin:0}.pkfr button{padding:7px 12px;font-size:13px}.pkst{font-size:12px;color:var(--muted);width:100%}.pkx{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}.pkx h3{margin:0 0 4px;font-size:15px}';
+    document.head.appendChild(st);
+  })();
+  function pkHash(str){ var h = 5381, i = str.length; while(i) h = (h * 33) ^ str.charCodeAt(--i); return (h >>> 0).toString(36) + str.length.toString(36); }
+  function pkH(it){ return pkHash(pkSig(it)); }
+  var pkDocC = (typeof WeakMap === 'function') ? new WeakMap() : null;
+  function pkDH(d){
+    var dat = d.data || '', c = pkDocC && pkDocC.get(d);
+    if(c && c.l === dat.length) return c.h;
+    var h = pkHash(String(d.name || '') + '|' + String(d.kind || '') + '|' + dat);
+    if(pkDocC) pkDocC.set(d, {l:dat.length, h:h});
+    return h;
+  }
+  function pkRec(pid){ var r = null; nbMeta().packs.forEach(function(x){ if(x.id === pid) r = x; }); return r; }
+  function pkBase(p){
+    var b = {i:{}, d:{}};
+    p.items.forEach(function(it){ b.i[it.id] = pkH(it); });
+    (p.docs || []).forEach(function(d){ if(d.data) b.d[d.id] = pkDH(d); });
+    return b;
+  }
+  function pkName(fr){ return fr.alias || (fr.data && fr.data.name) || 'Freund'; }
+  function pkFriend(gist){ var r = null; (S.friends || []).forEach(function(x){ if(x.gist === gist) r = x; }); return r; }
+  function pkPartnerName(pt){ var fr = pkFriend(pt.gist); return fr ? pkName(fr) : (pt.name || 'Freund'); }
+  /* Veröffentlichen: eigene Paketdatei und Angebotsliste im eigenen Freigabe-Gist */
+  function pkPush(force){
+    var c = frCfg();
+    if(!c.gist || !syncCfg || !syncCfg.token) return Promise.resolve(false);
+    var files = {}, offers = [], any = false, m = nbMeta();
+    m.packs.forEach(function(rec){
+      var p = NB.packs[rec.id];
+      if(!p || !Array.isArray(rec.fr)) return;
+      var out = rec.fr.filter(function(x){ return x.dir !== 'in'; });
+      if(!out.length){
+        if(rec.fh){ files['pack-' + rec.id + '.json'] = null; rec.fh = ''; any = true; }
+        return;
+      }
+      var to = out.map(function(x){ return {g:x.gist, m:x.mode}; });
+      offers.push({pid:p.id, title:p.title, author:p.author || '', n:p.items.length, rev:p.rev || 0, to:to});
+      var b = pkBase(p), h = pkHash(JSON.stringify([b, p.title]));
+      if(force || h !== rec.fh){
+        var full = JSON.parse(JSON.stringify(p));
+        full.docs = (full.docs || []).filter(function(d){ return d.data; });
+        files['pack-' + rec.id + '.json'] = {content:JSON.stringify(full)};
+        rec.fh = h; any = true;
+      }
+    });
+    var oj = JSON.stringify({format:'short-final-packs', v:1, offers:offers});
+    if(oj !== c.po || any || force){ files[PK_PACKS] = {content:oj}; }
+    else return Promise.resolve(false);
+    return gh('/gists/' + c.gist, {method:'PATCH', body:{files:files}}).then(function(){ c.po = oj; save(); return true; }, function(){ pkNeedPush(); return false; });
+  }
+  function pkNeedPush(){ clearTimeout(pkTimer); pkTimer = setTimeout(function(){ pkPush(false); }, 4000); }
+  (function(){
+    var c0 = nbHooks.changed;
+    nbHooks.changed = function(){ if(c0) c0(); if(S && S.nb && (S.nb.packs || []).some(function(r){ return Array.isArray(r.fr) && r.fr.length; })) pkNeedPush(); };
+  })();
+  /* Gegenseite abfragen */
+  function pkReadOffers(fr){
+    return frGet(fr.gist).then(function(g){
+      var f = g.files && g.files[PK_PACKS];
+      if(!f) return {offers:[], files:g.files || {}};
+      return frFileText(f).then(function(t){
+        var o = null; try{ o = JSON.parse(t); }catch(e){}
+        return {offers:(o && o.format === 'short-final-packs' && Array.isArray(o.offers)) ? o.offers : [], files:g.files};
+      });
+    });
+  }
+  function pkFetchPack(fr, files, pid){
+    var f = files && files['pack-' + pid + '.json'];
+    return frFileText(f).then(function(t){
+      var r = nbParseText(t);
+      if(r.err || !r.pack || r.pack.id !== pid) throw new Error('bad');
+      return r.pack;
+    });
+  }
+  /* Dreiwege-Vergleich: Basis (letzter gemeinsamer Stand), lokal, Gegenseite */
+  function pkDiff3(local, remote, base){
+    base = base || {i:{}, d:{}};
+    var L = {}, ch = [], LD = {};
+    local.items.forEach(function(it){ L[it.id] = it; });
+    (local.docs || []).forEach(function(d){ LD[d.id] = d; });
+    remote.items.forEach(function(it){
+      var o = L[it.id], rs = pkH(it), bs = base.i[it.id];
+      if(!o){ if(bs === undefined) ch.push({k:'new', it:it}); return; }
+      var ls = pkH(o);
+      if(rs === ls) return;
+      if(bs === undefined) ch.push({k:'chg', it:it, old:o});
+      else if(ls === bs) ch.push({k:'chg', it:it, old:o});
+      else if(rs === bs) return;
+      else ch.push({k:'conf', it:it, old:o, sel:false});
+    });
+    (remote.docs || []).forEach(function(d){
+      if(!d.data) return;
+      var o = LD[d.id], rs = pkDH(d), bs = base.d[d.id];
+      if(!o || !o.data){ if(!o && bs === undefined) ch.push({k:'dnew', doc:d}); else if(o && !o.data) ch.push({k:'dchg', doc:d, old:o}); return; }
+      var ls = pkDH(o);
+      if(rs === ls) return;
+      if(bs === undefined || ls === bs) ch.push({k:'dchg', doc:d, old:o});
+      else if(rs !== bs) ch.push({k:'dconf', doc:d, old:o, sel:false});
+    });
+    return ch;
+  }
+  function pkSyncBase(pt, p, remote){
+    pt.base = pt.base || {i:{}, d:{}};
+    var LI = {}, LD = {};
+    p.items.forEach(function(it){ LI[it.id] = it; });
+    (p.docs || []).forEach(function(d){ LD[d.id] = d; });
+    remote.items.forEach(function(it){ if(LI[it.id] && pkH(LI[it.id]) === pkH(it)) pt.base.i[it.id] = pkH(it); });
+    (remote.docs || []).forEach(function(d){ if(d.data && LD[d.id] && LD[d.id].data && pkDH(LD[d.id]) === pkDH(d)) pt.base.d[d.id] = pkDH(d); });
+  }
+  function pkLog(rec, a, c, from){ rec.log = [{t:Date.now(), a:a, c:c, from:from}].concat(rec.log || []).slice(0, 30); }
+  function pkPersist(p){ return nbIdb('readwrite', function(s2){ return s2.put(p); }).catch(function(){}); }
+  /* Warteschlange für die Rückfragen */
+  function pkNext(){
+    if(pkShowing) return;
+    var job = pkQ.shift();
+    if(!job){ return; }
+    pkShowing = true;
+    var done = false;
+    function fin(){ if(done) return; done = true; pkShowing = false; setTimeout(pkNext, 150); }
+    try{ (job.kind === 'offer' ? pkOfferSheet : pkUpdateSheet)(job, fin); }catch(e){ fin(); }
+  }
+  function pkSheet(title, inner, fin){
+    var sh = openSheet('<div class="shead"><h2>' + title + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' + inner);
+    sh.ov.addEventListener('click', function(e){ if(e.target === sh.ov || (e.target.closest && e.target.closest('[data-sx]'))) fin(); });
+    return sh;
+  }
+  function pkOfferSheet(job, fin){
+    var fr = job.fr, of = job.offer, mine = job.mine;
+    var collab = job.mode === 'collab', nm = pkName(fr);
+    var sh = pkSheet('Lernpaket von ' + esc(nm),
+      '<div class="nbconf"><b>' + esc(of.title) + '</b><div class="small">' + of.n + ' Einträge' + (of.author ? ' · Autor: ' + esc(of.author) : '') + '</div>' +
+      '<div class="small" style="margin-top:6px">' + esc(nm) + (collab ? ' möchte mit dir gemeinsam an diesem Paket arbeiten. Änderungen von beiden Seiten werden dir jeweils zum Übernehmen angezeigt. Dokumente werden mitgeschickt.' : ' möchte dieses Paket mit dir teilen. Spätere Änderungen von ' + esc(nm) + ' werden dir zum Übernehmen angezeigt.') +
+      (mine ? ' Du hast bereits ein Paket mit dieser Kennung, die Unterschiede siehst du im nächsten Schritt.' : '') + '</div>' +
+      (collab && !(syncCfg && syncCfg.token && S.share && S.share.gist) ? '<div class="small" style="margin-top:6px">Damit deine Änderungen auch bei ' + esc(nm) + ' ankommen, brauchst du Cloud-Synchronisierung und Freigabe (Account oben rechts).</div>' : '') + '</div>' +
+      '<div class="row" style="margin-top:12px"><button id="pkYes" style="flex:1">Annehmen</button><button class="ghost" id="pkLater">Später</button><button class="ghost" id="pkNo">Ablehnen</button></div><div class="small" id="pkMsg" style="margin-top:8px"></div>', fin);
+    var o = sh.ov, msg = o.querySelector('#pkMsg');
+    o.querySelector('#pkLater').addEventListener('click', function(){ sh.close(); fin(); });
+    o.querySelector('#pkNo').addEventListener('click', function(){ var m = nbMeta(); m.pkdecl = m.pkdecl || {}; m.pkdecl[of.pid + '|' + fr.gist] = of.rev; save(); sh.close(); fin(); });
+    o.querySelector('#pkYes').addEventListener('click', function(){
+      msg.textContent = 'Lade Paket …';
+      var btn = o.querySelector('#pkYes'); btn.disabled = true;
+      pkFetchPack(fr, job.files, of.pid).then(function(rp){
+        var pt = {gist:fr.gist, name:nm, mode:job.mode, dir:'in', seen:of.rev};
+        if(mine){
+          var rec = pkRec(of.pid);
+          rec.fr = (rec.fr || []).filter(function(x){ return x.gist !== fr.gist; });
+          pt.dir = collab ? 'both' : 'in'; pt.base = {i:{}, d:{}};
+          rec.fr.push(pt); save(); sh.close();
+          pkUpdateSheet({kind:'upd', fr:fr, offer:of, remote:rp, rec:rec, pt:pt}, fin);
+          return;
+        }
+        return nbAddPack(rp).then(function(){
+          var rec = pkRec(rp.id);
+          if(rec){ pt.dir = collab ? 'both' : 'in'; pt.base = pkBase(NB.packs[rp.id]); rec.fr = [pt]; rec.fh = ''; pkLog(rec, rp.items.length, 0, nm); }
+          save(); nbRefresh(); toast('Paket angenommen: ' + rp.title);
+          if(collab) pkNeedPush();
+          sh.close(); fin();
+        });
+      }).catch(function(){ btn.disabled = false; msg.textContent = 'Das Paket konnte nicht geladen werden. Versuche es später noch einmal.'; });
+    });
+  }
+  function pkChLine(c){
+    if(c.k === 'new') return '<b>Neu:</b> ' + esc(c.it.title) + '<div class="d">' + esc(pkShort(c.it.q || c.it.a)) + '</div>';
+    if(c.k === 'dnew') return '<b>Neues Dokument:</b> ' + esc(c.doc.name);
+    if(c.k === 'dchg') return '<b>Dokument geändert:</b> ' + esc(c.doc.name);
+    if(c.k === 'dconf') return '<b>Dokument auf beiden Seiten geändert:</b> ' + esc(c.doc.name) + '<div class="d">Übernehmen ersetzt deine Version.</div>';
+    var lines = '';
+    Object.keys(PK_F).forEach(function(f){ if(String(c.old[f] || '') !== String(c.it[f] || '')) lines += '<div class="d">' + PK_F[f] + ': ' + esc(pkShort(c.old[f])) + ' → <b>' + esc(pkShort(c.it[f])) + '</b></div>'; });
+    if(!lines) lines = '<div class="d">Mehrfachauswahl, Bild oder Zusatzfach geändert</div>';
+    return '<b>' + (c.k === 'conf' ? 'Auf beiden Seiten geändert' : 'Geändert') + ':</b> ' + esc(c.it.title) + (c.k === 'conf' ? '<div class="d">Übernehmen ersetzt deine Version.</div>' : '') + lines;
+  }
+  function pkUpdateSheet(job, fin){
+    var rec = job.rec, pt = job.pt, p = NB.packs[rec.id], nm = pkPartnerName(pt);
+    if(!p){ fin(); return; }
+    var ch = job.ch || pkDiff3(p, job.remote, pt.base);
+    if(!ch.length){ pt.seen = job.offer.rev; pkSyncBase(pt, p, job.remote); save(); fin(); return; }
+    var h = '<div class="small"><b>' + esc(p.title) + '</b> · ' + ch.length + (ch.length === 1 ? ' Änderung' : ' Änderungen') + ' von ' + esc(nm) + '</div>';
+    ch.forEach(function(c, i){ h += '<label class="pdr" style="display:block"><input type="checkbox" data-pki="' + i + '"' + (c.sel === false ? '' : ' checked') + ' style="margin-right:8px">' + pkChLine(c) + '</label>'; });
+    h += '<div class="row" style="margin-top:10px"><button id="pkApply" style="flex:1">Ausgewählte übernehmen</button><button class="ghost" id="pkSkip">Nicht übernehmen</button></div><div class="small" id="pkMsg" style="margin-top:8px"></div>';
+    var sh = pkSheet('Änderungen im Paket', h, function(){ pt.seen = job.offer.rev; save(); fin(); });
+    var o = sh.ov;
+    o.querySelector('#pkSkip').addEventListener('click', function(){ pt.seen = job.offer.rev; save(); sh.close(); fin(); });
+    o.querySelector('#pkApply').addEventListener('click', function(){
+      Array.prototype.forEach.call(o.querySelectorAll('[data-pki]'), function(cb){ ch[+cb.getAttribute('data-pki')].sel = cb.checked; });
+      var added = 0, changed = 0, items = p.items.slice(), docs = (p.docs || []).slice();
+      ch.forEach(function(c){
+        if(c.sel === false) return;
+        if(c.k === 'new'){ items.push(c.it); added++; }
+        else if(c.k === 'chg' || c.k === 'conf'){ items.forEach(function(x, j){ if(x.id === c.it.id) items[j] = c.it; }); changed++; }
+        else if(c.k === 'dnew'){ docs.push(c.doc); added++; }
+        else{ var ix = -1; docs.forEach(function(x, j){ if(x.id === c.doc.id) ix = j; }); if(ix >= 0) docs[ix] = c.doc; else docs.push(c.doc); changed++; }
+      });
+      if(!added && !changed){ o.querySelector('#pkMsg').textContent = 'Nichts ausgewählt.'; return; }
+      p.items = items; if(docs.length) p.docs = docs; p.rev = Date.now();
+      nbUpsertMeta(p);
+      var rc = pkRec(p.id); rec = rc || rec;
+      if(rc){ rc.fr = rc.fr || []; var cur = rc.fr.filter(function(x){ return x.gist === pt.gist; })[0]; if(cur) pt = cur; }
+      pkSyncBase(pt, p, job.remote); pt.seen = job.offer.rev;
+      pkLog(rec, added, changed, nm);
+      save(); nbChanged(); nbRefresh(); pkPersist(p);
+      toast('Paket aktualisiert'); sh.close(); fin();
+    });
+  }
+  /* Prüfen: beim Öffnen des Lernzentrums */
+  function pkCheck(force){
+    var c = frCfg();
+    if(pkBusy) return Promise.resolve();
+    if(!force && Date.now() - pkLast < 8000) return Promise.resolve();
+    pkBusy = true; pkLast = Date.now();
+    return pkPush(false).catch(function(){}).then(function(){
+      var chain = Promise.resolve(), m = nbMeta(), mine = c.gist;
+      if(!mine) return;
+      (S.friends || []).forEach(function(fr){
+        chain = chain.then(function(){
+          return pkReadOffers(fr).then(function(r){
+            var subs = [];
+            r.offers.forEach(function(of){
+              if(!of || !of.pid || !Array.isArray(of.to)) return;
+              var tm = null; of.to.forEach(function(x){ if(x && x.g === mine) tm = x; });
+              if(!tm) return;
+              var rev = Number(of.rev) || 0;
+              var rec = pkRec(of.pid), pt = null;
+              if(rec && Array.isArray(rec.fr)) rec.fr.forEach(function(x){ if(x.gist === fr.gist) pt = x; });
+              var mode = tm.m === 'collab' ? 'collab' : 'share';
+              if(!pt){
+                var dec = (m.pkdecl || {})[of.pid + '|' + fr.gist];
+                if(dec !== undefined && rev <= dec) return;
+                if(m.del && m.del[of.pid] && m.del[of.pid] >= rev) return;
+                pkQ.push({kind:'offer', fr:fr, offer:{pid:of.pid, title: frTxt(of.title, 80) || 'Paket', author: frTxt(of.author, 40), n: Number(of.n) || 0, rev: rev}, mode:mode, files:r.files, mine: !!rec});
+              }else if(pt.dir !== 'out' && rev > (pt.seen || 0)){
+                var job = {kind:'upd', fr:fr, offer:{pid:of.pid, rev:rev}, rec:rec, pt:pt};
+                subs.push((function(){
+                  return pkFetchPack(fr, r.files, of.pid).then(function(rp){
+                    job.remote = rp;
+                    if(!pt.base) pt.base = {i:{}, d:{}};
+                    var lp = NB.packs[rec.id];
+                    if(lp && pkDiff3(lp, rp, pt.base).length) pkQ.push(job);
+                    else if(lp){ pt.seen = rev; pkSyncBase(pt, lp, rp); save(); }
+                  }, function(){});
+                })());
+              }
+            });
+            return Promise.all(subs);
+          }, function(){});
+        });
+      });
+      return chain;
+    }).then(function(){ pkBusy = false; pkNext(); }, function(){ pkBusy = false; });
+  }
+  nbHooks.open = function(){ if(!pkBusy) setTimeout(function(){ pkCheck(false); }, 400); };
+  /* Teilen-Fenster: Freunde mit einem Klick */
+  nbHooks.shareExtra = function(ov, p){
+    var box = document.createElement('div');
+    box.className = 'pkx';
+    ov.querySelector('.sheet').appendChild(box);
+    function draw(){
+      var c = frCfg(), rec = pkRec(p.id), fr = S.friends || [], hasTok = !!(syncCfg && syncCfg.token);
+      var h = '<h3>Mit Freund teilen</h3>';
+      if(!fr.length) h += '<div class="small">Füge zuerst einen Freund hinzu (rundes Freunde-Symbol oben rechts).</div>';
+      else if(!hasTok || !c.gist) h += '<div class="small">Dafür brauchst du Cloud-Synchronisierung und deine Freigabe (Account oben rechts).</div>';
+      else{
+        fr.forEach(function(f, i){
+          var pt = null; (rec && rec.fr || []).forEach(function(x){ if(x.gist === f.gist) pt = x; });
+          var stT = pt ? (pt.dir === 'in' ? 'Von ' + esc(pkName(f)) + ' erhalten' : pt.mode === 'collab' ? 'Ihr arbeitet zusammen' : 'Geteilt (nur von dir)') : '';
+          h += '<div class="pkfr"><b>' + esc(pkName(f)) + '</b><div class="row">' +
+            (pt && pt.dir !== 'in' ? '<button type="button" class="ghost" data-pkend="' + i + '">Beenden</button>' : '') +
+            (!pt || pt.dir !== 'in' ? '<button type="button" class="ghost" data-pksh="' + i + '" data-m="share">Teilen</button><button type="button" data-pksh="' + i + '" data-m="collab">Zusammenarbeiten</button>' : '') +
+            '</div>' + (stT ? '<div class="pkst">' + stT + '</div>' : '') + '</div>';
+        });
+        h += '<div class="small" style="margin-top:8px"><b>Teilen:</b> Dein Freund bekommt das Paket und deine späteren Änderungen. <b>Zusammenarbeiten:</b> Änderungen gehen in beide Richtungen, auch Dokumente. Jede Änderung wird nur nach Rückfrage übernommen.</div>' +
+          '<div class="small" style="margin-top:6px">Wichtig: Dein Freund muss dich auch als Freund hinzugefügt haben, sonst sieht er nichts. <button type="button" class="ghost" data-pkinv="1" style="padding:5px 10px;font-size:12px">Einladungslink kopieren</button></div>';
+      }
+      h += '<div class="small" id="pkShMsg" style="margin-top:6px">' + esc(box._msg || '') + '</div>';
+      box.innerHTML = h;
+    }
+    function say(t){ box._msg = t; var e = box.querySelector('#pkShMsg'); if(e) e.textContent = t; }
+    box.addEventListener('click', function(ev){
+      var t = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+      if(!t) return;
+      var c = frCfg();
+      if(t.hasAttribute('data-pkinv')){ say(copyText(location.origin + location.pathname + '?friend=' + c.gist) ? 'Einladungslink kopiert. Schick ihn deinem Freund.' : 'Kopieren nicht möglich.'); return; }
+      var rec = pkRec(p.id);
+      if(t.hasAttribute('data-pksh')){
+        var f = S.friends[+t.getAttribute('data-pksh')], mode = t.getAttribute('data-m');
+        if(!f || !rec) return;
+        rec.fr = (rec.fr || []).filter(function(x){ return x.gist !== f.gist; });
+        rec.fr.push({gist:f.gist, name:pkName(f), mode:mode, dir:mode === 'collab' ? 'both' : 'out', base:pkBase(NB.packs[p.id]), seen:0});
+        save(); say('Wird gesendet …');
+        pkPush(true).then(function(okp){
+          say(okp ? (mode === 'collab' ? 'Zusammenarbeit angeboten.' : 'Paket geteilt.') + ' ' + pkName(f) + ' wird beim Öffnen des Lernzentrums gefragt.' : 'Senden nicht möglich. Es wird später erneut versucht.');
+          draw(); box._msg = '';
+        });
+        draw();
+      }else if(t.hasAttribute('data-pkend')){
+        var f2 = S.friends[+t.getAttribute('data-pkend')];
+        if(!f2 || !rec) return;
+        rec.fr = (rec.fr || []).filter(function(x){ return x.gist !== f2.gist; });
+        save(); pkPush(true); draw();
+      }
+    });
+    draw();
+  };
   maybeChangelog();
   connect(0);
   if(S.fresh === true) obOpen();

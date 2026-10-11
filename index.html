@@ -2359,12 +2359,12 @@ body.menuopen{overflow:hidden}
   function renderAI(){
     var cb0 = $('chatBtn'); if(cb0) cb0.textContent = aiName() + ' anfunken';
     var ci0 = $('chatInfo');
-    if(ci0) ci0.textContent = (typeof STANDALONE !== 'undefined' && STANDALONE)
+    if(ci0) ci0.textContent = (typeof STANDALONE !== 'undefined' && STANDALONE && !aikOn())
       ? 'Funkverbindung zur KI: ' + aiName() + ' öffnet sich und bekommt alle deine Daten aus der App (Lernstand, Plan, Fächer, Berichte, Notizen, Lernzentrum). Danach kannst du frei darüber sprechen, zum Beispiel für einen Wochenplan oder eine zweite Meinung.'
       : 'Funkverbindung zu Claude: Er kennt alle deine Daten aus der App (Lernstand, Plan, Fächer, Berichte, Notizen, Lernzentrum). Du chattest direkt hier und kannst frei darüber sprechen, zum Beispiel für einen Wochenplan oder eine zweite Meinung.';
     var body = $('aiBody'), btn = $('aiBtn'), stop = $('aiStop');
     btn.disabled = aiBusy;
-    btn.textContent = aiBusy ? (STANDALONE ? 'Öffne ' + aiName() + ' …' : 'Analysiere …') : (STANDALONE ? 'In ' + aiName() + ' analysieren' : (S.ai ? 'Neu analysieren' : 'Analyse erstellen'));
+    btn.textContent = aiBusy ? (STANDALONE ? 'Öffne ' + aiName() + ' …' : 'Analysiere …') : ((STANDALONE && !aikOn()) ? 'In ' + aiName() + ' analysieren' : (S.ai ? 'Neu analysieren' : 'Analyse erstellen'));
     stop.hidden = !aiBusy || STANDALONE;
     $('aiMsg').textContent = aiBusy ? (STANDALONE ? 'Lernstand wird für ' + aiName() + ' vorbereitet …' : 'Claude wertet deine Daten aus, das kann bis zu einer Minute dauern.') : aiMsgText;
     body.classList.remove('reveal');
@@ -2374,7 +2374,7 @@ body.menuopen{overflow:hidden}
     }
     var a = S.ai && S.ai.data;
     if(!a){
-      body.innerHTML = '<div class="small">Tippe auf „In ' + aiName() + ' analysieren“. Dein Lernstand wird als Text kopiert und ' + aiName() + ' öffnet sich. Dort sendest du ihn ab und bekommst Bewertung und Tagesempfehlung.</div>';
+      body.innerHTML = '<div class="small">Tippe auf „' + (aikOn() ? 'Analyse erstellen' : 'In ' + aiName() + ' analysieren') + '“. ' + (aikOn() ? 'Claude bewertet deinen Lernstand und gibt dir eine Empfehlung für heute.' : 'Dein Lernstand wird als Text kopiert und ' + aiName() + ' öffnet sich. Dort sendest du ihn ab und bekommst Bewertung und Tagesempfehlung.') + '</div>';
       return;
     }
     var h = '<div class="aitop"><div class="rate ' + cls(a.rating) + '">' + (a.rating === null ? '–' : a.rating) + '<small>von 100</small></div>' +
@@ -2609,7 +2609,7 @@ body.menuopen{overflow:hidden}
   async function runAI(){
     if(aiBusy) return;
     var sample = null;
-    try{ if(window.claude && window.claude.use) sample = await window.claude.use('sample'); }catch(e){ sample = null; }
+    try{ sample = await aikSample(); }catch(e){ sample = null; }
     if(!sample){ openInClaude(); return; }
     aiBusy = true; aiMsgText = ''; aiCtl = new AbortController(); renderAI();
     try{
@@ -2627,7 +2627,7 @@ body.menuopen{overflow:hidden}
       if(code === 'cancelled') aiMsgText = '';
       else if(code === 'not_granted') aiMsgText = 'Nicht erlaubt. Tippe erneut auf die Schaltfläche und erlaube den Zugriff auf Claude.';
       else if(code === 'rate_limited') aiMsgText = 'Zu viele Anfragen. Bitte kurz warten und noch einmal versuchen.';
-      else aiMsgText = 'Die Analyse ist gerade nicht möglich. Bitte später noch einmal versuchen.';
+      else aiMsgText = (e && e.userMsg) || 'Die Analyse ist gerade nicht möglich. Bitte später noch einmal versuchen.';
     }
     aiBusy = false; aiCtl = null;
     renderAI();
@@ -2771,7 +2771,7 @@ body.menuopen{overflow:hidden}
     });
     var samplePromise = null;
     function getSample(){
-      if(!samplePromise) samplePromise = (async function(){ try{ return (window.claude && window.claude.use) ? await window.claude.use('sample') : null; }catch(e){ return null; } })();
+      if(!samplePromise) samplePromise = (async function(){ try{ return await aikSample(); }catch(e){ return null; } })();
       return samplePromise;
     }
     async function send(){
@@ -2805,7 +2805,7 @@ body.menuopen{overflow:hidden}
           chatTurns.pop();
           inp.value = txt;
         }
-        msg.textContent = code === 'cancelled' ? '' : (code === 'not_granted' ? 'Nicht erlaubt. Tippe erneut auf Senden und erlaube den Zugriff auf Claude.' : (code === 'rate_limited' ? 'Zu viele Anfragen. Bitte kurz warten.' : 'Das hat gerade nicht geklappt. Bitte noch einmal senden.'));
+        msg.textContent = code === 'cancelled' ? '' : (code === 'not_granted' ? 'Nicht erlaubt. Tippe erneut auf Senden und erlaube den Zugriff auf Claude.' : (code === 'rate_limited' ? 'Zu viele Anfragen. Bitte kurz warten.' : ((e && e.userMsg) || 'Das hat gerade nicht geklappt. Bitte noch einmal senden.')));
       }
       chatBusy = false; chatCtl = null; paint();
     }
@@ -2856,7 +2856,7 @@ body.menuopen{overflow:hidden}
   $('chatBtn').addEventListener('click', function(){
     haptic('tick');
     funkScene(function(){
-      if(typeof STANDALONE !== 'undefined' && STANDALONE) chatOpenExternal(); else chatOpenSheet();
+      if(typeof STANDALONE !== 'undefined' && STANDALONE && !aikOn()) chatOpenExternal(); else chatOpenSheet();
     });
   });
 
@@ -6267,6 +6267,9 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-31', items:[
+      {t:'Claude direkt in der App', x:'Mit einem eigenen API-Schlüssel (Menü, KI-Anbindung) antworten „Analyse erstellen“ und „Claude anfunken“ direkt hier, ohne Kopieren und Einfügen. Der Schlüssel bleibt nur auf diesem Gerät und wird nie synchronisiert. Ohne Schlüssel funktioniert alles wie bisher.', web:true, menu:true, sel:'#aiKeyCard summary', open:'#aiKeyCard'}
+    ]},
     {v:'2026.10.11-30', items:[
       {t:'Freunde-Diagramme in Freundesfarben', x:'Balken und Linien in der Freunde-Übersicht zeigen die App-Farbe des jeweiligen Freundes. Sind sich zwei Farben zu ähnlich, wird eine leicht im Ton abgewandelt, damit du sie unterscheiden kannst.', web:true, tab:'home', sel:'#frIcon'},
       {t:'Schlankere Diagramme auf dem iPad', x:'Auf breiten Bildschirmen werden Balken und Linien in der Freunde-Übersicht nicht mehr riesig gezogen, sondern bleiben schlank.', web:true, tab:'home', sel:'#frIcon'}
@@ -7938,6 +7941,121 @@ body.menuopen{overflow:hidden}
     })();
   }
   setTimeout(function(){ frHomeRender(); sdMaybe(); }, 3200);
+  /* ---------- Eigener Claude-API-Schlüssel (nur GitHub-Version) ---------- */
+  var AIK_KEY = KEY + '-aik', AIK_MODEL = KEY + '-aimodel';
+  var AIK_MODELS = [['claude-sonnet-5-5', 'Sonnet 5.5 (Standard)'], ['claude-haiku-5-5', 'Haiku 5.5 (günstiger, schneller)'], ['claude-opus-5-5', 'Opus 5.5 (stärker, teurer)']];
+  function aikGet(){ try{ return localStorage.getItem(AIK_KEY) || ''; }catch(e){ return ''; } }
+  function aikOn(){ return aikGet().length > 20; }
+  function aikModel(){ var m = ''; try{ m = localStorage.getItem(AIK_MODEL) || ''; }catch(e){} return AIK_MODELS.some(function(x){ return x[0] === m; }) ? m : AIK_MODELS[0][0]; }
+  function aikErr(code, msg, text){ var e = new Error(msg || code); e.code = code; e.userMsg = msg || ''; if(text) e.text = text; return e; }
+  function aikHttpMsg(status, body){
+    var m = (body && body.error && body.error.message) || '';
+    if(status === 401) return 'Der Schlüssel wurde abgelehnt. Prüfe ihn im Menü unter „KI-Anbindung“.';
+    if(status === 403) return 'Dieser Schlüssel darf das nicht. Prüfe ihn in der Anthropic-Konsole.';
+    if(status === 429) return 'Zu viele Anfragen oder Limit erreicht. Bitte kurz warten.';
+    if(status === 400 && /credit balance/i.test(m)) return 'Dein Anthropic-Guthaben ist leer. Lade es in der Konsole unter „Billing“ auf.';
+    if(status === 413) return 'Die Datenmenge ist zu groß für eine Anfrage.';
+    if(status === 529 || status >= 500) return 'Claude ist gerade überlastet. Bitte später noch einmal versuchen.';
+    return 'Die Anfrage wurde abgelehnt' + (m ? ' (' + m.slice(0, 120) + ')' : '') + '.';
+  }
+  async function aikCall(turns, opts){
+    var key = aikGet();
+    if(!key) throw aikErr('no_key', 'Es ist kein Schlüssel hinterlegt.');
+    opts = opts || {};
+    var stream = typeof opts.onText === 'function';
+    var body = {model: aikModel(), max_tokens: opts.maxTokens || 4096, stream: stream, messages: turns.map(function(t){ return {role: t.role, content: String(t.content)}; })};
+    var res;
+    try{
+      res = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST', signal: opts.signal, body: JSON.stringify(body),
+        headers: {'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}});
+    }catch(e){
+      if(e && e.name === 'AbortError') throw aikErr('cancelled');
+      throw aikErr('network', 'Keine Verbindung zur Claude-API. Prüfe dein Netz und versuche es noch einmal.');
+    }
+    if(!res.ok){
+      var eb = null; try{ eb = await res.json(); }catch(e){}
+      throw aikErr(res.status === 429 ? 'rate_limited' : 'api', aikHttpMsg(res.status, eb));
+    }
+    if(!stream){
+      var j = await res.json();
+      return {text: (j.content || []).map(function(c){ return c.type === 'text' ? c.text : ''; }).join('')};
+    }
+    var acc = '', buf = '', reader = res.body.getReader(), dec = new TextDecoder();
+    try{
+      for(;;){
+        var r = await reader.read();
+        if(r.done) break;
+        buf += dec.decode(r.value, {stream: true});
+        var lines = buf.split('\n'); buf = lines.pop();
+        for(var i = 0; i < lines.length; i++){
+          var ln = lines[i].trim();
+          if(ln.indexOf('data:') !== 0) continue;
+          var ev = null; try{ ev = JSON.parse(ln.slice(5)); }catch(e){ continue; }
+          if(ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta'){ acc += ev.delta.text; opts.onText({text: acc}); }
+          else if(ev.type === 'error'){ throw aikErr('api', 'Claude hat die Antwort abgebrochen. Bitte noch einmal versuchen.', acc); }
+        }
+      }
+    }catch(e){
+      if(e && e.code) throw e;
+      if(e && e.name === 'AbortError') throw aikErr('cancelled', '', acc);
+      throw aikErr('network', 'Die Verbindung wurde unterbrochen.', acc);
+    }
+    return {text: acc};
+  }
+  function aikJson(text){
+    var t = String(text || '').replace(/```(?:json)?/gi, ''), a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if(a < 0 || b <= a) throw aikErr('api', 'Die Antwort war nicht verwertbar. Bitte noch einmal versuchen.');
+    try{ return JSON.parse(t.slice(a, b + 1)); }catch(e){ throw aikErr('api', 'Die Antwort war nicht verwertbar. Bitte noch einmal versuchen.'); }
+  }
+  async function aikSample(){
+    if(!aikOn()) return null;
+    var fn = function(turns, opts){ if(typeof turns === 'string') turns = [{role: 'user', content: turns}]; return aikCall(turns, opts); };
+    fn.json = async function(prompt, opts){ var r = await aikCall([{role: 'user', content: prompt}], {signal: opts && opts.signal, maxTokens: 2048}); return aikJson(r.text); };
+    return fn;
+  }
+  (function aikUI(){
+    var st = document.createElement('style');
+    st.textContent = '#aiKeyCard{--ic:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'8\' cy=\'15\' r=\'4\'/%3E%3Cpath d=\'M11 12l9-9M16 7l3 3\'/%3E%3C/svg%3E")}#aiKeyCard label{display:block;margin-top:10px}#aiKeyCard input,#aiKeyCard select{width:100%;margin-top:4px}';
+    document.head.appendChild(st);
+    var el = document.createElement('details'); el.className = 'card settings'; el.id = 'aiKeyCard';
+    el.innerHTML = '<summary>KI-Anbindung (eigener Schlüssel)</summary>' +
+      '<div class="small" style="margin:8px 14px 4px">Mit einem eigenen Claude-API-Schlüssel antwortet Claude direkt in der App: „Analyse erstellen“ und „Claude anfunken“ laufen dann hier, ohne dass du etwas einfügen musst. Der Schlüssel bleibt nur auf diesem Gerät. Er wird nicht synchronisiert und nicht in Sicherungen gespeichert. Die Nutzung wird über dein Anthropic-Konto abgerechnet.</div>' +
+      '<label>API-Schlüssel<input type="password" id="aikIn" placeholder="sk-ant-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>' +
+      '<label>Modell<select id="aikModel">' + AIK_MODELS.map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join('') + '</select></label>' +
+      '<div class="row" style="margin-top:10px"><button id="aikSave">Speichern</button><button class="ghost" id="aikTest">Testen</button><button class="ghost" id="aikDel">Entfernen</button></div>' +
+      '<div class="small msg" id="aikMsg" style="margin-top:8px"></div>' +
+      '<div class="small" style="margin-top:8px">So bekommst du einen Schlüssel: console.anthropic.com öffnen, unter „Billing“ Guthaben aufladen, unter „API Keys“ einen Schlüssel erstellen. Setze dort ein Ausgabenlimit. Der Schlüssel steht nur im Browser dieses Geräts, nutze ihn deshalb nur auf Geräten, die du kontrollierst.</div>' +
+      '<a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="color:var(--accent);font-weight:650;font-size:13px;display:inline-block;margin-top:6px">Anthropic-Konsole öffnen</a>';
+    var sc = document.getElementById('syncCard');
+    if(sc && sc.parentNode) sc.parentNode.insertBefore(el, sc.nextSibling); else (document.getElementById('menuBody') || document.body).appendChild(el);
+    var inp = el.querySelector('#aikIn'), sel = el.querySelector('#aikModel'), msg = el.querySelector('#aikMsg');
+    function paint(){
+      inp.value = ''; inp.placeholder = aikOn() ? '••••••••••• gespeichert (' + aikGet().slice(-4) + ')' : 'sk-ant-…';
+      sel.value = aikModel();
+      el.querySelector('#aikDel').hidden = !aikOn(); el.querySelector('#aikTest').hidden = !aikOn();
+    }
+    function after(){ paint(); try{ renderAI(); }catch(e){} }
+    el.querySelector('#aikSave').addEventListener('click', function(){
+      var v = (inp.value || '').trim();
+      try{ localStorage.setItem(AIK_MODEL, sel.value); }catch(e){}
+      if(v){
+        if(!/^sk-ant-[A-Za-z0-9_\-]{20,}$/.test(v)){ msg.textContent = 'Das sieht nicht wie ein Claude-Schlüssel aus. Er beginnt mit „sk-ant-“.'; return; }
+        try{ localStorage.setItem(AIK_KEY, v); }catch(e){ msg.textContent = 'Speichern ist in diesem Browser nicht möglich.'; return; }
+        msg.textContent = 'Gespeichert. Mit „Testen“ prüfst du, ob er funktioniert.';
+      }else msg.textContent = aikOn() ? 'Modell gespeichert.' : 'Bitte einen Schlüssel einfügen.';
+      after();
+    });
+    el.querySelector('#aikDel').addEventListener('click', function(){
+      try{ localStorage.removeItem(AIK_KEY); }catch(e){}
+      msg.textContent = 'Schlüssel entfernt. „In Claude analysieren“ funktioniert wieder wie vorher.'; after();
+    });
+    el.querySelector('#aikTest').addEventListener('click', async function(){
+      msg.textContent = 'Teste …';
+      try{ await aikCall([{role: 'user', content: 'Antworte nur mit dem Wort OK.'}], {maxTokens: 16}); msg.textContent = 'Das klappt. Claude antwortet jetzt direkt in der App.'; }
+      catch(e){ msg.textContent = (e && e.userMsg) || 'Der Test ist fehlgeschlagen.'; }
+    });
+    paint();
+  })();
   maybeChangelog();
   connect(0);
   if(S.fresh === true) obOpen();

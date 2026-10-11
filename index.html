@@ -8783,6 +8783,7 @@ body.menuopen{overflow:hidden}
     if(!fr.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
     fr.forEach(function(f, i){ h += insCard(f, i); });
     h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
+    h += '<div class="card frc"><b>Instructor zurücksetzen</b><div class="small" style="margin:6px 0">Trennt alle Schüler, meldet dieses Gerät beim Push-Dienst ab, löscht den Instructor-Zugang samt Freigabe in der Cloud und beginnt die Einrichtung neu. Lernkonten von Schülern sind nicht betroffen.</div><button type="button" class="ghost" data-iact="reset">Instructor zurücksetzen</button></div>';
     v.innerHTML = h;
     if(v.querySelector('#insCode')) v.querySelector('#insCode').value = cv;
     if(v.querySelector('#insAlias')) v.querySelector('#insAlias').value = av;
@@ -8818,6 +8819,18 @@ body.menuopen{overflow:hidden}
     function arm(label){
       if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
       return true;
+    }
+    if(a === 'reset'){
+      if(!arm('Instructor zurücksetzen')) return;
+      insMsg('Setze zurück …'); t.disabled = true;
+      var jobs = [];
+      (S.friends || []).forEach(function(f){ try{ jobs.push(pushCall('/unlink', {g: f.gist}).catch(function(){})); }catch(e){} });
+      try{ jobs.push(pushSub().then(function(sub){ if(sub){ return pushApi('/unsubscribe', {endpoint: sub.endpoint}).catch(function(){}).then(function(){ return sub.unsubscribe(); }); } }).catch(function(){})); }catch(e){}
+      try{ if(S.share && S.share.gist) jobs.push(frDel(S.share.gist)); }catch(e){}
+      try{ if(syncCfg && syncCfg.gistId) jobs.push(frDel(syncCfg.gistId)); }catch(e){}
+      var fin = false, go = function(){ if(fin) return; fin = true; try{ wipeStorage(); }catch(e){} location.reload(); };
+      Promise.all(jobs).then(go, go); setTimeout(go, 6000);
+      return;
     }
     if(a === 'add') insAdd();
     else if(a === 'ident') insIdent();

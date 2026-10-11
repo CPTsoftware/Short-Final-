@@ -1439,7 +1439,7 @@ body.menuopen{overflow:hidden}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null,
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null, role:(S.role === 'instructor') ? 'instructor' : null,
       share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null, o:S.share.optout ? 1 : 0, v:S.share.sdv || 0} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
     }));
   }
@@ -3775,7 +3775,7 @@ body.menuopen{overflow:hidden}
       setTimeout(close, reducedMotion() ? 2800 : 4200);
     }, 4700);
   }
-  function bdSoon(){ clearTimeout(bdT); bdT = setTimeout(bdCheck, 1500); }
+  function bdSoon(){ if(S && S.role === 'instructor') return; clearTimeout(bdT); bdT = setTimeout(bdCheck, 1500); }
   function bdOpen(){
     bdCheck();
     var c = bdCtx(), list = bdList(), seen = bdSeen() || {}, bd = S.badges || {}, got = 0;
@@ -4053,12 +4053,23 @@ body.menuopen{overflow:hidden}
   }
   function obRender(){
     var o = $('onb'), st = ob.step, v = ob.v;
+    if(ob.insMode){
+      o.innerHTML = '<div class="obox"><div class="obtop"><span class="small">Instructor</span></div>' +
+        '<h2>Instructor-Zugang einrichten</h2><p>Als Instructor beaufsichtigst du Schüler wie ein Fluglehrer die Klasse: Du trägst selbst keine Fragen ein, schickst Anfragen an Schüler und siehst nach deren Zustimmung Statistiken und Verläufe. Du bekommst dieselben Meldungen wie ein Freund.</p>' +
+        '<input type="text" id="insName" placeholder="Dein Name" maxlength="24" autocomplete="off" style="width:100%" value="' + escA(ob.insName || '') + '">' +
+        '<input type="password" id="insTok" placeholder="Eigener GitHub-Token (ghp_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;margin-top:8px">' +
+        '<div class="small" style="margin-top:6px">Der Token ist dein Instructor-Konto. Erzeuge dafür bei GitHub einen eigenen mit der Berechtigung „gist“, nicht den eines Schülers. Er speichert dein Konto und verbindet weitere Geräte.</div>' +
+        '<div class="small" id="obInsMsg" style="margin-top:8px;min-height:18px"></div>' +
+        '<div class="obimp" style="margin-top:6px"><button type="button" id="obInsGo">Einrichten</button><button type="button" class="ghost" id="obInsBack">Zurück</button></div></div>';
+      o.scrollTop = 0;
+      return;
+    }
     if(ob.pre){
       o.innerHTML = '<div class="obox"><div class="obtop"><span class="small">Willkommen</span></div>' +
         '<h2>Hast du schon ein Profil?</h2><p>Wenn du Short Final! schon auf einem anderen Gerät nutzt, kannst du dich hier mit deinem GitHub-Token anmelden. Dein Stand, deine Fächer und Lernpakete werden dann geladen und du musst nichts neu einrichten.</p>' +
         '<input type="password" id="obTok" placeholder="Token einfügen (ghp_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%">' +
         '<div class="small" id="obLoginMsg" style="margin-top:8px;min-height:18px"></div>' +
-        '<div class="obimp" style="margin-top:6px"><button type="button" id="obLogin">Anmelden</button><button type="button" class="ghost" id="obNew">Nein, ich bin neu hier</button></div></div>';
+        '<div class="obimp" style="margin-top:6px"><button type="button" id="obLogin">Anmelden</button><button type="button" class="ghost" id="obNew">Nein, ich bin neu hier</button></div><div style="text-align:center;margin-top:18px"><button type="button" class="insl" id="obIns">Instructor</button></div></div>';
       o.scrollTop = 0;
       return;
     }
@@ -4125,7 +4136,7 @@ body.menuopen{overflow:hidden}
     }
     el.innerHTML = '<div class="wel-p" aria-hidden="true">' + units + '</div>' +
       '<h1 class="wel-t">Short Final!</h1><p class="wel-s">Dein Weg zur Prüfung, Frage für Frage.</p>' +
-      '<button type="button" id="welGo" class="wel-b">Einrichten</button>';
+      '<button type="button" id="welGo" class="wel-b">Einrichten</button><button type="button" id="welIns" class="insl" style="margin-top:6px">Instructor</button>';
     document.body.appendChild(el);
     setTimeout(function(){
       var is = el.querySelectorAll('.lights i');
@@ -4136,6 +4147,11 @@ body.menuopen{overflow:hidden}
         i.style.cssText = '--x:' + (u * 0.25).toFixed(2) + 's;--i:0;--fb:' + PAPI_W.bg + ';--fg:' + PAPI_W.gl + ';--tb:' + PAPI_R.bg + ';--tg:' + PAPI_R.gl;
       }
     }, 1500);
+    $('welIns').addEventListener('click', function(){
+      ob.pre = false; ob.insMode = true; obRender();
+      el.classList.add('out');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
+    });
     $('welGo').addEventListener('click', function(){
       el.classList.add('out');
       setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
@@ -4143,8 +4159,9 @@ body.menuopen{overflow:hidden}
   }
   var obLoginBusy = false;
   function obLoginDone(){
-    if(!obLoginBusy || !ob.pre) return;
+    if(!obLoginBusy || !(ob.pre || ob.insMode)) return;
     obLoginBusy = false;
+    if(ob.insMode){ insFinish(); return; }
     if(S.fresh === true){
       tokWarnPending = tokWarnPending;
       ob.pre = false; obRender();
@@ -4210,6 +4227,17 @@ body.menuopen{overflow:hidden}
   $('onb').addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('button') : null;
     if(!b) return;
+    if(b.id === 'obIns'){ ob.pre = false; ob.insMode = true; obRender(); return; }
+    if(b.id === 'obInsBack'){ ob.insMode = false; ob.pre = true; obRender(); return; }
+    if(b.id === 'obInsGo'){
+      var inm = nameClean($('insName').value), itk = ($('insTok').value || '').trim();
+      ob.insName = inm;
+      if(!inm){ $('obInsMsg').textContent = 'Bitte gib deinen Namen ein.'; return; }
+      if(!itk){ $('obInsMsg').textContent = 'Bitte den Token einfügen.'; return; }
+      obLoginBusy = true; $('obInsMsg').textContent = 'Richte ein …';
+      $('syncTok').value = itk; $('syncConnect').click();
+      return;
+    }
     if(b.id === 'obNew'){ ob.pre = false; obRender(); return; }
     if(b.id === 'obLogin'){
       var tk = ($('obTok').value || '').trim();
@@ -5957,6 +5985,7 @@ body.menuopen{overflow:hidden}
     sh.ov.querySelector('#lkDone').addEventListener('click', function(){ finish(); sh.close(); });
   }
   function maybeLook(done){
+    if(S && S.role === 'instructor'){ if(done) done(); return; }
     var asked = null;
     try{ asked = localStorage.getItem(KEY + '-look-asked'); }catch(e){}
     if(asked === '1' || (S && S.fresh === true) || (S && S.look && S.look.asked === true)){ if(done) done(); return; }
@@ -6088,7 +6117,7 @@ body.menuopen{overflow:hidden}
   }
   function rwSeen(){ if(!S.rw || typeof S.rw !== 'object') S.rw = {}; return S.rw; }
   function rwMaybe(){
-    if(!S || !S.entries || S.fresh === true) return;
+    if(!S || !S.entries || S.fresh === true || S.role === 'instructor') return;
     var P = rwPeriods(new Date()), r = rwSeen(), due = [];
     if(r.w !== P.w.key && rwCalc(P.w)) due.push(P.w);
     if(r.m !== P.m.key && rwCalc(P.m)) due.push(P.m);
@@ -6180,6 +6209,7 @@ body.menuopen{overflow:hidden}
     ];
   }
   function startTour(steps, after){
+    if(S && S.role === 'instructor') return;
     closeMenu();
     try{ localStorage.setItem(TOUR_KEY, '1'); }catch(e){}
     if(tourSt) return;
@@ -6269,6 +6299,10 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-35', autotour:true, items:[
+      {t:'Instructor-Modus', x:'Für Fluglehrer und Aufsichten: Beim ersten Start gibt es unten den grauen Link „Instructor“. Damit richtet man einen eigenen Zugang ein, schickt Anfragen an Schüler und sieht nach deren Zustimmung Statistiken, Verläufe und Meldungen. Ein Instructor trägt selbst keine Fragen ein.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Anfragen von Instructors', x:'Fragt ein Instructor an, erscheint die Anfrage im Freunde-Fenster. Du entscheidest: Zulassen, Ablehnen oder Blockieren. Zugelassene Instructors sehen nur, was du unter „Freunde und Freigabe“ freigibst, und bekommen deine automatischen Meldungen. Den Zugriff entziehst du jederzeit.', web:true, tab:'home', sel:'#frIcon'}
+    ]},
     {v:'2026.10.11-34', autotour:true, items:[
       {t:'Benachrichtigungen einstellen', x:'Hier schaltest du alles ein oder aus: tägliche Erinnerung, Briefing am Morgen, Debriefing am Abend und Meldungen von Freunden. Außerdem kannst du freiwillig einen anonymen Stand für die Gesamtübersicht teilen. Standardmäßig ist alles aus, bis du es aktivierst.', web:true, menu:true, sel:'#pushCard summary'},
       {t:'Briefing und Debriefing mit KI', x:'Mit deinem eigenen API-Schlüssel schreibt die KI dir morgens ein kurzes Briefing und abends ein Debriefing. Den Schlüssel trägst du in dieser Karte ein. Er bleibt auf deinem Gerät.', web:true, menu:true, sel:'#aiKeyCard summary'},
@@ -6521,7 +6555,7 @@ body.menuopen{overflow:hidden}
           if(ov.parentNode) ov.parentNode.removeChild(ov);
           done();
           if(tour){ startUpdateTour(missed.concat([latest]), function(){ maybeLook(); }); return; }
-          if(latest.autotour && items.some(function(c){ return !c.notour && c.sel; })){ startUpdateTour([latest], function(){ maybeLook(); }); return; }
+          if(latest.autotour && items.some(function(c){ return !c.notour && c.sel; })){ startUpdateTour(missed.filter(function(r){ return r.autotour; }).concat([latest]), function(){ maybeLook(); }); return; }
           maybeTour(); maybeLook();
         }, 420);
       }
@@ -6534,6 +6568,7 @@ body.menuopen{overflow:hidden}
   function maybeChangelog(){
     var seen = null;
     try{ seen = localStorage.getItem(KEY + '-ver'); }catch(e){}
+    if(S && S.role === 'instructor'){ try{ localStorage.setItem(KEY + '-ver', APP_VER); }catch(e){} return; }
     if(seen === APP_VER){ if(!(S && S.fresh === true)) setTimeout(function(){ maybeLook(); }, 1200); return; }
     try{ localStorage.setItem(KEY + '-ver', APP_VER); }catch(e){}
     if(S && S.fresh === true) return;
@@ -6545,7 +6580,7 @@ body.menuopen{overflow:hidden}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false, syncReady = true;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
+  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S || !syncReady) return;
     var h = dataHash();
@@ -6554,7 +6589,7 @@ body.menuopen{overflow:hidden}
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function(){ syncNow(false); }, 3000);
   }
-  function syncMsg(t){ var el = $('syncMsg'); if(el) el.textContent = t || ''; var ol = $('obLoginMsg'); if(ol) ol.textContent = t || ''; }
+  function syncMsg(t){ var el = $('syncMsg'); if(el) el.textContent = t || ''; var ol = $('obLoginMsg'); if(ol) ol.textContent = t || ''; var oi = $('obInsMsg'); if(oi) oi.textContent = t || ''; }
   function syncUI(){
     var on = !!(syncCfg && syncCfg.gistId);
     $('syncOff1').hidden = on; $('syncOn1').hidden = !on;
@@ -6614,6 +6649,7 @@ body.menuopen{overflow:hidden}
       if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || '', optout:!!d.share.o, sdv:Math.max(d.share.v || 0, (S.share && S.share.sdv) || 0)}; }
       if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen}; }); }
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
+      if(d.role === 'instructor') S.role = 'instructor';
       S.updatedAt = d.updatedAt || Date.now();
       delete S.fresh;
       ensureS();
@@ -6621,6 +6657,7 @@ body.menuopen{overflow:hidden}
       syncHash = dataHash();
       save();
       render(); renderSubjects(); renderHome();
+      if(typeof insApply === 'function') insApply();
     }finally{ syncApplying = false; }
   }
   function syncNow(manual){
@@ -6969,6 +7006,7 @@ body.menuopen{overflow:hidden}
   function frTxt(v, n){ return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, n); }
   function frDate(v){ return (typeof v === 'string' && /^\d{4}-\d\d-\d\d$/.test(v)) ? v : null; }
   function frMine(all){
+    if(S.role === 'instructor') return {format:'short-final-share', v:1, name:frTxt(S.uname, 24) || 'Instructor', role:'instructor', t:Date.now()};
     var c = frCfg(), f = all ? {stand:1, tempo:1, score:1, faecher:1, verlauf:0, badges:1, papi:1, stats:1} : c.f, n = homeNums();
     var o = {format:'short-final-share', v:1, name:frTxt(S.uname, 24) || 'Pilot', t:Date.now()};
     if(f.stand){ o.stand = n.last.n; o.stand_d = n.last.d; o.ziel = S.target; o.ziel_datum = S.deadline; o.diff = Math.round(n.diff); o.heute = n.clicked; o.heute_d = iso(new Date()); }
@@ -7063,6 +7101,7 @@ body.menuopen{overflow:hidden}
     frTimer = setTimeout(function(){ frPush(false).then(function(){ if(typeof pushEvents === 'function') pushEvents(); }); }, 8000);
   }
   function frRelEval(){
+    if(S.role === 'instructor') return;
     var me = null, es = null;
     try{ es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }); me = es[es.length - 1].n; }catch(e){ return; }
     if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {};
@@ -7086,6 +7125,7 @@ body.menuopen{overflow:hidden}
     frBusy = true; frLast = Date.now();
     var chain = Promise.resolve();
     S.friends.forEach(function(fr){
+      if(S.role === 'instructor' && !(typeof pushLk !== 'undefined' && pushLk[fr.gist])) return;
       chain = chain.then(function(){
         return frFetchShare(fr.gist).then(function(d){
           var prev = fr.data, nmF = fr.alias || d.name || 'Freund';
@@ -7108,7 +7148,7 @@ body.menuopen{overflow:hidden}
         }, function(e){ fr.err = (e && e.message) || 'http'; });
       });
     });
-    return chain.then(function(){ frBusy = false; try{ frRelEval(); }catch(e){} frStore(); frRender(); frNewsFlush(); bdSoon(); if(typeof frHomeRender === 'function') frHomeRender(); });
+    return chain.then(function(){ frBusy = false; try{ frRelEval(); }catch(e){} frStore(); frRender(); frNewsFlush(); bdSoon(); if(typeof frHomeRender === 'function') frHomeRender(); if(typeof insRender === 'function') insRender(); });
   }
   /* Hinweise auf neue Abzeichen von Freunden (nur beim Öffnen oder Aktualisieren der App, kein Push) */
   var FR_NEWS = KEY + '-frnews', frFresh = [];
@@ -7227,6 +7267,7 @@ body.menuopen{overflow:hidden}
       h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small">aktualisiert ' + esc(frWhen(fr.last)) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
         '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
     });
+    h += (typeof pushInsHtml === 'function' ? pushInsHtml() : '');
     h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
     h += '<div class="small" id="frMsg" style="margin-top:10px">' + esc(frNote) + '</div>';
     var keep = b.querySelector('#frCode'), ka = b.querySelector('#frAlias'), cv = keep ? keep.value : null, av = ka ? ka.value : null;
@@ -8080,6 +8121,7 @@ body.menuopen{overflow:hidden}
   /* ---------- Erinnerungen per Push (nur GitHub-Version, standardmäßig aus) ---------- */
   var PUSH_KEY = KEY + '-push', pushCfg = null, pushLast = '';
   var PK = ['q', 'o', 'g', 'b', 's', 'p'];
+  var INS_PK = {q: 'Ein Schüler hat Fragen geklickt', o: 'Ein Schüler hat jemanden überholt', g: 'Ein Schüler hat das Tagespensum erreicht', b: 'Ein Schüler hat ein Abzeichen geholt', s: 'Ein Schüler ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
   var PK_LAB = {q: 'Ein Freund hat Fragen geklickt', o: 'Ein Freund hat mich überholt', g: 'Ein Freund hat das Tagespensum erreicht', b: 'Ein Freund hat ein Abzeichen geholt', s: 'Ein Freund ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
   function pushGet(){
     var raw = null, c = null; try{ raw = localStorage.getItem(PUSH_KEY); c = JSON.parse(raw || 'null'); }catch(e){}
@@ -8180,7 +8222,7 @@ body.menuopen{overflow:hidden}
   }
   function pushPayload(sub){
     var c = pushGet(), m = pushMe();
-    var o = {sub: sub.toJSON(), times: c.rem.on ? c.rem.times : [], brief: c.brief.on && aikOn() ? c.brief.t : null, debrief: c.debrief.on && aikOn() ? c.debrief.t : null, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin'), ev: m ? pushEv(c) : ''};
+    var ins = isIns(), o = {sub: sub.toJSON(), times: !ins && c.rem.on ? c.rem.times : [], brief: !ins && c.brief.on && aikOn() ? c.brief.t : null, debrief: !ins && c.debrief.on && aikOn() ? c.debrief.t : null, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin'), ev: m ? pushEv(c) : ''};
     if(m){ o.me = m.me; o.tok = m.tok; o.mute = pushMute(); o.pk = pushPacks(); }
     return o;
   }
@@ -8200,15 +8242,15 @@ body.menuopen{overflow:hidden}
     pushStAt = Date.now();
     try{
       var j = await pushApi('/status', m);
-      pushSt = j; pushLk = {}; (j.out || []).forEach(function(g){ pushLk[g] = 1; });
+      pushSt = j; pushLk = {}; (isIns() ? (j.wat || []) : (j.out || [])).forEach(function(g){ pushLk[g] = 1; });
     }catch(e){ return pushSt; }
-    (pushSt.inbox || []).forEach(function(x){
+    (isIns() ? [] : (pushSt.inbox || [])).forEach(function(x){
       if(pushAnn[x.from]) return; pushAnn[x.from] = 1;
       if(typeof frPop !== 'function') return;
-      var el = frPop('anfrage', '<b>' + esc(x.n) + '</b> möchte dein Freund sein<small>Tippe, um die Anfrage zu beantworten</small>');
+      var el = frPop('anfrage', '<b>' + (x.r === 'i' ? 'Instructor ' : '') + esc(x.n) + '</b> ' + (x.r === 'i' ? 'möchte deine Fortschritte sehen' : 'möchte dein Freund sein') + '<small>Tippe, um die Anfrage zu beantworten</small>');
       if(el) el.addEventListener('click', function(){ if(typeof frOpen === 'function') frOpen(); });
     });
-    try{ if(typeof frRender === 'function') frRender(); if(typeof frNewsDot === 'function') frNewsDot(); }catch(e){}
+    try{ if(typeof frRender === 'function') frRender(); if(typeof frNewsDot === 'function') frNewsDot(); if(typeof insRender === 'function') insRender(); }catch(e){}
     return pushSt;
   }
   async function pushCall(path, extra){
@@ -8220,13 +8262,20 @@ body.menuopen{overflow:hidden}
   async function pushReq(g){
     if(!pushMe()) return null;
     try{
-      var r = await pushCall('/req', {to: g, n: pushName()});
+      var r = await pushCall('/req', isIns() ? {to: g, n: pushName(), r: 'i'} : {to: g, n: pushName()});
       (S.friends || []).forEach(function(f){ if(f.gist === g){ f.req = Date.now(); } }); save();
       return r;
     }catch(e){ return null; }
   }
-  async function pushAccept(g, n){
+  async function pushAccept(g, n, role){
     try{
+      if(role === 'i'){
+        await pushCall('/accept', {from: g, n: pushName()});
+        if(typeof insName === 'function') insName(g, n);
+        frMsg('Instructor ' + n + ' sieht jetzt deine freigegebenen Daten und bekommt deine Meldungen.');
+        try{ frRender(); }catch(e){}
+        return;
+      }
       if(!S.friends.some(function(x){ return x.gist === g; })){
         var d = await frFetchShare(g);
         S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: g, alias: frTxt(n, 24), data: d, last: Date.now(), bseen: d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
@@ -8243,7 +8292,8 @@ body.menuopen{overflow:hidden}
     var ib = (pushSt && pushSt.inbox) || [];
     if(!ib.length) return '';
     return '<div class="card frc" style="margin-top:0;border-color:var(--accent)"><b>Anfragen</b>' + ib.map(function(x){
-      var at = ' data-pg="' + escA(x.from) + '" data-pn="' + escA(x.n) + '"';
+      var at = ' data-pg="' + escA(x.from) + '" data-pn="' + escA(x.n) + '" data-pr="' + (x.r === 'i' ? 'i' : 'f') + '"';
+      if(x.r === 'i') return '<div class="pdr"><b>Instructor ' + esc(x.n) + '</b> möchte deine Fortschritte sehen.<div class="small" style="margin-top:4px">Mit „Zulassen“ sieht er, was du unter „Freunde und Freigabe“ freigibst, und bekommt deine automatischen Meldungen. Du bekommst nichts von ihm und ihr seid keine Freunde.</div><div class="row" style="margin-top:8px"><button type="button" data-pact="racc"' + at + '>Zulassen</button><button type="button" class="ghost" data-pact="rdec"' + at + '>Ablehnen</button><button type="button" class="ghost" data-pact="rblk"' + at + '>Blockieren</button></div></div>';
       return '<div class="pdr"><b>' + esc(x.n) + '</b> möchte dein Freund sein.<div class="small" style="margin-top:4px">Mit „Annehmen“ folgst du ihm auch zurück. Ihr bekommt dann gegenseitig Push-Meldungen.</div><div class="row" style="margin-top:8px"><button type="button" data-pact="racc"' + at + '>Annehmen</button><button type="button" class="ghost" data-pact="rdec"' + at + '>Ablehnen</button><button type="button" class="ghost" data-pact="rblk"' + at + '>Blockieren</button></div></div>';
     }).join('') + '</div>';
   }
@@ -8258,6 +8308,14 @@ body.menuopen{overflow:hidden}
       return '<label class="tg"><span>' + PK_LAB[k].replace('Ein Freund', 'Er').replace('ein gemeinsames Paket', 'ein Paket') + '</span><input type="checkbox" class="sw" data-pmute="' + k + '" data-pg="' + escA(fr.gist) + '"' + (mu.indexOf(k) < 0 ? ' checked' : '') + '></label>';
     }).join('') + '</details>';
   }
+  function pushInsHtml(){
+    var ib = (pushSt && pushSt.ins) || [];
+    if(!ib.length) return '';
+    var nm = typeof insNames === 'function' ? insNames() : {};
+    return '<div class="card frc"><b>Instructor</b><div class="small" style="margin-top:4px">Diese Instructors sehen deine freigegebenen Daten und bekommen deine Meldungen. Den Datenzugriff beendest du ganz mit „Code erneuern“ (Account › Freunde und Freigabe).</div>' + ib.map(function(g){
+      return '<div class="pdr" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:0">' + esc(nm[g] || 'Instructor') + '</span><button type="button" class="ghost" data-pact="iun" data-pg="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-pact="rblk" data-pg="' + escA(g) + '" data-pn="' + escA(nm[g] || '') + '" style="padding:6px 12px">Blockieren</button></div>';
+    }).join('') + '</div>';
+  }
   function pushBlkBtn(fr){ return pushCfg && pushMe() ? '<button type="button" class="ghost" data-pact="blk" data-pg="' + escA(fr.gist) + '" style="padding:6px 12px">Blockieren</button>' : ''; }
   function pushBlkHtml(){
     var bl = (pushSt && pushSt.blocked) || [];
@@ -8270,7 +8328,7 @@ body.menuopen{overflow:hidden}
   document.addEventListener('click', function(ev){
     var t = ev.target && ev.target.closest ? ev.target.closest('[data-pact]') : null;
     if(!t) return;
-    var a = t.getAttribute('data-pact'), g = t.getAttribute('data-pg'), n = t.getAttribute('data-pn') || '';
+    var a = t.getAttribute('data-pact'), g = t.getAttribute('data-pg'), n = t.getAttribute('data-pn') || '', pr = t.getAttribute('data-pr') || '';
     function arm(label){
       if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
       return true;
@@ -8278,7 +8336,8 @@ body.menuopen{overflow:hidden}
     function fin(msg){ return function(){ frMsg(msg); try{ frRender(); }catch(e){} }; }
     function fail(){ frMsg('Das hat nicht geklappt. Bist du online?'); }
     if(a === 'ask'){ frMsg('Sende Anfrage …'); pushReq(g).then(function(r){ frMsg(r && r.linked ? 'Verbunden.' : r ? 'Anfrage gesendet.' : 'Das hat nicht geklappt. Bist du online?'); try{ frRender(); }catch(e){} }); }
-    else if(a === 'racc'){ frMsg('Verbinde …'); pushAccept(g, n); }
+    else if(a === 'racc'){ frMsg('Verbinde …'); pushAccept(g, n, pr); }
+    else if(a === 'iun'){ if(!arm('Entziehen')) return; pushCall('/unlink', {g: g}).then(fin('Zugriff entzogen. Der Instructor bekommt keine Meldungen mehr.'), fail); }
     else if(a === 'rdec'){ pushCall('/decline', {from: g}).then(fin('Anfrage abgelehnt.'), fail); }
     else if(a === 'rblk'){ if(!arm('Blockieren')) return; blkName(g, n); pushCall('/block', {g: g}).then(fin('Blockiert.'), fail); }
     else if(a === 'blk'){
@@ -8307,7 +8366,7 @@ body.menuopen{overflow:hidden}
   var PEV_KEY = KEY + '-pushev', pevBusy = false;
   function pushEvents(){
     try{
-      if(!pushMe()) return;
+      if(!pushMe() || isIns()) return;
       if(pushSt === null){ if(!pevBusy){ pevBusy = true; pushStatus(true).then(function(){ pevBusy = false; if(pushSt) pushEvents(); }, function(){ pevBusy = false; }); } return; }
       var n = homeNums(), d = iso(new Date());
       var bd = bdMerge(S.badges, null), ids = Object.keys(bd);
@@ -8317,7 +8376,7 @@ body.menuopen{overflow:hidden}
       var save2 = function(o){ try{ localStorage.setItem(PEV_KEY, JSON.stringify(o)); }catch(e){} };
       if(!prev || !Array.isArray(prev.bd)){ save2(cur); return; }
       var out = {d: d, qs: prev.d === d ? prev.qs : 0, diff: cur.diff, bd: ids, st: cur.st, gd: prev.gd === d ? d : ''};
-      var linked = Object.keys(pushLk).length > 0;
+      var linked = Object.keys(pushLk).length > 0 || !!(pushSt && pushSt.ins && pushSt.ins.length);
       if(linked){
         if(n.clicked >= 50 && n.clicked - out.qs >= 50){ pushSend('q', String(n.clicked)); out.qs = n.clicked; }
         var fresh = ids.filter(function(id){ return prev.bd.indexOf(id) < 0; });
@@ -8330,7 +8389,7 @@ body.menuopen{overflow:hidden}
         if(typeof prev.st === 'number'){
           (S.friends || []).forEach(function(f){
             var fs = f.data && f.data.stand;
-            if(pushLk[f.gist] && typeof fs === 'number' && prev.st <= fs && cur.st > fs) pushSend('o', '', {to: [f.gist]});
+            if((pushLk[f.gist] || (pushSt && pushSt.ins && pushSt.ins.length)) && typeof fs === 'number' && prev.st <= fs && cur.st > fs) pushSend('o', String(f.alias || (f.data && f.data.name) || '').slice(0, 24), {to: [f.gist]});
           });
         }
       }else{ out.qs = Math.max(out.qs, n.clicked); if(done) out.gd = d; }
@@ -8347,7 +8406,7 @@ body.menuopen{overflow:hidden}
   var pushStatAt = 0, pushStatKey = '';
   function pushStatSend(force){
     try{
-      var c = pushGet(); if(!pushCfg) return;
+      var c = pushGet(); if(!pushCfg || isIns()) return;
       if(!c.stat){
         if(c.statSent && c.sid){ c.statSent = 0; pushPut(c); pushApi('/stat', {sid: c.sid, off: true}).catch(function(){}); }
         return;
@@ -8400,20 +8459,20 @@ body.menuopen{overflow:hidden}
     el.innerHTML = '<summary>Benachrichtigungen (Push)</summary>' +
       '<div class="small pnote">Optional und standardmäßig aus. Dein Gerät meldet sich dafür bei einem kleinen Server an. Dort liegen nur eine anonyme Geräteadresse, deine Uhrzeiten, deine Zeitzone, deine Freigabe-ID und das Netz deiner bestätigten Freunde. Es werden keine Lerndaten und kein API-Schlüssel übertragen. Die Texte erstellt dein Gerät selbst.</div>' +
       '<div class="small pnote" id="pushIos" hidden>Auf iPhone und iPad funktioniert das nur, wenn die App auf dem Home-Bildschirm liegt: In Safari auf Teilen tippen, „Zum Home-Bildschirm“ wählen und die App von dort öffnen.</div>' +
-      '<h3>Für dich</h3>' +
+      '<div class="pme"><h3>Für dich</h3>' +
       chk('pRemOn', 'Tägliche Erinnerung') +
       '<div class="ptm two"><input type="time" id="pushT1" value="18:00" aria-label="Uhrzeit"><input type="time" id="pushT2" aria-label="Zweite Uhrzeit (optional)"></div>' +
       chk('pBrOn', 'Briefing am Morgen (mit KI)') + '<div class="ptm"><input type="time" id="pBrT" value="07:30" aria-label="Uhrzeit Briefing"></div>' +
       chk('pDeOn', 'Debriefing am Abend (mit KI)') + '<div class="ptm"><input type="time" id="pDeT" value="21:00" aria-label="Uhrzeit Debriefing"></div>' +
-      '<div class="small pnote" id="pAiNote"></div>' +
-      '<h3>Von Freunden</h3>' +
+      '<div class="small pnote" id="pAiNote"></div></div>' +
+      '<h3 id="pFh">Von Freunden</h3>' +
       PK.map(function(k){ return chk('pF' + k, PK_LAB[k]); }).join('') +
       '<div class="small pnote" id="pFNote"></div>' +
       '<h3>Meine Meldungen an Freunde</h3>' +
       '<div class="small pnote">Mit jedem bestätigten Freund seid ihr gegenseitig verbunden. Dann bekommt er automatisch eine Meldung, wenn du Fragen geklickt hast, ihn überholst, dein Tagespensum erreichst, ein Abzeichen holst, wieder im Soll bist oder ein gemeinsames Paket aktualisierst. Dein Gerät sendet dafür beim Ereignis deinen Namen und die Art der Meldung an den Server, keine Zahlen. Pro Freund kannst du Meldungen im Freunde-Fenster stummschalten. Dort kannst du Freunde auch entfernen oder blockieren.</div>' +
-      '<h3>Anonyme Statistik</h3>' +
+      '<div id="pStatBox"><h3>Anonyme Statistik</h3>' +
       chk('pStat', 'Anonymen Stand für die Gesamtübersicht des Betreibers teilen') +
-      '<div class="small pnote">Gesendet werden nur Fragenstand, Ziel, Tempo und Datum unter einer zufälligen Nummer. Kein Name, keine Freunde, keine Verbindung zu deinem Konto. Jederzeit abschaltbar, dann wird der Eintrag gelöscht.</div>' +
+      '<div class="small pnote">Gesendet werden nur Fragenstand, Ziel, Tempo und Datum unter einer zufälligen Nummer. Kein Name, keine Freunde, keine Verbindung zu deinem Konto. Jederzeit abschaltbar, dann wird der Eintrag gelöscht.</div></div>' +
       '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button></div>' +
       '<div class="small msg" id="pushMsg" style="margin:8px 14px 0"></div>';
     var anchor = document.getElementById('aiKeyCard') || document.getElementById('syncCard');
@@ -8434,8 +8493,9 @@ body.menuopen{overflow:hidden}
       $('pBrOn').checked = c.brief.on && ai; $('pDeOn').checked = c.debrief.on && ai; $('pBrOn').disabled = $('pDeOn').disabled = !ai;
       $('pBrT').value = c.brief.t; $('pDeT').value = c.debrief.t;
       $('pAiNote').textContent = ai ? 'Briefing und Debriefing schreibt die KI mit deinem eigenen API-Schlüssel. Dein Gerät ruft sie direkt bei Anthropic auf, die Kosten sind sehr gering. Basis ist dein Stand vom letzten Öffnen der App. Auf dem iPhone kann der Abruf im Hintergrund zu lange dauern. Dann kommt ein kurzer Standardtext.' : 'Briefing und Debriefing brauchen deinen eigenen API-Schlüssel. Trage ihn in der Karte „KI“ weiter oben ein, dann kannst du sie hier einschalten.';
-      PK.forEach(function(k){ $('pF' + k).checked = c.fev[k]; $('pF' + k).disabled = !me; });
-      $('pFNote').textContent = me ? 'Du bekommst Meldungen nur von Freunden, mit denen du verbunden bist. Einzelne Freunde schaltest du im Freunde-Fenster stumm.' : 'Dafür brauchst du zuerst deine Freigabe (Account, Freunde und Freigabe).';
+      PK.forEach(function(k){ $('pF' + k).checked = c.fev[k]; $('pF' + k).disabled = !me; $('pF' + k).parentNode.querySelector('span').textContent = isIns() ? (INS_PK[k] || PK_LAB[k]) : PK_LAB[k]; });
+      $('pFh').textContent = isIns() ? 'Von Schülern' : 'Von Freunden';
+      $('pFNote').textContent = isIns() ? 'Du bekommst Meldungen nur von Schülern, die deine Anfrage bestätigt haben. Einzelne Schüler schaltest du in der Instructor-Ansicht stumm.' : me ? 'Du bekommst Meldungen nur von Freunden, mit denen du verbunden bist. Einzelne Freunde schaltest du im Freunde-Fenster stumm.' : 'Dafür brauchst du zuerst deine Freigabe (Account, Freunde und Freigabe).';
       $('pStat').checked = c.stat;
       $('pushOn').textContent = c.on ? 'Einstellungen speichern' : 'Benachrichtigungen aktivieren';
       $('pushOff').hidden = !c.on; $('pushTest').hidden = !c.on;
@@ -8466,8 +8526,8 @@ body.menuopen{overflow:hidden}
         pushPut(c);
         await pushApi('/subscribe', pushPayload(sub));
         c.on = true; pushPut(c); pushLast = ''; pushFh = ''; pushTouch(true); paint();
-        var parts = []; if(c.rem.on) parts.push('Erinnerung um ' + c.rem.times.join(' und ') + ' Uhr');
-        if(c.brief.on && aikOn()) parts.push('Briefing um ' + c.brief.t + ' Uhr'); if(c.debrief.on && aikOn()) parts.push('Debriefing um ' + c.debrief.t + ' Uhr');
+        var parts = [], nIns = isIns(); if(c.rem.on && !nIns) parts.push('Erinnerung um ' + c.rem.times.join(' und ') + ' Uhr');
+        if(c.brief.on && aikOn() && !nIns) parts.push('Briefing um ' + c.brief.t + ' Uhr'); if(c.debrief.on && aikOn() && !nIns) parts.push('Debriefing um ' + c.debrief.t + ' Uhr');
         if(friendsOn) parts.push('Freund-Meldungen');
         msg.textContent = 'Aktiv: ' + parts.join(', ') + '.';
       }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler'); }
@@ -8511,9 +8571,194 @@ body.menuopen{overflow:hidden}
       if(q){ try{ history.replaceState(null, '', location.pathname); }catch(e){} var tries = 0; (function w(){ if(pushCfg){ pushStatus(true).then(function(){ if(typeof frOpen === 'function') frOpen(); }); } else if(tries++ < 20) setTimeout(w, 400); })(); }
     }catch(e){}
   })();
+  /* ---------- Instructor-Modus (Aufsicht über Schüler, nur GitHub-Version) ---------- */
+  function isIns(){ return !!S && S.role === 'instructor'; }
+  var INS_OPEN = null, INS_NF = KEY + '-insn';
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = 'body.instr .tabs,body.instr #tabHome,body.instr #tabMain,body.instr #tabSubj,body.instr .subrow,body.instr #bdIcon,body.instr #frIcon,body.instr #statCard,body.instr #rwCard,body.instr #examCard,body.instr #settingsMain,body.instr #wCard,body.instr #impCard,body.instr #dataCard,body.instr #acShare,body.instr #pushCard .pme,body.instr #pStatBox{display:none!important}' +
+      '#insView{margin-top:4px}#insView .ins-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#insView .ins-h b{flex:1;font-size:17px}' +
+      '.insbar{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px}.insbar .nm{flex:0 0 30%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.insbar .tr{flex:1;height:14px;border-radius:7px;background:var(--line);overflow:hidden}.insbar .tr i{display:block;height:100%;border-radius:7px}.insbar .pc{flex:0 0 44px;text-align:right;font-weight:650}' +
+      '.inst{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:13px}.inst span{white-space:nowrap}.inst b{font-weight:700}' +
+      '.insl{color:#8b93ab;font-size:12.5px;background:none;border:0;padding:6px;text-decoration:underline;cursor:pointer}.insl:hover{color:var(--text)}';
+    document.head.appendChild(st);
+  })();
+  function insNames(){ try{ var o = JSON.parse(localStorage.getItem(INS_NF) || '{}'); return o && typeof o === 'object' ? o : {}; }catch(e){ return {}; } }
+  function insName(g, n){ var o = insNames(); if(n) o[g] = String(n).slice(0, 24); try{ localStorage.setItem(INS_NF, JSON.stringify(o)); }catch(e){} return o[g] || ''; }
+  function insColor(ac){
+    if(typeof ac === 'string' && /^#[0-9a-fA-F]{6}$/.test(ac)) return ac;
+    var c = LOOK_COLORS.filter(function(x){ return x[0] === ac; })[0];
+    return (c && c[2]) || '#d6247a';
+  }
+  function insApply(){
+    var on = isIns();
+    document.body.classList.toggle('instr', on);
+    try{ var pc0 = document.getElementById('pushCard'); if(pc0) pc0.dispatchEvent(new Event('toggle')); }catch(e){}
+    var v = document.getElementById('insView');
+    if(!on){ if(v && v.parentNode) v.parentNode.removeChild(v); return; }
+    if(!v){
+      v = document.createElement('div'); v.id = 'insView';
+      var tabs = document.querySelector('.tabs');
+      if(tabs && tabs.parentNode) tabs.parentNode.insertBefore(v, tabs.nextSibling);
+      v.addEventListener('click', insClick);
+    }
+    insRender();
+  }
+  function insPct(d){ return d && typeof d.stand === 'number' && d.ziel > 0 ? Math.max(0, Math.min(100, d.stand / d.ziel * 100)) : null; }
+  var INS_LAB = {q: 'Fragen geklickt', o: 'hat jemanden überholt', g: 'Tagespensum erreicht', b: 'Abzeichen geholt', s: 'wieder im Soll'};
+  function insCard(fr, i){
+    var d = fr.data, g = fr.gist, lk = !!(typeof pushLk !== 'undefined' && pushLk[g]);
+    var nm = fr.alias || (d && d.name) || fr.nm || 'Schüler';
+    var pend = !lk && fr.req;
+    var h = '<div class="card frc"><div class="frh"><b>' + esc(nm) + '</b><span class="small">' + (lk ? 'aktualisiert ' + esc(frWhen(fr.last)) : pend ? 'wartet auf Zusage' : 'nicht verbunden') + '</span></div>';
+    if(!lk){
+      h += '<div class="small" style="margin-top:6px">' + (pend ? 'Die Anfrage ist gesendet. Sobald der Schüler zustimmt, siehst du seine Daten und bekommst seine Meldungen.' : 'Noch keine Verbindung. Sende die Anfrage erneut.') + '</div><div class="row" style="margin-top:8px"><button type="button" class="ghost" data-iact="ask" data-ig="' + escA(g) + '" style="padding:6px 12px">Anfrage erneut senden</button><button type="button" class="ghost" data-iact="rm" data-ig="' + escA(g) + '" style="padding:6px 12px">Entfernen</button></div></div>';
+      return h;
+    }
+    if(!d){
+      h += '<div class="small" style="margin-top:6px">' + (fr.err === 'gone' ? 'Die Freigabe des Schülers wurde beendet oder der Code ist ungültig.' : fr.err ? 'Konnte nicht geladen werden. Bist du online?' : 'Lädt …') + '</div>';
+    }else{
+      var pc = insPct(d), today = iso(new Date());
+      h += '<div class="inst">' + (pc !== null ? '<span>Fortschritt <b>' + Math.round(pc) + ' %</b></span>' : '') + (typeof d.stand === 'number' ? '<span>Stand <b>' + fmt(d.stand) + '</b>' + (d.ziel ? ' von ' + fmt(d.ziel) : '') + '</span>' : '') +
+        (typeof d.diff === 'number' ? '<span>Soll <b style="color:' + (d.diff >= 0 ? 'var(--good,#1d8f3f)' : 'var(--bad,#d12f3f)') + '">' + (d.diff >= 0 ? '+' : '') + fmt(d.diff) + '</b></span>' : '') +
+        (typeof d.heute === 'number' ? '<span>Heute <b>' + fmt(d.heute_d === today ? d.heute : 0) + '</b></span>' : '') + (typeof d.tempo === 'number' ? '<span>Tempo <b>' + fmt(d.tempo) + '</b>/Tag</span>' : '') +
+        (typeof d.score === 'number' ? '<span>Ø Score <b>' + frF1(d.score) + ' %</b></span>' : '') + '</div>';
+      if(typeof d.papi === 'number') h += '<div style="display:flex;justify-content:center;margin-top:8px">' + stMini(d.pst && ST_STYLES.some(function(x){ return x[0] === d.pst; }) ? d.pst : 'papi', d.papi) + '</div>';
+      if(d.faecher && d.faecher.length) h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Score je Fach</summary><table class="frt"><tr><th></th><th>Score</th><th>Geklickt</th></tr>' + d.faecher.map(function(x){ return '<tr><td>' + esc(x.name) + '</td><td>' + frF1(x.sc) + '</td><td>' + (x.clicked === null || x.clicked === undefined ? '–' : fmt(x.clicked)) + '</td></tr>'; }).join('') + '</table></details>';
+      if(d.badges){ var bl = bdList(), got = {}; d.badges.forEach(function(x){ got[x.id] = x.d; }); h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Abzeichen: ' + bl.filter(function(b){ return got[b.id]; }).length + ' von ' + bl.length + '</summary><div class="bdg">' + bl.filter(function(b){ return got[b.id]; }).map(function(b){ return '<div class="bdc on">' + bdSvg(b, true, 40) + '<b>' + esc(b.name) + '</b></div>'; }).join('') + '</div></details>'; }
+      if(d.stats) h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Statistiken und Fakten</summary>' + statHTML(d.stats, nm) + '</details>';
+      if(d.verlauf && d.verlauf.length > 1) h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Verlauf</summary>' + insLines([{n: nm, c: insColor(d.ac), v: d.verlauf, z: d.ziel}], false) + '</details>';
+      if(!d.stats && !d.verlauf && !d.faecher && !d.badges) h += '<div class="small" style="margin-top:6px">Der Schüler gibt nur wenige Daten frei.</div>';
+    }
+    var mu = fr.mute || '';
+    h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Meldungen von diesem Schüler</summary>' + Object.keys(INS_LAB).map(function(k){
+      return '<label class="tg"><span>' + INS_LAB[k] + '</span><input type="checkbox" class="sw" data-pmute="' + k + '" data-pg="' + escA(g) + '"' + (mu.indexOf(k) < 0 ? ' checked' : '') + '></label>';
+    }).join('') + '</details>';
+    h += '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-iact="rm" data-ig="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-iact="blk" data-ig="' + escA(g) + '" style="padding:6px 12px">Blockieren</button></div></div>';
+    return h;
+  }
+  /* Liniendiagramm: pro Schüler eine Linie in seiner Akzentfarbe, Werte als Prozent vom Ziel (pct) oder absolut */
+  function insLines(series, pct){
+    var all = []; series.forEach(function(s){ s.v.forEach(function(e){ all.push(e); }); });
+    if(!all.length) return '';
+    var ds = all.map(function(e){ return e.d; }).sort(), t0 = parse(ds[0]), t1 = parse(ds[ds.length - 1]), span = Math.max(1, days(t0, t1)), W = 320, H = 120;
+    var val = function(s, e){ return pct ? (s.z > 0 ? Math.min(100, e.n / s.z * 100) : 0) : e.n; };
+    var ymax = Math.max.apply(null, series.map(function(s){ return Math.max.apply(null, s.v.map(function(e){ return val(s, e); }).concat([1])); })) || 1;
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + (H + 4) + '" style="width:100%;margin-top:8px" role="img" aria-label="Verlauf">' +
+      '<line x1="0" y1="' + (H - 1) + '" x2="' + W + '" y2="' + (H - 1) + '" stroke="var(--line)"/>' +
+      series.map(function(s){
+        return '<polyline fill="none" stroke="' + s.c + '" stroke-width="2" stroke-linejoin="round" points="' + s.v.map(function(e){ return (days(t0, parse(e.d)) / span * W).toFixed(1) + ',' + (H - val(s, e) / ymax * (H - 8) - 3).toFixed(1); }).join(' ') + '"/>';
+      }).join('') + '</svg>';
+    return svg + '<div class="small" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px"><span>' + fd(t0) + ' – ' + fd(t1) + (pct ? ' · Prozent vom Ziel' : ' · Fragen gesamt') + '</span>' + series.map(function(s){ return '<span><i style="display:inline-block;width:10px;height:10px;border-radius:5px;background:' + s.c + ';margin-right:4px"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
+  }
+  function insRender(){
+    var v = document.getElementById('insView');
+    if(!v || !isIns()) return;
+    var keepC = v.querySelector('#insCode'), keepA = v.querySelector('#insAlias'), cv = keepC ? keepC.value : '', av = keepA ? keepA.value : '';
+    var fr = S.friends || [], lkd = fr.filter(function(f){ return typeof pushLk !== 'undefined' && pushLk[f.gist] && f.data; });
+    var h = '<div class="card"><div class="ins-h"><b>Instructor-Ansicht</b><button type="button" class="ghost" data-iact="refresh" style="padding:7px 14px">Aktualisieren</button></div>';
+    h += '<div class="small" style="margin-top:4px">' + (lkd.length ? lkd.length + (lkd.length === 1 ? ' Schüler verbunden.' : ' Schüler verbunden.') : 'Noch kein Schüler verbunden.') + ' Du siehst, was jeder Schüler in „Freunde und Freigabe“ freigibt, und bekommst seine Meldungen.</div>';
+    if(!(S.share && S.share.gist)) h += '<div class="small" style="margin-top:8px;color:var(--bad,#d12f3f)">Dein Instructor-Zugang ist noch nicht beim Server angemeldet.</div><button type="button" data-iact="ident" style="width:100%;margin-top:6px">Verbindung herstellen</button>';
+    h += '</div>';
+    if(lkd.length){
+      var sorted = lkd.slice().sort(function(a, b){ return (insPct(b.data) || 0) - (insPct(a.data) || 0); });
+      h += '<div class="card"><h2>Klasse im Überblick</h2>' + sorted.map(function(f){
+        var p = insPct(f.data), nm = f.alias || f.data.name || 'Schüler';
+        return '<div class="insbar"><span class="nm">' + esc(nm) + '</span><span class="tr"><i style="width:' + (p || 0).toFixed(1) + '%;background:' + insColor(f.data.ac) + '"></i></span><span class="pc">' + (p === null ? '–' : Math.round(p) + ' %') + '</span></div>';
+      }).join('') + '<div class="small" style="margin-top:8px">Fortschritt = Fragenstand im Verhältnis zum eigenen Ziel.</div></div>';
+      var ser = sorted.filter(function(f){ return f.data.verlauf && f.data.verlauf.length > 1; }).map(function(f){ return {n: f.alias || f.data.name || 'Schüler', c: insColor(f.data.ac), v: f.data.verlauf, z: f.data.ziel}; });
+      if(ser.length) h += '<div class="card"><h2>Verlauf aller Schüler</h2>' + insLines(ser, true) + '</div>';
+      var tab = sorted.map(function(f){ var d = f.data; return '<tr><td>' + esc(f.alias || d.name || 'Schüler') + '</td><td>' + (typeof d.diff === 'number' ? (d.diff >= 0 ? '+' : '') + fmt(d.diff) : '–') + '</td><td>' + (typeof d.heute === 'number' ? fmt(d.heute_d === iso(new Date()) ? d.heute : 0) : '–') + '</td><td>' + (typeof d.tempo === 'number' ? fmt(d.tempo) : '–') + '</td></tr>'; }).join('');
+      h += '<div class="card"><h2>Zahlen</h2><table class="frt"><tr><th></th><th>Soll</th><th>Heute</th><th>Tempo</th></tr>' + tab + '</table></div>';
+    }
+    h += '<div class="card frc"><b>Schüler hinzufügen</b><div class="small" style="margin:6px 0">Gib den Freundecode des Schülers ein. Er steht bei ihm im Account unter „Freunde und Freigabe“. Der Schüler muss deine Anfrage bestätigen.</div>' +
+      '<input type="text" id="insCode" placeholder="SF-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%">' +
+      '<input type="text" id="insAlias" placeholder="Name (optional)" maxlength="24" style="width:100%;margin-top:8px">' +
+      '<button type="button" data-iact="add" style="width:100%;margin-top:8px">Anfrage senden</button><div class="small" id="insMsg" style="margin-top:8px">' + esc(INS_NOTE) + '</div></div>';
+    h += '<div class="row" style="margin-top:12px;align-items:center"><b style="flex:1">Deine Schüler</b></div>';
+    if(!fr.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
+    fr.forEach(function(f, i){ h += insCard(f, i); });
+    h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
+    v.innerHTML = h;
+    if(v.querySelector('#insCode')) v.querySelector('#insCode').value = cv;
+    if(v.querySelector('#insAlias')) v.querySelector('#insAlias').value = av;
+    if(fr.some(function(f){ return typeof pushLk !== 'undefined' && pushLk[f.gist] && !f.data && !f.err && !f.last; }) && !frBusy) frPull(true);
+  }
+  var INS_NOTE = '';
+  function insMsg(t){ INS_NOTE = t || ''; var el = document.getElementById('insMsg'); if(el) el.textContent = INS_NOTE; }
+  function insAdd(){
+    var v = document.getElementById('insView'), raw = v.querySelector('#insCode').value, m = /([0-9a-f]{20,40})/i.exec(raw.replace(/\s+/g, ''));
+    if(!m){ insMsg('Das sieht nicht nach einem Freigabe-Code aus.'); return; }
+    var gid = m[1].toLowerCase();
+    if(!S.share || !S.share.gist){ insMsg('Stelle zuerst die Verbindung her (siehe oben).'); return; }
+    if(S.share.gist === gid){ insMsg('Das ist dein eigener Code.'); return; }
+    if(S.friends.some(function(x){ return x.gist === gid; })){ insMsg('Diesen Schüler hast du schon hinzugefügt.'); return; }
+    insMsg('Prüfe Code …');
+    var alias = frTxt(v.querySelector('#insAlias').value, 24);
+    frFetchShare(gid).then(function(d){
+      S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: gid, alias: alias, nm: d.name, data: null, last: 0});
+      save(); v.querySelector('#insCode').value = ''; v.querySelector('#insAlias').value = '';
+      return pushReq(gid).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden: ' + d.name : 'Anfrage an ' + d.name + ' gesendet. Sobald er zustimmt, siehst du seine Daten.') : 'Hinzugefügt, aber die Anfrage ging nicht raus. Prüfe die Verbindung und sende sie erneut.'); insRender(); });
+    }, function(e){ insMsg(e && e.message === 'gone' ? 'Code nicht gefunden. Prüfe ihn und frage nach einem neuen.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Das hat nicht geklappt. Bist du online und ist der Code vollständig?'); });
+  }
+  function insIdent(){
+    insMsg('Verbinde …');
+    frCfg();
+    var p = S.share.gist ? Promise.resolve(null) : frCreate();
+    p.then(function(g){ if(g){ S.share.gist = g.id; S.share.h = frHash(frMine(false)); save(); } insMsg('Verbunden.'); if(typeof pushStatus === 'function') pushStatus(true); insRender(); }, function(){ insMsg('Das hat nicht geklappt. Prüfe die Verbindung und den Token.'); });
+  }
+  function insClick(ev){
+    var t = ev.target && ev.target.closest ? ev.target.closest('[data-iact]') : null;
+    if(!t) return;
+    var a = t.getAttribute('data-iact'), g = t.getAttribute('data-ig');
+    function arm(label){
+      if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
+      return true;
+    }
+    if(a === 'add') insAdd();
+    else if(a === 'ident') insIdent();
+    else if(a === 'refresh'){ frLast = 0; if(typeof pushStatus === 'function') pushStatus(true); frPull(true); }
+    else if(a === 'ask'){ insMsg('Sende Anfrage …'); pushReq(g).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden.' : 'Anfrage gesendet.') : 'Das hat nicht geklappt. Bist du online?'); insRender(); }); }
+    else if(a === 'rm'){
+      if(!arm(t.textContent)) return;
+      S.friends = S.friends.filter(function(x){ return x.gist !== g; }); save(); pushUnlink(g); insRender();
+    }else if(a === 'blk'){
+      if(!arm('Blockieren')) return;
+      var f0 = S.friends.filter(function(x){ return x.gist === g; })[0];
+      if(typeof blkName === 'function') blkName(g, f0 ? (f0.alias || f0.nm || (f0.data && f0.data.name) || '') : '');
+      S.friends = S.friends.filter(function(x){ return x.gist !== g; }); save();
+      pushCall('/block', {g: g}).then(function(){ insMsg('Blockiert und entfernt.'); }, function(){ insMsg('Das hat nicht geklappt. Bist du online?'); });
+      insRender();
+    }
+  }
+  /* Einrichtung: Abschluss nach erfolgreicher Anmeldung */
+  function insFinish(){
+    var today = iso(new Date());
+    if(S.role !== 'instructor' && S.fresh !== true){
+      /* Token gehört zu einem Lernkonto: nichts verändern, lokal zurücksetzen */
+      setTimeout(function(){ var m = document.getElementById('obInsMsg'); if(m) m.textContent = 'Dieser Token gehört zu einem Lernkonto. Erzeuge für den Instructor-Zugang einen eigenen Token bei GitHub.'; }, 150);
+      setTimeout(function(){ try{ wipeStorage(); }catch(e){} location.reload(); }, 3500);
+      return;
+    }
+    if(S.role !== 'instructor'){
+      S.role = 'instructor'; S.uname = nameClean(ob.insName) || 'Instructor';
+      S.entries = [{d: today, n: 0}];
+    }
+    delete S.fresh; ensureS(); save();
+    document.body.classList.remove('obopen');
+    $('onb').hidden = true; $('onb').innerHTML = ''; document.body.style.overflow = '';
+    var w = document.getElementById('wel'); if(w && w.parentNode) w.parentNode.removeChild(w);
+    try{ localStorage.setItem(KEY + '-look-asked', '1'); localStorage.setItem(KEY + '-ver', APP_VER); }catch(e){}
+    ob.insMode = false; ob.pre = false;
+    insApply(); showTab('home');
+    toast('Instructor-Zugang eingerichtet.');
+    setTimeout(tokWarn, 700);
+    insIdent();
+  }
   maybeChangelog();
   connect(0);
   if(S.fresh === true) obOpen();
+  insApply();
 })();
 </script>
 </body>

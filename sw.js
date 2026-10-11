@@ -28,9 +28,9 @@ function message(s){
   return GENERIC[dn % GENERIC.length];
 }
 function friendText(it, cfg){
-  var nm = (cfg && cfg.fr && cfg.fr[it.g]) || it.n || 'Ein Freund';
+  var nm = (cfg && cfg.fr && cfg.fr[it.g]) || it.n || (it.i ? 'Ein Schüler' : 'Ein Freund');
   if(it.e === 'q') return nm + ' hat heute ' + (it.x ? it.x + ' ' : '') + 'Fragen geklickt.';
-  if(it.e === 'o') return nm + ' hat dich überholt.';
+  if(it.e === 'o') return it.i ? nm + ' hat ' + (it.x || 'jemanden') + ' überholt.' : nm + ' hat dich überholt.';
   if(it.e === 'g') return nm + ' hat das Tagespensum erreicht.';
   if(it.e === 'b') return nm + ' hat das Abzeichen „' + (it.x || 'neu') + '“ geholt.';
   if(it.e === 's') return nm + ' ist wieder im Soll.';

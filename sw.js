@@ -110,7 +110,10 @@ function handle(){
         }
         else jobs.push(show('Short Final!', message(st), 'sf-daily'));
       });
-      return Promise.all(jobs);
+      return Promise.all(jobs).then(function(){
+        if(!(self.clients && self.clients.matchAll)) return null;
+        return self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(function(l){ l.forEach(function(c){ try{ c.postMessage({sf: 'refresh'}); }catch(e){} }); });
+      });
     });
   });
 }

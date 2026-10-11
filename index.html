@@ -8152,15 +8152,52 @@ body.menuopen{overflow:hidden}
     var s = b64.replace(/-/g, '+').replace(/_/g, '/'); while(s.length % 4) s += '=';
     var raw = atob(s), out = new Uint8Array(raw.length); for(var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i); return out;
   }
-  async function pushApi(path, body){
+  var pushClaimTried = {};
+  async function pushApi(path, body, noRetry){
     var r = await fetch(pushCfg.url + path, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
     var j = null; try{ j = await r.json(); }catch(e){}
-    if(!r.ok) throw new Error((j && j.error) || ('Fehler ' + r.status));
+    if(!r.ok){
+      var em = (j && j.error) || ('Fehler ' + r.status), g0 = body && (body.me || body.gist);
+      /* Freigabe-ID gehört dort einem anderen Gerätetoken: Eigentum über das Beschreiben des Gists neu belegen */
+      if(!noRetry && em === 'nicht erlaubt' && path !== '/claim' && body && body.tok && g0 && syncCfg && syncCfg.token && !pushClaimTried[g0]){
+        pushClaimTried[g0] = 1;
+        try{ await pushClaim(g0, body.tok); }catch(e){ throw new Error(em); }
+        return pushApi(path, body, true);
+      }
+      throw new Error(em);
+    }
     return j;
+  }
+  async function pushClaim(g, tok){
+    var a = await pushApi('/claim', {gist: g}, true);
+    await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': {content: a.nonce}}}});
+    await pushApi('/claim', {gist: g, tok: tok, nonce: a.nonce}, true);
+    try{ await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': null}}}); }catch(e){}
+  }
+  /* SHA-256 (synchron), damit alle Geräte eines Kontos denselben Token ableiten */
+  function pushSha(str){
+    var u = unescape(encodeURIComponent(str)), n = u.length, w = [], i, j, K = [], H = [], P = 0;
+    function r(x, c){ return (x >>> c) | (x << (32 - c)); }
+    var c = 2; while(P < 64){ var pr = true; for(i = 2; i * i <= c; i++) if(c % i === 0){ pr = false; break; } if(pr){ var f2 = function(x){ return ((x - Math.floor(x)) * 4294967296) | 0; }; if(P < 8) H[P] = f2(Math.pow(c, 0.5)); K[P++] = f2(Math.pow(c, 1 / 3)); } c++; }
+    for(i = 0; i < ((((n + 8) >> 6) << 4) + 16); i++) w[i] = 0;
+    for(i = 0; i < n; i++) w[i >> 2] |= u.charCodeAt(i) << (24 - (i % 4) * 8);
+    w[n >> 2] |= 0x80 << (24 - (n % 4) * 8); w[(((n + 8) >> 6) << 4) + 15] = n * 8;
+    for(j = 0; j < w.length; j += 16){
+      var W = w.slice(j, j + 16), h = H.slice(0), t;
+      for(i = 0; i < 64; i++){
+        if(i >= 16){ var a0 = W[i - 15], a1 = W[i - 2]; W[i] = (W[i - 16] + (r(a0, 7) ^ r(a0, 18) ^ (a0 >>> 3)) + W[i - 7] + (r(a1, 17) ^ r(a1, 19) ^ (a1 >>> 10))) | 0; }
+        t = (h[7] + (r(h[4], 6) ^ r(h[4], 11) ^ r(h[4], 25)) + ((h[4] & h[5]) ^ (~h[4] & h[6])) + K[i] + (W[i] | 0)) | 0;
+        var m = ((r(h[0], 2) ^ r(h[0], 13) ^ r(h[0], 22)) + ((h[0] & h[1]) ^ (h[0] & h[2]) ^ (h[1] & h[2]))) | 0;
+        h = [(t + m) | 0, h[0], h[1], h[2], (h[3] + t) | 0, h[4], h[5], h[6]];
+      }
+      for(i = 0; i < 8; i++) H[i] = (H[i] + h[i]) | 0;
+    }
+    return H.map(function(x){ return ('00000000' + (x >>> 0).toString(16)).slice(-8); }).join('');
   }
   function pushEv(c){ return PK.filter(function(x){ return c.fev[x]; }).join(''); }
   function pushWantsAi(c){ return (c.brief.on || c.debrief.on) && aikOn(); }
   function pushTok(c){
+    if(syncCfg && syncCfg.token) return pushSha(syncCfg.token + '|sf-push-v1').slice(0, 32);
     if(!c.tok || !/^[0-9a-f]{32}$/.test(c.tok)){ c.tok = pushRnd(16); pushPut(c); }
     return c.tok;
   }
@@ -8246,13 +8283,66 @@ body.menuopen{overflow:hidden}
       pushSt = j; pushLk = {}; (isIns() ? (j.wat || []) : (j.out || [])).forEach(function(g){ pushLk[g] = 1; });
     }catch(e){ return pushSt; }
     (isIns() ? [] : (pushSt.inbox || [])).forEach(function(x){
-      if(pushAnn[x.from]) return; pushAnn[x.from] = 1;
+      var pk0 = x.from + ':' + x.t, seenP = {}; try{ seenP = JSON.parse(localStorage.getItem(KEY + '-bellpop') || '{}') || {}; }catch(e){}
+      if(pushAnn[pk0] || seenP[pk0]) return; pushAnn[pk0] = 1; seenP[pk0] = 1; try{ var ks = Object.keys(seenP); if(ks.length > 40) delete seenP[ks[0]]; localStorage.setItem(KEY + '-bellpop', JSON.stringify(seenP)); }catch(e){}
       if(typeof frPop !== 'function') return;
       var el = frPop('anfrage', '<b>' + (x.r === 'i' ? 'Instructor ' : '') + esc(x.n) + '</b> ' + (x.r === 'i' ? 'möchte deine Fortschritte sehen' : 'möchte dein Freund sein') + '<small>Tippe, um die Anfrage zu beantworten</small>');
-      if(el) el.addEventListener('click', function(){ if(typeof frOpen === 'function') frOpen(); });
+      if(el) el.addEventListener('click', function(){ el.remove(); bellOpen(); });
     });
+    try{ bellSync(); }catch(e){}
     try{ if(typeof frRender === 'function') frRender(); if(typeof frNewsDot === 'function') frNewsDot(); if(typeof insRender === 'function') insRender(); }catch(e){}
+    try{ bellDot(); bellRender(); }catch(e){}
     return pushSt;
+  }
+  /* ---------- Glocke: offene und frühere Anfragen ---------- */
+  var BELL_KEY = KEY + '-bell', bellView = null;
+  function bellLoad(){ try{ var a = JSON.parse(localStorage.getItem(BELL_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+  function bellSave(a){ try{ localStorage.setItem(BELL_KEY, JSON.stringify(a.slice(-30))); }catch(e){} }
+  function bellSync(){
+    if(!pushSt || isIns()) return;
+    var a = bellLoad(), ib = pushSt.inbox || [], ch = false;
+    ib.forEach(function(x){ if(!a.some(function(e){ return e.from === x.from && e.t === x.t; })){ a.push({from: x.from, n: x.n, r: x.r === 'i' ? 'i' : 'f', t: x.t, st: 'open'}); ch = true; } });
+    a.forEach(function(e){
+      if(e.st !== 'open' || ib.some(function(x){ return x.from === e.from && x.t === e.t; })) return;
+      e.st = (pushSt.blocked || []).indexOf(e.from) >= 0 ? 'blockiert' : ((pushSt.ins || []).indexOf(e.from) >= 0 || pushLk[e.from]) ? 'angenommen' : 'beantwortet'; ch = true;
+    });
+    if(ch) bellSave(a);
+  }
+  var BELL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>';
+  function bellBtn(){
+    var b = document.getElementById('bellIcon');
+    if(b || !pushCfg) return b;
+    var fi = document.getElementById('frIcon'); if(!fi || !fi.parentNode) return null;
+    b = document.createElement('button'); b.className = 'iconbtn'; b.id = 'bellIcon'; b.setAttribute('aria-label', 'Mitteilungen'); b.title = 'Mitteilungen'; b.innerHTML = BELL_SVG;
+    fi.parentNode.insertBefore(b, fi);
+    b.addEventListener('click', bellOpen);
+    var st = document.createElement('style'); st.textContent = 'body.instr #bellIcon{display:none!important}#bellIcon{position:relative}.bellh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}.bellh:first-of-type{border-top:0}.bellh b{font-weight:650}.bellh .d{color:var(--muted);font-size:12px;margin-left:auto}';
+    document.head.appendChild(st);
+    return b;
+  }
+  function bellDot(){
+    var b = bellBtn(); if(!b) return;
+    var n = pushInboxN(), dot = b.querySelector('.dotb');
+    if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
+    if(!dot){ dot = document.createElement('span'); dot.className = 'dotb'; b.appendChild(dot); }
+    dot.textContent = n > 9 ? '9+' : String(n);
+  }
+  function bellRender(){
+    if(!bellView || !bellView.ov.parentNode) return;
+    var b = bellView.ov.querySelector('#bellBody'); if(!b) return;
+    var h = pushReqHtml();
+    if(!h) h = '<div class="small" style="margin-top:6px">Keine offenen Anfragen.</div>';
+    var hist = bellLoad().filter(function(e){ return e.st !== 'open'; }).reverse().slice(0, 15);
+    if(hist.length) h += '<h3 class="achd" style="margin-top:14px">Verlauf</h3>' + hist.map(function(e){
+      var d = new Date(e.t);
+      return '<div class="bellh"><span><b>' + (e.r === 'i' ? 'Instructor ' : '') + esc(e.n || 'Jemand') + '</b> · ' + (e.r === 'i' ? 'Aufsicht' : 'Freundschaft') + ' ' + esc(e.st) + '</span><span class="d">' + esc(fd(d) + ' ' + hhmm(e.t)) + '</span></div>';
+    }).join('');
+    b.innerHTML = h;
+  }
+  function bellOpen(){
+    bellView = openSheet('<div class="shead"><h2>Mitteilungen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div id="bellBody"></div>');
+    bellRender();
+    pushStatus(true);
   }
   async function pushCall(path, extra){
     var m = pushMe(); if(!m) throw new Error('nofreigabe');
@@ -8260,13 +8350,19 @@ body.menuopen{overflow:hidden}
     await pushStatus(true); return r;
   }
   function pushName(){ return String(S.uname || 'Pilot').slice(0, 24); }
+  var pushErr = '';
   async function pushReq(g){
     if(!pushMe()) return null;
     try{
       var r = await pushCall('/req', isIns() ? {to: g, n: pushName(), r: 'i'} : {to: g, n: pushName()});
       (S.friends || []).forEach(function(f){ if(f.gist === g){ f.req = Date.now(); } }); save();
+      pushErr = '';
       return r;
-    }catch(e){ return null; }
+    }catch(e){
+      var em = (e && e.message) || '';
+      pushErr = em === 'unbekannt' || /^Fehler 404/.test(em) ? 'Der Server (Worker) kennt diese Funktion noch nicht. Spiele die neue worker.js in Cloudflare ein.' : em === 'blockiert' ? 'Du hast diese Person blockiert.' : em === 'nicht erlaubt' ? 'Der Server lehnt deine Freigabe-ID ab (sie gehört dort einem anderen Token).' : /Failed to fetch|NetworkError|Load failed/i.test(em) ? 'Der Server ist nicht erreichbar. Bist du online?' : em;
+      return null;
+    }
   }
   async function pushAccept(g, n, role){
     try{
@@ -8558,18 +8654,20 @@ body.menuopen{overflow:hidden}
     try{
       fetch('push-config.json', {cache: 'no-store'}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(j){
         if(j && typeof j.url === 'string' && /^https:\/\/[^\s]+$/.test(j.url) && typeof j.key === 'string' && j.key.length > 60 && !/HIER|DEIN/.test(j.url + j.key)){
-          pushCfg = {url: j.url.replace(/\/+$/, ''), key: j.key}; pushUI(); pushTouch(true);
+          pushCfg = {url: j.url.replace(/\/+$/, ''), key: j.key}; pushUI(); bellBtn(); pushTouch(true);
           pushStatus(true).then(function(){ pushEvents(); });
         }
       }).catch(function(){});
       document.addEventListener('visibilitychange', function(){ if(!document.hidden && pushCfg) pushStatus(false); });
+      setInterval(function(){ if(!document.hidden && pushCfg && !isIns()) pushStatus(true); }, 30000);
       if(navigator.serviceWorker && navigator.serviceWorker.addEventListener){
         navigator.serviceWorker.addEventListener('message', function(e){
-          if(e && e.data && e.data.sf === 'open-friends'){ pushStatus(true).then(function(){ if(typeof frOpen === 'function') frOpen(); }); }
+          if(e && e.data && e.data.sf === 'refresh'){ if(pushCfg) pushStatus(true); }
+          if(e && e.data && e.data.sf === 'open-friends'){ pushStatus(true).then(function(){ bellOpen(); }); }
         });
       }
       var q = ''; try{ q = new URLSearchParams(location.search).get('inbox') || ''; }catch(e){}
-      if(q){ try{ history.replaceState(null, '', location.pathname); }catch(e){} var tries = 0; (function w(){ if(pushCfg){ pushStatus(true).then(function(){ if(typeof frOpen === 'function') frOpen(); }); } else if(tries++ < 20) setTimeout(w, 400); })(); }
+      if(q){ try{ history.replaceState(null, '', location.pathname); }catch(e){} var tries = 0; (function w(){ if(pushCfg){ pushStatus(true).then(function(){ bellOpen(); }); } else if(tries++ < 20) setTimeout(w, 400); })(); }
     }catch(e){}
   })();
   /* ---------- Instructor-Modus (Aufsicht über Schüler, nur GitHub-Version) ---------- */
@@ -8699,7 +8797,7 @@ body.menuopen{overflow:hidden}
     frFetchShare(gid).then(function(d){
       S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: gid, alias: alias, nm: d.name, data: null, last: 0});
       save(); v.querySelector('#insCode').value = ''; v.querySelector('#insAlias').value = '';
-      return pushReq(gid).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden: ' + d.name : 'Anfrage an ' + d.name + ' gesendet. Sobald er zustimmt, siehst du seine Daten.') : 'Hinzugefügt, aber die Anfrage ging nicht raus. Prüfe die Verbindung und sende sie erneut.'); insRender(); });
+      return pushReq(gid).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden: ' + d.name : 'Anfrage an ' + d.name + ' gesendet. Sobald er zustimmt, siehst du seine Daten.') : 'Hinzugefügt, aber die Anfrage ging nicht raus. ' + (pushErr || 'Prüfe die Verbindung und sende sie erneut.')); insRender(); });
     }, function(e){ insMsg(e && e.message === 'gone' ? 'Code nicht gefunden. Prüfe ihn und frage nach einem neuen.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Das hat nicht geklappt. Bist du online und ist der Code vollständig?'); });
   }
   function insIdent(){
@@ -8719,7 +8817,7 @@ body.menuopen{overflow:hidden}
     if(a === 'add') insAdd();
     else if(a === 'ident') insIdent();
     else if(a === 'refresh'){ frLast = 0; if(typeof pushStatus === 'function') pushStatus(true); frPull(true); }
-    else if(a === 'ask'){ insMsg('Sende Anfrage …'); pushReq(g).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden.' : 'Anfrage gesendet.') : 'Das hat nicht geklappt. Bist du online?'); insRender(); }); }
+    else if(a === 'ask'){ insMsg('Sende Anfrage …'); pushReq(g).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden.' : 'Anfrage gesendet.') : 'Anfrage nicht gesendet. ' + (pushErr || 'Bist du online?')); insRender(); }); }
     else if(a === 'rm'){
       if(!arm(t.textContent)) return;
       S.friends = S.friends.filter(function(x){ return x.gist !== g; }); save(); pushUnlink(g); insRender();

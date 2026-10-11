@@ -8575,7 +8575,7 @@ body.menuopen{overflow:hidden}
       '<div id="pStatBox"><h3>Anonyme Statistik</h3>' +
       chk('pStat', 'Anonymen Stand für die Gesamtübersicht des Betreibers teilen') +
       '<div class="small pnote">Gesendet werden nur Fragenstand, Ziel, Tempo und Datum unter einer zufälligen Nummer. Kein Name, keine Freunde, keine Verbindung zu deinem Konto. Jederzeit abschaltbar, dann wird der Eintrag gelöscht.</div></div>' +
-      '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button></div>' +
+      '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button><button class="ghost" id="pushDiag">Diagnose</button></div>' +
       '<div class="small msg" id="pushMsg" style="margin:8px 14px 0"></div>';
     var anchor = document.getElementById('aiKeyCard') || document.getElementById('syncCard');
     if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling); else (document.getElementById('menuBody') || document.body).appendChild(el);
@@ -8651,6 +8651,21 @@ body.menuopen{overflow:hidden}
         if(!sub) throw new Error('Gerät nicht angemeldet. Schalte die Benachrichtigungen neu ein.');
         await pushApi('/test', {endpoint: sub.endpoint}); msg.textContent = 'Die Testnachricht ist unterwegs. Sie kann einige Sekunden brauchen.';
       }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler'); }
+    });
+    $('pushDiag').addEventListener('click', async function(){
+      var L = [], m = pushMe();
+      msg.style.whiteSpace = 'pre-wrap'; msg.textContent = 'Prüfe …';
+      L.push('Build: diag-3 · Rolle: ' + (isIns() ? 'Instructor' : 'Lernender'));
+      L.push('Cloud-Sync: ' + (syncCfg && syncCfg.token ? 'ja' : 'nein') + ' · Freigabe-ID: ' + (S.share && S.share.gist ? S.share.gist.slice(0, 8) + '…' : 'keine'));
+      L.push('Gerätetoken: ' + (m ? pushSha(m.tok).slice(0, 6) + ' (' + (syncCfg && syncCfg.token ? 'aus Sync abgeleitet' : 'nur dieses Gerät') + ')' : 'keiner (keine Freigabe)'));
+      try{ L.push('Erlaubnis: ' + (window.Notification ? Notification.permission : 'nicht unterstützt') + ' · Abo: ' + ((await pushSub()) ? 'ja' : 'nein')); }catch(e){ L.push('Abo: Fehler'); }
+      if(m){
+        try{
+          var j = await pushApi('/status', m);
+          L.push('Server: OK · Anfragen offen ' + (j.inbox || []).length + (j.inbox && j.inbox.length ? ' (' + j.inbox.map(function(x){ return (x.r === 'i' ? 'Instructor ' : '') + x.n; }).join(', ') + ')' : '') + ' · Freunde ' + (j.out || []).length + ' · Instructors ' + (j.ins || []).length + ' · Schüler ' + (j.wat || []).length + ' · blockiert ' + (j.blocked || []).length);
+        }catch(e){ L.push('Server: Fehler „' + ((e && e.message) || '?') + '“' + (e && e.detail ? ' · Neu-Zuordnung: ' + e.detail : '') + (pushClaimErr ? ' · letzter Grund: ' + pushClaimErr : '')); }
+      }
+      msg.textContent = L.join('\n');
     });
     el.addEventListener('toggle', paint);
     paint();

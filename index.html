@@ -585,7 +585,7 @@ body.menuopen{overflow:hidden}
   .grid{grid-template-columns:repeat(4,1fr)}
   #tabHome,#tabMain{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #tabHome>*,#tabMain>*{margin:0 !important}
-  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
+  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#frBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
   #subjBox{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #subjBox>.card{margin:0}
   .sheetov{align-items:center}
@@ -694,6 +694,7 @@ body.menuopen{overflow:hidden}
     <div class="card cdc" id="cdCard"></div>
     <button class="addq" id="addQBtn">Fragen Tracken</button>
     <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
+    <button class="addq" id="frBtn"><b>Freunde</b><span>Fortschritt vergleichen</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="coach" id="coach" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
@@ -918,7 +919,7 @@ body.menuopen{overflow:hidden}
   var dbDoc = null;
   function setStatus(t){ var el=document.getElementById('status'); if(!el) return; if(typeof syncCfg !== 'undefined' && syncCfg && syncCfg.gistId) return; el.textContent=t; }
   function save(){
-    syncTouch();
+    syncTouch(); frTouch();
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
     if(dbDoc){
       try{
@@ -1273,7 +1274,8 @@ body.menuopen{overflow:hidden}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null,
+      share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
     }));
   }
   function nn(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
@@ -2860,7 +2862,7 @@ body.menuopen{overflow:hidden}
     return 'Du hilfst mir, meinen bisherigen ATPL-Lernstand in meine Lern-App „Short Final!“ zu übernehmen. Ich habe meine geklickten Fragen bisher anders festgehalten, zum Beispiel in Excel, in Notizen, auf Fotos oder in PDFs. Die Dateien hänge ich an diese Nachricht an.\n\n' +
       'ABLAUF\n' +
       '1) Lies zuerst alle angehängten Dateien genau. Sag mir in 3 bis 5 Sätzen, was du gefunden hast (Zeitraum, Fächer, Art der Zahlen).\n' +
-      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen, höchstens 4 pro Runde, als nummerierte Liste mit Antwortvorschlägen. Kläre mindestens:\n' +
+      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen als klickbare Auswahlfragen. Nutze dafür dein Fragen-Werkzeug (zum Beispiel AskUserQuestion), wenn du eines hast: höchstens 4 Fragen pro Runde, jede mit 2 bis 4 konkreten Antwortoptionen, deine Empfehlung zuerst und mit „(Empfohlen)“ markiert. Freitext wähle ich bei Bedarf selbst über „Other“. Stelle keine offenen Fragen im Chat, auf die ich lange tippen müsste. Hast du kein solches Werkzeug, stelle die Fragen als nummerierte Liste mit Antwortbuchstaben (1a, 1b, 2a, …), damit ich alles in einer Zeile beantworten kann, zum Beispiel „1a 2c 3b“. Frage nur, was du aus den Dateien nicht sicher selbst ableiten kannst. Kläre mindestens:\n' +
       '   a) Was bedeuten die Zahlen genau? Sind es Fragen pro Tag oder ein Gesamtstand? Was ist geklickt, richtig, falsch? Wie sind Datumsangaben gemeint?\n' +
       '   b) Wie ordnest du meine Bezeichnungen den App-Fächern zu (Liste unten)? Frag nach, wo es nicht eindeutig ist.\n' +
       '   c) Pro Fach, soweit ableitbar oder von mir genannt: insgesamt geklickt, davon falsch und wie viele Fragen noch nie geklickt wurden („noch offen“).\n' +
@@ -4060,7 +4062,7 @@ body.menuopen{overflow:hidden}
     var m = nbMeta(), idx = -1;
     m.packs.forEach(function(p, i){ if(p.id === pack.id) idx = i; });
     var rec = {id:pack.id, title:pack.title, author:pack.author, n:pack.items.length, added:iso(new Date())};
-    if(idx >= 0){ rec.share = m.packs[idx].share; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
+    if(idx >= 0){ rec.share = m.packs[idx].share; rec.src = m.packs[idx].src; rec.log = m.packs[idx].log; rec.added = m.packs[idx].added || rec.added; m.packs[idx] = rec; }
     else m.packs.push(rec);
   }
   function nbChanged(){ if(nbHooks.changed) nbHooks.changed(); }
@@ -4087,6 +4089,8 @@ body.menuopen{overflow:hidden}
     var r = nbParseText(raw);
     if(r.err){ toast(r.err); return Promise.resolve(false); }
     return nbAddPack(r.pack).then(function(had){
+      var ps = nbHooks.pendingSrc;
+      if(ps && ps.pid === r.pack.id){ nbMeta().packs.forEach(function(x){ if(x.id === ps.pid) x.src = ps.src; }); nbHooks.pendingSrc = null; save(); }
       toast((had ? 'Aktualisiert: ' : 'Importiert: ') + r.pack.title + ' (' + r.pack.items.length + ' Einträge' + (r.skipped ? ', ' + r.skipped + ' übersprungen' : '') + ')');
       if(!NB.persist) toast('Hinweis: Das Paket bleibt nur bis zum Schließen der App erhalten.');
       nbRefresh();
@@ -4249,6 +4253,7 @@ body.menuopen{overflow:hidden}
         if(!have) h += '<div class="small" style="color:var(--warn);margin-top:4px">Der Inhalt fehlt auf diesem Gerät. Importiere die Datei hier noch einmal.</div>';
         if(have) h += nbDocsHTML(NB.packs[p.id]);
         h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button><button type="button" class="ghost" data-nbact="newin" style="padding:8px 14px">+ Eintrag</button>' : '') +
+          (have && nbHooks.diff ? '<button type="button" class="ghost" data-nbact="pkdiff" style="padding:8px 14px">Änderungen</button>' : '') +
           (have ? '<button type="button" class="ghost" data-nbact="hidepk" style="padding:8px 14px">' + (phd ? 'Einblenden' : 'Ausblenden') + '</button>' : '') + '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
       });
       if(!NB.persist) h += '<div class="small" style="margin-top:8px;color:var(--warn)">Dein Browser erlaubt hier keinen dauerhaften Speicher. Pakete bleiben nur bis zum Schließen der App.</div>';
@@ -4432,7 +4437,7 @@ body.menuopen{overflow:hidden}
     return 'Du hilfst mir, meine handschriftlichen ATPL-Notizen und Zusammenfassungen in ein Lernpaket für meine Lern-App „Short Final!“ umzuwandeln. Die Notizen hängen als Fotos oder PDF an dieser Nachricht.\n\n' +
       'ABLAUF\n' +
       '1) Sieh dir alle angehängten Seiten genau an. Sag mir kurz, welche Fächer und Themen du erkennst und wie viele Seiten du gelesen hast.\n' +
-      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen, am besten als Auswahlfragen:\n' +
+      '2) Stelle mir danach und BEVOR du etwas erstellst Rückfragen als klickbare Auswahlfragen. Nutze dafür dein Fragen-Werkzeug (zum Beispiel AskUserQuestion), wenn du eines hast: höchstens 4 Fragen pro Runde, jede mit 2 bis 4 konkreten Antwortoptionen, deine Empfehlung zuerst und mit „(Empfohlen)“ markiert. Freitext wähle ich bei Bedarf selbst über „Other“. Stelle keine offenen Fragen im Chat, auf die ich lange tippen müsste. Hast du kein solches Werkzeug, stelle die Fragen als nummerierte Liste mit Antwortbuchstaben (1a, 1b, 2a, …), damit ich alles in einer Zeile beantworten kann, zum Beispiel „1a 2c 3b“. Frage nur, was du aus den Dateien nicht sicher selbst ableiten kannst. Kläre mindestens:\n' +
       '   a) Was soll ins Paket: alles oder nur bestimmte Fächer oder Themen? Welche Arten: Merksprüche, Formeln, Fakten und Definitionen, Skizzen?\n' +
       '   b) Wie soll abgefragt werden: nur Multiple Choice (dann erfindest du zu jedem Eintrag 3 plausible falsche Antworten), nur freie Antwort oder beides?\n' +
       '   c) Wie sollen Zeichnungen behandelt werden: als Ausschnitt aus meinem Foto oder von dir sauber als SVG nachgezeichnet? Frag pro Zeichnung nach oder gib mir eine Sammelauswahl.\n' +
@@ -4904,6 +4909,7 @@ body.menuopen{overflow:hidden}
         if(pid4){ var mh = nbMeta(); if(mh.hid[pid4]) delete mh.hid[pid4]; else mh.hid[pid4] = 1; save(); nbDraw(); toast(mh.hid[pid4] ? 'Paket ausgeblendet. Es zählt nicht mehr in Liste und Abfrage.' : 'Paket wieder eingeblendet.'); }
       }
       else if(a === 'share'){ var pk = b.closest('.nbpk'); if(pk) nbShareSheet(pk.getAttribute('data-pk')); }
+      else if(a === 'pkdiff'){ var pkd = b.closest('.nbpk'); if(pkd && nbHooks.diff) nbHooks.diff(pkd.getAttribute('data-pk')); }
       else if(a === 'delpk'){
         var pk2 = b.closest('.nbpk'), pid = pk2 && pk2.getAttribute('data-pk');
         if(!pid) return;
@@ -5387,6 +5393,11 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-24', items:[
+      {t:'Freunde vergleichen', x:'Unter „Freunde“ auf dem Startbildschirm gibst du einen Freigabe-Code weiter und siehst den Fortschritt deiner Freunde im Vergleich zu deinem. Du wählst selbst, was sichtbar ist (Stand, Tempo, Score, Fächer, Verlauf). Deinen Token gibst du nie weiter. Die Daten aktualisieren sich beim Öffnen der App und über „Aktualisieren“.', web:true, tab:'home', sel:'#frBtn'},
+      {t:'Pakete abgleichen mit Änderungsverlauf', x:'Unter „Pakete“ zeigt „Änderungen“, was bei einem geteilten Lernpaket neu oder anders ist. Du übernimmst Änderungen einzeln oder alle. Der Verlauf merkt sich, was wann übernommen oder veröffentlicht wurde.', web:true, menu:false, tab:'home', sel:'#nbBtn'},
+      {t:'Interview beim Import', x:'Der Prompt für „Lernstand importieren“ und für Lernpakete weist Claude jetzt an, seine Rückfragen als klickbare Auswahlfragen zu stellen, mit Empfehlung zuerst. Ohne dieses Werkzeug bekommst du nummerierte Fragen, die du in einer Zeile beantwortest (zum Beispiel „1a 2c 3b“).', menu:true, sel:'#impCard summary', open:'#impCard'}
+    ]},
     {v:'2026.10.11-23', items:[
       {t:'Realistisches Tempo und Tagesziel', x:'Das aktuelle Tempo zählt jetzt stärker als alte Wochen (Halbwertszeit etwa 10 Tage). Die Prognose rechnet damit, zusätzlich siehst du das Datum bei deinem Gesamt-Ø und eine gepunktete Prognose-Linie im Verlauf. „Heute noch zu klicken“ ist jetzt dein Tagesziel (Rest geteilt durch die verbleibenden Tage), der Rückstand ist darin schon verteilt. Die Soll-Linie bleibt als Info.', tab:'main', sel:'#stats'}
     ]},
@@ -5594,7 +5605,7 @@ body.menuopen{overflow:hidden}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look]); }
+  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.share ? [S.share.gist, S.share.f] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S) return;
     var h = dataHash();
@@ -5659,6 +5670,8 @@ body.menuopen{overflow:hidden}
       if(typeof d.uname === 'string') S.uname = d.uname;
       if(d.look && typeof d.look === 'object') S.look = cp(d.look);
       if(d.ai) S.ai = cp(d.ai);
+      if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || ''}; }
+      if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0}; }); }
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
       S.updatedAt = d.updatedAt || Date.now();
       delete S.fresh;
@@ -5812,6 +5825,7 @@ body.menuopen{overflow:hidden}
       if(f.truncated && f.raw_url) return fetch(f.raw_url, {cache:'no-store'}).then(function(r){ return r.text(); });
       return f.content;
     }).then(function(text){
+      try{ var rp = nbParseText(text, {noData:true}); if(rp.pack) nbHooks.pendingSrc = {pid:rp.pack.id, src:id}; }catch(e){}
       var n = 0;
       (function tryShow(){
         var busy = !$('onb').hidden || tourSt || document.querySelector('.celeb');
@@ -5988,6 +6002,363 @@ body.menuopen{overflow:hidden}
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) renderGreeting(); });
   updateSyncLink();
   renderGreeting();
+
+  /* ---------- Freunde: Freigabe-Code und Vergleich per Abruf (nur GitHub-Version) ---------- */
+  var FR_FILE = 'short-final-share.json', frBusy = false, frLast = 0, frTimer = null, frView = null, frPrefill = '', frNote = '';
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '#frBtn{background:transparent;color:var(--text);border:1.5px solid var(--accent);display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 18px}#frBtn b{font-size:16px;letter-spacing:.02em}#frBtn span{font-size:12px;font-weight:600;opacity:.75}' +
+      '.frt{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.frt th,.frt td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;font-weight:600}.frt th{color:var(--muted);font-weight:650;font-size:12px}.frt td:first-child,.frt th:first-child{text-align:left;color:var(--muted);font-weight:500}' +
+      '.frc{margin-top:10px}.frh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.frcode{font-family:var(--mono);word-break:break-all;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin:8px 0}' +
+      '.frs{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line)}.frs h3{margin:0 0 6px;font-size:14px}.pdr{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}.pdr .d{color:var(--muted);font-size:12px;margin-top:3px;word-break:break-word}';
+    document.head.appendChild(st);
+  })();
+  function frCfg(){
+    if(!S.share || typeof S.share !== 'object') S.share = {gist:null};
+    if(!S.share.f || typeof S.share.f !== 'object') S.share.f = {stand:true, tempo:true, score:true, faecher:false, verlauf:false};
+    if(!Array.isArray(S.friends)) S.friends = [];
+    return S.share;
+  }
+  function frN(v){ if(v === null || v === undefined || v === '') return null; v = Number(v); return isFinite(v) ? v : null; }
+  function frTxt(v, n){ return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, n); }
+  function frDate(v){ return (typeof v === 'string' && /^\d{4}-\d\d-\d\d$/.test(v)) ? v : null; }
+  function frMine(all){
+    var c = frCfg(), f = all ? {stand:1, tempo:1, score:1, faecher:1, verlauf:0} : c.f, n = homeNums();
+    var o = {format:'short-final-share', v:1, name:frTxt(S.uname, 24) || 'Pilot', t:Date.now()};
+    if(f.stand){ o.stand = n.last.n; o.stand_d = n.last.d; o.ziel = S.target; o.ziel_datum = S.deadline; o.diff = Math.round(n.diff); }
+    if(f.tempo){ o.tempo = Math.round(n.paceR); o.tempo_gesamt = Math.round(n.pace); }
+    var scs = [], fa = [];
+    SUBJECTS.forEach(function(sj){
+      var a = analyze(sj.id), sc = a.sc === null ? null : Math.round(a.sc * 10) / 10;
+      if(sc !== null) scs.push(sc);
+      fa.push({id:sj.id, name:sj.name, sc:sc, clicked:nn(getSub(sj.id).clicked)});
+    });
+    if(f.score){ o.score = scs.length ? Math.round(scs.reduce(function(a, b){ return a + b; }, 0) / scs.length * 10) / 10 : null; o.score_n = scs.length; }
+    if(f.faecher) o.faecher = fa;
+    if(f.verlauf) o.verlauf = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90).map(function(e){ return {d:e.d, n:e.n}; });
+    return o;
+  }
+  function frHash(o){ return JSON.stringify(o, function(k, v){ return k === 't' ? undefined : v; }); }
+  function frStore(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  function frGet(gid){
+    function go(auth){
+      var hd = {'Accept':'application/vnd.github+json'};
+      if(auth && syncCfg && syncCfg.token) hd.Authorization = 'Bearer ' + syncCfg.token;
+      return fetch('https://api.github.com/gists/' + gid, {headers:hd, cache:'no-store'}).then(function(r){
+        if(r.status === 401 && auth) return go(false);
+        if(r.status === 404) throw new Error('gone');
+        if(r.status === 403 || r.status === 429) throw new Error('limit');
+        if(!r.ok) throw new Error('http');
+        return r.json();
+      });
+    }
+    return go(true);
+  }
+  function frFileText(f){
+    if(!f) return Promise.reject(new Error('nofile'));
+    if(f.truncated && f.raw_url) return fetch(f.raw_url, {cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('http'); return r.text(); });
+    return Promise.resolve(f.content || '');
+  }
+  function frClean(o){
+    if(!o || typeof o !== 'object' || o.format !== 'share' && o.format !== 'short-final-share') return null;
+    var r = {name:frTxt(o.name, 24) || 'Pilot', t:frN(o.t)};
+    ['stand', 'ziel', 'diff', 'tempo', 'tempo_gesamt', 'score', 'score_n'].forEach(function(k){ var v = frN(o[k]); if(v !== null) r[k] = v; });
+    if(frDate(o.stand_d)) r.stand_d = o.stand_d;
+    if(frDate(o.ziel_datum)) r.ziel_datum = o.ziel_datum;
+    if(Array.isArray(o.faecher)) r.faecher = o.faecher.slice(0, 20).map(function(x){ x = x || {}; return {id:frTxt(x.id, 20), name:frTxt(x.name, 40), sc:frN(x.sc), clicked:frN(x.clicked)}; });
+    if(Array.isArray(o.verlauf)) r.verlauf = o.verlauf.slice(-120).filter(function(x){ return x && frDate(x.d) && frN(x.n) !== null; }).map(function(x){ return {d:x.d, n:Number(x.n)}; });
+    return r;
+  }
+  function frFetchShare(gid){
+    return frGet(gid).then(function(g){
+      var f = g.files && g.files[FR_FILE];
+      return frFileText(f);
+    }).then(function(t){
+      var o = null; try{ o = JSON.parse(t); }catch(e){}
+      var d = frClean(o);
+      if(!d) throw new Error('nofile');
+      return d;
+    });
+  }
+  function frPush(force){
+    var c = frCfg();
+    if(!c.gist || !syncCfg || !syncCfg.token) return Promise.resolve(false);
+    var o = frMine(false), h = frHash(o);
+    if(!force && h === c.h) return Promise.resolve(false);
+    var files = {}; files[FR_FILE] = {content:JSON.stringify(o)};
+    return gh('/gists/' + c.gist, {method:'PATCH', body:{files:files}}).then(function(){ c.h = h; frStore(); return true; }, function(){ return false; });
+  }
+  function frTouch(){
+    var c = S && S.share;
+    if(!c || !c.gist) return;
+    clearTimeout(frTimer);
+    frTimer = setTimeout(function(){ frPush(false); }, 8000);
+  }
+  function frPull(force){
+    frCfg();
+    if(frBusy || !S.friends.length) return Promise.resolve();
+    if(!force && Date.now() - frLast < 300000) return Promise.resolve();
+    frBusy = true; frLast = Date.now();
+    var chain = Promise.resolve();
+    S.friends.forEach(function(fr){
+      chain = chain.then(function(){
+        return frFetchShare(fr.gist).then(function(d){ fr.data = d; fr.last = Date.now(); fr.err = null; }, function(e){ fr.err = (e && e.message) || 'http'; });
+      });
+    });
+    return chain.then(function(){ frBusy = false; frStore(); frRender(); });
+  }
+  function frDel(gid){
+    if(!gid || !syncCfg || !syncCfg.token) return Promise.resolve();
+    return fetch('https://api.github.com/gists/' + gid, {method:'DELETE', headers:{'Authorization':'Bearer ' + syncCfg.token, 'Accept':'application/vnd.github+json'}}).catch(function(){});
+  }
+  function frCreate(){
+    var files = {}; files[FR_FILE] = {content:JSON.stringify(frMine(false))};
+    return gh('/gists', {method:'POST', body:{description:'Short Final! Freigabe (Fortschritt für Freunde)', public:false, files:files}});
+  }
+  function frMsg(t){ frNote = t || ''; var el = frView && frView.ov.querySelector('#frMsg'); if(el) el.textContent = frNote; }
+  function frF1(v){ return v === null || v === undefined ? '–' : (Math.round(v * 10) / 10).toString().replace('.', ','); }
+  function frWhen(ts){
+    if(!ts) return 'noch nie';
+    var d = new Date(ts), now = new Date();
+    return (d.toDateString() === now.toDateString() ? 'heute ' : fd(d)) + ' ' + hhmm(ts) + ' Uhr';
+  }
+  function frCompare(fr){
+    var me = frMine(true), d = fr.data, nm = esc(fr.alias || (d && d.name) || 'Freund');
+    if(!d) return '<div class="small" style="margin-top:6px">' + (fr.err === 'gone' ? 'Die Freigabe wurde beendet oder der Code ist ungültig.' : fr.err === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : fr.err ? 'Konnte nicht geladen werden. Bist du online?' : 'Noch nicht geladen.') + '</div>';
+    var rows = [];
+    function row(label, a, b, hi){
+      if(b === null || b === undefined) return;
+      var win = '';
+      if(hi && a !== null && a !== undefined && a !== b) win = a > b ? 1 : 2;
+      rows.push('<tr><td>' + label + '</td><td' + (win === 1 ? ' class="good"' : '') + '>' + (a === null || a === undefined ? '–' : hi === 'f1' || hi === 'f1h' ? frF1(a) : fmt(a)) + '</td><td' + (win === 2 ? ' class="good"' : '') + '>' + (hi === 'f1' || hi === 'f1h' ? frF1(b) : fmt(b)) + '</td></tr>');
+    }
+    row('Gesamtstand', me.stand, d.stand, 1);
+    if(d.stand !== undefined && d.ziel){ var pa = Math.round(me.stand / S.target * 100), pb = Math.round(d.stand / d.ziel * 100); row('Zum Ziel in %', pa, pb, 1); }
+    row('Vorsprung zur Soll-Linie', me.diff, d.diff, 1);
+    row('Aktuelles Tempo pro Tag', me.tempo, d.tempo, 1);
+    row('Tempo gesamt pro Tag', me.tempo_gesamt, d.tempo_gesamt, 1);
+    row('Ø Fächer-Score in %', me.score, d.score, 'f1h');
+    var h = '<table class="frt"><tr><th></th><th>Du</th><th>' + nm + '</th></tr>' + rows.join('') + '</table>';
+    if(d.faecher && d.faecher.length){
+      var mf = {}; me.faecher.forEach(function(x){ mf[x.id] = x; });
+      var fr2 = d.faecher.map(function(x){
+        var m0 = mf[x.id], a = m0 ? m0.sc : null, b = x.sc, win = (a !== null && b !== null && a !== b) ? (a > b ? 1 : 2) : 0;
+        return '<tr><td>' + esc(x.name) + '</td><td' + (win === 1 ? ' class="good"' : '') + '>' + frF1(a) + '</td><td' + (win === 2 ? ' class="good"' : '') + '>' + frF1(b) + '</td></tr>';
+      }).join('');
+      h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Score je Fach</summary><table class="frt"><tr><th></th><th>Du</th><th>' + nm + '</th></tr>' + fr2 + '</table></details>';
+    }
+    if(d.verlauf && d.verlauf.length > 1){
+      var mine = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90);
+      var all = mine.concat(d.verlauf), t0 = parse(all.reduce(function(a, e){ return e.d < a ? e.d : a; }, all[0].d)), t1 = parse(all.reduce(function(a, e){ return e.d > a ? e.d : a; }, all[0].d));
+      var span = Math.max(1, days(t0, t1)), ymax = Math.max.apply(null, all.map(function(e){ return e.n; })) || 1, W = 320, H = 110;
+      var pl = function(arr, col){ return '<polyline fill="none" stroke="' + col + '" stroke-width="2" points="' + arr.map(function(e){ return (days(t0, parse(e.d)) / span * W).toFixed(1) + ',' + (H - e.n / ymax * (H - 6) - 3).toFixed(1); }).join(' ') + '"/>'; };
+      h += '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;margin-top:8px" role="img" aria-label="Verlauf im Vergleich">' + pl(mine, 'var(--accent)') + pl(d.verlauf, 'var(--cy)') + '</svg><div class="small">Magenta = du · Cyan = ' + nm + '</div>';
+    }
+    return h;
+  }
+  var FR_LAB = {stand:'Gesamtstand, Ziel und Vorsprung/Rückstand', tempo:'Tempo', score:'Ø Fächer-Score', faecher:'Score und Anzahl je Fach', verlauf:'Verlaufskurve (letzte 90 Einträge)'};
+  function frRender(){
+    if(!frView || !frView.ov.parentNode) return;
+    var c = frCfg(), b = frView.ov.querySelector('#frBody'), h = '';
+    var hasTok = !!(syncCfg && syncCfg.token);
+    h += '<div class="card frc" style="margin-top:0"><b>Meine Freigabe</b>';
+    if(!c.gist){
+      h += '<div class="small" style="margin-top:6px">Teile deinen Fortschritt mit Freunden. Sie bekommen einen Freigabe-Code, nie deinen Token. Du wählst, was sichtbar ist.</div>';
+    }else{
+      var code = 'SF-' + c.gist;
+      h += '<div class="frcode" id="frCodeTxt">' + esc(code) + '</div><div class="row"><button type="button" class="ghost" data-fract="copy">Code kopieren</button><button type="button" class="ghost" data-fract="copylink">Link kopieren</button></div>';
+    }
+    h += '<div style="margin-top:8px">' + Object.keys(FR_LAB).map(function(k){
+      return '<label class="tg"><span>' + FR_LAB[k] + '</span><input type="checkbox" class="sw" data-frf="' + k + '"' + (c.f[k] ? ' checked' : '') + '></label>';
+    }).join('') + '</div>';
+    if(!c.gist) h += '<button type="button" data-fract="start" style="width:100%;margin-top:10px"' + (hasTok ? '' : ' disabled') + '>Freigabe starten</button>' + (hasTok ? '' : '<div class="small" style="margin-top:6px">Dafür brauchst du die Cloud-Synchronisierung (Menü › Cloud-Synchronisierung und Account).</div>');
+    else h += '<div class="row" style="margin-top:10px"><button type="button" class="ghost" data-fract="renew">Code erneuern</button><button type="button" class="ghost" data-fract="stop">Freigabe beenden</button></div><div class="small" style="margin-top:6px">Mit „Code erneuern“ verlieren alle bisherigen Freunde den Zugriff.</div>';
+    h += '</div>';
+    h += '<div class="card frc"><b>Freund hinzufügen</b><div class="small" style="margin:6px 0">Füge den Freigabe-Code oder Link deines Freundes ein.</div>' +
+      '<input type="text" id="frCode" placeholder="SF-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%" value="' + escA(frPrefill) + '">' +
+      '<input type="text" id="frAlias" placeholder="Name (optional)" maxlength="24" style="width:100%;margin-top:8px">' +
+      '<button type="button" data-fract="add" style="width:100%;margin-top:8px">Hinzufügen</button></div>';
+    h += '<div class="row" style="margin-top:12px;align-items:center"><b style="flex:1">Deine Freunde</b><button type="button" class="ghost" data-fract="refresh" style="padding:7px 14px">' + (frBusy ? 'Lädt …' : 'Aktualisieren') + '</button></div>';
+    if(!S.friends.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
+    S.friends.forEach(function(fr, i){
+      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small">aktualisiert ' + esc(frWhen(fr.last)) + '</span></div>' + frCompare(fr) +
+        '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button></div></div>';
+    });
+    h += '<div class="small" id="frMsg" style="margin-top:10px">' + esc(frNote) + '</div>';
+    var keep = b.querySelector('#frCode'), ka = b.querySelector('#frAlias'), cv = keep ? keep.value : null, av = ka ? ka.value : null;
+    b.innerHTML = h;
+    if(cv !== null && b.querySelector('#frCode')) b.querySelector('#frCode').value = cv;
+    if(av !== null && b.querySelector('#frAlias')) b.querySelector('#frAlias').value = av;
+  }
+  function frAdd(){
+    var o = frView.ov, raw = o.querySelector('#frCode').value, m = /([0-9a-f]{20,40})/i.exec(raw.replace(/\s+/g, ''));
+    if(!m){ frMsg('Das sieht nicht nach einem Freigabe-Code aus.'); return; }
+    var gid = m[1].toLowerCase(), c = frCfg();
+    if(c.gist === gid){ frMsg('Das ist dein eigener Code.'); return; }
+    if(S.friends.some(function(x){ return x.gist === gid; })){ frMsg('Diesen Freund hast du schon hinzugefügt.'); return; }
+    frMsg('Lade …');
+    frFetchShare(gid).then(function(d){
+      S.friends.push({id:Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist:gid, alias:frTxt(o.querySelector('#frAlias').value, 24), data:d, last:Date.now()});
+      frPrefill = '';
+      save(); frNote = 'Hinzugefügt: ' + d.name; frRender();
+      var cd = o.querySelector('#frCode'); if(cd) cd.value = '';
+    }, function(e){ frMsg(e && e.message === 'gone' ? 'Code nicht gefunden. Prüfe ihn und frage nach einem neuen.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Das hat nicht geklappt. Bist du online und ist der Code vollständig?'); });
+  }
+  function frClick(ev){
+    var t = ev.target && ev.target.closest ? ev.target.closest('[data-fract]') : null;
+    if(!t) return;
+    var a = t.getAttribute('data-fract'), c = frCfg();
+    function arm(label){
+      if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
+      return true;
+    }
+    if(a === 'start'){
+      if(!syncCfg || !syncCfg.token){ frMsg('Dafür brauchst du die Cloud-Synchronisierung.'); return; }
+      frMsg('Erstelle Freigabe …');
+      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); frNote = 'Freigabe aktiv. Gib den Code an deine Freunde weiter.'; frRender(); }, function(){ frMsg('Konnte die Freigabe nicht erstellen. Prüfe die Verbindung und den Token.'); });
+    }else if(a === 'copy'){ frMsg(copyText('SF-' + c.gist) ? 'Code kopiert.' : 'Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.');
+    }else if(a === 'copylink'){ var url = location.origin + location.pathname + '?friend=' + c.gist; frMsg(copyText(url) ? 'Link kopiert.' : 'Kopieren nicht möglich.');
+    }else if(a === 'renew'){
+      if(!arm('Code erneuern')) return;
+      var old = c.gist; frMsg('Erneuere …');
+      frCreate().then(function(g){ c.gist = g.id; c.h = frHash(frMine(false)); save(); return frDel(old); }).then(function(){ frNote = 'Neuer Code erstellt. Der alte ist ungültig.'; frRender(); }, function(){ frMsg('Konnte den Code nicht erneuern.'); });
+    }else if(a === 'stop'){
+      if(!arm('Freigabe beenden')) return;
+      var old2 = c.gist; c.gist = null; c.h = ''; save(); frDel(old2); frNote = 'Freigabe beendet. Freunde sehen deine Daten nicht mehr.'; frRender();
+    }else if(a === 'add'){ frAdd();
+    }else if(a === 'refresh'){ frMsg(''); frPull(true); frRender();
+    }else if(a === 'rm'){
+      var i = +t.getAttribute('data-fri');
+      if(!arm('Entfernen')) return;
+      S.friends.splice(i, 1); save(); frRender();
+    }
+  }
+  function frOpen(){
+    var sh = openSheet('<div class="shead"><h2>Freunde</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div id="frBody"></div>');
+    frView = sh; frNote = '';
+    sh.ov.addEventListener('click', frClick);
+    sh.ov.addEventListener('change', function(ev){
+      var k = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-frf');
+      if(!k) return;
+      frCfg().f[k] = !!ev.target.checked; save(); frTouch();
+    });
+    frRender(); frPull(false);
+  }
+  var frB = $('frBtn');
+  if(frB) frB.addEventListener('click', frOpen);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) frPull(false); });
+  setTimeout(function(){
+    var id = null;
+    try{ id = new URLSearchParams(location.search).get('friend'); }catch(e){}
+    if(id && /^[0-9a-f]{20,40}$/i.test(id)){ try{ history.replaceState(null, '', location.pathname); }catch(e){} frPrefill = id; frOpen(); }
+    else frPull(false);
+  }, 1600);
+
+  /* ---------- Pakete abgleichen: Änderungen prüfen und übernehmen (nur GitHub-Version) ---------- */
+  function pkSig(it){ return JSON.stringify([it.subject, (it.also || []).slice().sort(), it.type, it.title, it.q, it.a, it.note, it.wrong || [], it.img || '', it.svg || '', !!it.imgq]); }
+  var PK_F = {title:'Titel', q:'Frage', a:'Antwort', note:'Notiz', subject:'Fach', type:'Art'};
+  function pkShort(v){ v = String(v === undefined || v === null ? '' : v); return v.length > 120 ? v.slice(0, 120) + ' …' : v; }
+  function pkDiffOf(local, remote){
+    var L = {}, ch = [], only = 0, ids = {};
+    local.items.forEach(function(it){ L[it.id] = it; });
+    remote.items.forEach(function(it){
+      ids[it.id] = 1;
+      var o = L[it.id];
+      if(!o) ch.push({k:'new', it:it});
+      else if(pkSig(o) !== pkSig(it)) ch.push({k:'chg', it:it, old:o});
+    });
+    local.items.forEach(function(it){ if(!ids[it.id]) only++; });
+    return {ch:ch, only:only};
+  }
+  nbHooks.diff = function(pid){
+    var p = NB.packs[pid];
+    if(!p) return;
+    var m = nbMeta(), rec = null;
+    m.packs.forEach(function(x){ if(x.id === pid) rec = x; });
+    if(!rec) return;
+    var sh = openSheet('<div class="shead"><h2>Änderungen abgleichen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div class="pdbody"></div>');
+    var st = {res:null, msg:'', busy:false}, o = sh.ov;
+    function draw(){
+      var h = '<div class="small"><b>' + esc(p.title) + '</b> · ' + p.items.length + ' Einträge</div>' +
+        '<div class="small" style="margin-top:6px">Füge den Link ein, den dein Freund über „Teilen › Link erstellen“ bekommen hat. Du siehst dann, was bei ihm neu oder anders ist, und übernimmst es selbst. Nichts wird ungefragt überschrieben.</div>' +
+        '<input type="text" class="pdsrc" placeholder="Link oder Code des Pakets" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:100%;margin-top:8px" value="' + escA(rec.src || '') + '">' +
+        '<button type="button" id="pdGo" style="width:100%;margin-top:8px"' + (st.busy ? ' disabled' : '') + '>' + (st.busy ? 'Lädt …' : 'Änderungen abrufen') + '</button>';
+      if(st.msg) h += '<div class="small" style="margin-top:8px">' + esc(st.msg) + '</div>';
+      if(st.res){
+        var r = st.res;
+        h += '<div class="frs"><h3>Von ' + esc(r.remote.author || r.remote.title) + ': ' + r.d.ch.length + (r.d.ch.length === 1 ? ' Änderung' : ' Änderungen') + '</h3>';
+        if(r.d.only) h += '<div class="small">' + r.d.only + (r.d.only === 1 ? ' Eintrag ist nur bei dir' : ' Einträge sind nur bei dir') + ' (bleiben unverändert).</div>';
+        r.d.ch.forEach(function(c, i){
+          var lines = '';
+          if(c.k === 'chg'){
+            Object.keys(PK_F).forEach(function(f){ if(String(c.old[f] || '') !== String(c.it[f] || '')) lines += '<div class="d">' + PK_F[f] + ': ' + esc(pkShort(c.old[f])) + ' → <b>' + esc(pkShort(c.it[f])) + '</b></div>'; });
+            if(!lines) lines = '<div class="d">Mehrfachauswahl, Bild oder Zusatzfach geändert</div>';
+          }else lines = '<div class="d">' + esc(pkShort(c.it.q || c.it.a)) + '</div>';
+          h += '<label class="pdr" style="display:block"><input type="checkbox" data-pdi="' + i + '"' + (c.sel === false ? '' : ' checked') + ' style="margin-right:8px"><b>' + (c.k === 'new' ? 'Neu' : 'Geändert') + ':</b> ' + esc(c.it.title) + lines + '</label>';
+        });
+        if(r.d.ch.length) h += '<div class="row" style="margin-top:10px"><button type="button" id="pdApply" style="flex:1">Ausgewählte übernehmen</button></div>';
+        h += '</div>';
+      }
+      var log = (rec.log || []).slice(0, 8);
+      if(log.length){
+        h += '<div class="frs"><h3>Verlauf</h3>' + log.map(function(l){
+          return '<div class="small" style="margin-top:4px">' + esc(frWhen(l.t)) + ' · ' + (l.pub ? 'Veröffentlicht (Link aktualisiert)' : 'Übernommen: ' + (l.a || 0) + ' neu, ' + (l.c || 0) + ' geändert' + (l.from ? ' von ' + esc(l.from) : '')) + '</div>';
+        }).join('') + '</div>';
+      }
+      o.querySelector('.pdbody').innerHTML = h;
+    }
+    function selSync(){ if(!st.res) return; Array.prototype.forEach.call(o.querySelectorAll('[data-pdi]'), function(cb){ st.res.d.ch[+cb.getAttribute('data-pdi')].sel = cb.checked; }); }
+    o.addEventListener('click', function(ev){
+      var t = ev.target;
+      if(t && t.id === 'pdGo' && !st.busy){
+        var mm = /([0-9a-f]{20,40})/i.exec((o.querySelector('.pdsrc').value || '').replace(/\s+/g, ''));
+        if(!mm){ st.msg = 'Das sieht nicht nach einem Link oder Code aus.'; draw(); return; }
+        var gid = mm[1].toLowerCase(); st.busy = true; st.msg = ''; st.res = null; draw();
+        frGet(gid).then(function(g){
+          var f = null; Object.keys(g.files || {}).forEach(function(k){ if(!f) f = g.files[k]; });
+          return frFileText(f);
+        }).then(function(text){
+          var r = nbParseText(text, {noData:true});
+          if(r.err) throw new Error('bad');
+          if(r.pack.id !== pid) throw new Error('other');
+          rec.src = gid; save();
+          st.res = {remote:r.pack, gid:gid, d:pkDiffOf(p, r.pack)};
+          st.msg = st.res.d.ch.length ? '' : 'Keine Unterschiede. Dein Paket ist auf demselben Stand.';
+        }).catch(function(e){
+          st.msg = e && e.message === 'other' ? 'Das ist ein anderes Paket. Du kannst nur Versionen desselben Pakets abgleichen.' : e && e.message === 'gone' ? 'Link nicht gefunden.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Konnte das Paket nicht laden.';
+        }).then(function(){ st.busy = false; draw(); });
+      }else if(t && t.id === 'pdApply' && st.res){
+        selSync();
+        var added = 0, changed = 0, items = p.items.slice();
+        st.res.d.ch.forEach(function(c){
+          if(c.sel === false) return;
+          if(c.k === 'new'){ items.push(c.it); added++; }
+          else{ var ix = -1; items.forEach(function(x, j){ if(x.id === c.it.id) ix = j; }); if(ix >= 0){ items[ix] = c.it; changed++; } }
+        });
+        if(!added && !changed){ st.msg = 'Nichts ausgewählt.'; draw(); return; }
+        p.items = items; p.rev = Date.now();
+        nbUpsertMeta(p);
+        var rc = null; nbMeta().packs.forEach(function(x){ if(x.id === pid) rc = x; });
+        if(rc){ rc.log = [{t:Date.now(), a:added, c:changed, from:frTxt(st.res.remote.author || st.res.remote.title, 40)}].concat(rc.log || []).slice(0, 30); rec = rc; }
+        save(); nbChanged(); nbRefresh();
+        nbIdb('readwrite', function(s2){ return s2.put(p); }).catch(function(){});
+        st.res = null; st.msg = 'Übernommen: ' + added + ' neu, ' + changed + ' geändert.'; draw(); toast('Paket aktualisiert');
+      }
+    });
+    o.addEventListener('change', function(ev){ if(ev.target && ev.target.getAttribute && ev.target.getAttribute('data-pdi') !== null) selSync(); });
+    draw();
+  };
+  (function(){
+    var l0 = nbHooks.link;
+    if(!l0) return;
+    nbHooks.link = function(pack){
+      return l0(pack).then(function(u){
+        nbMeta().packs.forEach(function(x){ if(x.id === pack.id){ x.log = [{t:Date.now(), pub:1}].concat(x.log || []).slice(0, 30); } });
+        save();
+        return u;
+      });
+    };
+  })();
 
   maybeChangelog();
   connect(0);

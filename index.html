@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Short Final!</title>
-<link rel="apple-touch-icon" href="short-final-icon-v2.png">
-<link rel="icon" type="image/png" href="short-final-icon-v2.png">
+<link rel="apple-touch-icon" href="short-final-icon-v3.png">
+<link rel="icon" type="image/png" href="short-final-icon-v3.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Short Final!">
@@ -476,6 +476,8 @@ body.nbopen{overflow:hidden}
 .coach .ch{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
 .coach p{margin:0 0 6px}.coach p:last-child{margin-bottom:0}
 .coach .cp{color:var(--muted);font-size:13px}
+.nbc.hid,.nbpk.hid{opacity:.55}
+.nbhid{font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-right:4px;white-space:nowrap}
 .stbd{font-family:var(--mono);min-width:176px}
 .stbd .r1{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:#ffb21e;opacity:.7;margin-bottom:6px}
 .fcr{display:flex;justify-content:center;gap:1px}
@@ -2451,11 +2453,11 @@ body.menuopen{overflow:hidden}
     try{
       Object.keys(NB.packs).forEach(function(pid){
         var pk = NB.packs[pid];
-        if(!pk || !Array.isArray(pk.items)) return;
+        if(!pk || !Array.isArray(pk.items) || m.hid[pid]) return;
         lz.pakete.push({
           titel:pk.title, autor:pk.author || null,
           dokumente:(pk.docs || []).map(function(d){ return {name:d.name, art:d.kind === 'original' ? 'Original' : 'Zusammenfassung'}; }),
-          eintraege:pk.items.map(function(it){
+          eintraege:pk.items.filter(function(it){ return !m.hid[pid + '~' + it.id]; }).map(function(it){
             var gid = pid + '~' + it.id, st = m.stat[gid] || {}, subs = [it.subject].concat(it.also || []).concat(m.extra[gid] || []);
             var o = {fach:subs.filter(function(s, k, a){ return a.indexOf(s) === k; }).map(nbSubName), art:NB_TYPES[it.type] || it.type, titel:chatCut(it.title, cut), antwort:chatCut(it.a, cut)};
             if(it.q) o.frage = chatCut(it.q, cut);
@@ -3902,7 +3904,7 @@ body.menuopen{overflow:hidden}
 
   function nbMeta(){
     if(!S.nb || typeof S.nb !== 'object' || Array.isArray(S.nb)) S.nb = {};
-    ['fav', 'extra', 'stat'].forEach(function(k){
+    ['fav', 'extra', 'stat', 'hid'].forEach(function(k){
       if(!S.nb[k] || typeof S.nb[k] !== 'object' || Array.isArray(S.nb[k])) S.nb[k] = {};
     });
     if(!Array.isArray(S.nb.packs)) S.nb.packs = [];
@@ -4027,7 +4029,8 @@ body.menuopen{overflow:hidden}
   function nbDelLocal(pid, stamp){
     var m = nbMeta();
     m.packs = m.packs.filter(function(p){ return p.id !== pid; });
-    [m.fav, m.extra, m.stat].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.indexOf(pid + '~') === 0) delete o[k]; }); });
+    [m.fav, m.extra, m.stat, m.hid].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.indexOf(pid + '~') === 0) delete o[k]; }); });
+    delete m.hid[pid];
     delete NB.packs[pid];
     if(stamp) m.del[pid] = stamp;
     nbIdb('readwrite', function(st){ return st.delete(pid); }).catch(function(){});
@@ -4064,7 +4067,7 @@ body.menuopen{overflow:hidden}
       p.items.forEach(function(it){
         var gid = pid + '~' + it.id, subs = [it.subject];
         (it.also || []).concat(m.extra[gid] || []).forEach(function(s){ if(subs.indexOf(s) < 0) subs.push(s); });
-        out.push({gid:gid, pack:p, it:it, subs:subs});
+        out.push({gid:gid, pack:p, it:it, subs:subs, hid:!!(m.hid[pid] || m.hid[gid]), phid:!!m.hid[pid]});
       });
     });
     return out;
@@ -4099,8 +4102,10 @@ body.menuopen{overflow:hidden}
     document.body.classList.remove('nbopen');
   }
   function nbCounts(all){
-    var c = {all:all.length, fav:0}, m = nbMeta();
+    var c = {all:0, fav:0, hid:0}, m = nbMeta();
     all.forEach(function(e){
+      if(e.hid){ c.hid++; if(!nbv.hid) return; }
+      c.all++;
       if(m.fav[e.gid]) c.fav++;
       e.subs.forEach(function(s){ c[s] = (c[s] || 0) + 1; });
     });
@@ -4109,6 +4114,7 @@ body.menuopen{overflow:hidden}
   function nbFiltered(all){
     var m = nbMeta(), q = nbv.q.trim().toLowerCase();
     return all.filter(function(e){
+      if(e.hid && !nbv.hid) return false;
       if(nbv.fav && !m.fav[e.gid]) return false;
       if(nbv.sub !== 'all' && e.subs.indexOf(nbv.sub) < 0) return false;
       if(nbv.typ !== 'all' && e.it.type !== nbv.typ) return false;
@@ -4122,8 +4128,8 @@ body.menuopen{overflow:hidden}
   }
   function nbCardHTML(e){
     var m = nbMeta(), it = e.it, open = !!nbv.open[e.gid], st = m.stat[e.gid], fav = !!m.fav[e.gid];
-    var h = '<div class="nbc' + (open ? ' open' : '') + '" data-g="' + escA(e.gid) + '">' +
-      '<div class="nbh" data-nbtoggle="1" role="button" tabindex="0" aria-expanded="' + open + '"><span class="nbtag t-' + it.type + '">' + NB_TYPES[it.type] + '</span>' +
+    var h = '<div class="nbc' + (open ? ' open' : '') + (e.hid ? ' hid' : '') + '" data-g="' + escA(e.gid) + '">' +
+      '<div class="nbh" data-nbtoggle="1" role="button" tabindex="0" aria-expanded="' + open + '"><span class="nbtag t-' + it.type + '">' + NB_TYPES[it.type] + '</span>' + (e.hid ? '<span class="nbhid">ausgeblendet</span>' : '') +
       '<b class="nbtit">' + esc(it.title) + '</b>' + (st && (st.ok || st.bad) ? '<span class="nbmini d-' + nbDiff(st) + '" title="' + escA(NB_DIFF[nbDiff(st)]) + '"></span>' : '') +
       '<button type="button" class="nbstar' + (fav ? ' on' : '') + '" data-nbfav="1" aria-label="' + (fav ? 'Favorit entfernen' : 'Als Favorit markieren') + '">' + (fav ? '★' : '☆') + '</button></div>';
     if(open){
@@ -4133,12 +4139,13 @@ body.menuopen{overflow:hidden}
       if(it.note) h += '<div class="nbnote">' + nbT(it.note) + '</div>';
       h += nbImgHTML(it);
       h += '<div class="nbfoot">' + e.subs.map(function(s, n){ return '<span class="chip">' + esc(nbSubName(s)) + '</span>'; }).join('') +
-        '<button type="button" class="ghost" data-nbedit="1">Bearbeiten</button><button type="button" class="ghost" data-nbassign="1">Fach zuordnen</button></div>';
+        '<button type="button" class="ghost" data-nbedit="1">Bearbeiten</button><button type="button" class="ghost" data-nbassign="1">Fach zuordnen</button>' +
+        (e.phid ? '' : '<button type="button" class="ghost" data-nbhide="1">' + (e.hid ? 'Einblenden' : 'Ausblenden') + '</button>') + '</div>';
       if(st && (st.ok || st.bad)){
         h += '<div class="nbstat"><span class="nbok">✓ ' + (st.ok || 0) + '</span><span class="nbno">✗ ' + (st.bad || 0) + '</span><span class="nbdf d-' + nbDiff(st) + '">' + NB_DIFF[nbDiff(st)].replace(/ \(.*\)/, '') + '</span><span class="nbdots" title="Letzte Antworten">' +
           (st.h || []).map(function(v){ return '<i class="' + (v ? 'g' : 'r') + '"></i>'; }).join('') + '</span></div>';
       }else h += '<div class="small">Noch nie abgefragt</div>';
-      h += '<div class="small">Paket: ' + esc(e.pack.title) + '</div></div>';
+      h += '<div class="small">Paket: ' + esc(e.pack.title) + (e.phid ? ' (ausgeblendet; in „Pakete“ wieder einblenden)' : '') + '</div></div>';
     }
     return h + '</div>';
   }
@@ -4162,8 +4169,9 @@ body.menuopen{overflow:hidden}
   }
   function nbDraw(){
     var el = $('nb'), all = nbEntries(), c = nbCounts(all), m = nbMeta();
+    if(nbv.hid && !c.hid){ nbv.hid = false; c = nbCounts(all); }
     var h = '<div class="nbin"><div class="nbtop"><button type="button" class="ghost" data-nbact="back">← Zurück</button><h2>Lernzentrum</h2><button type="button" class="ghost" data-nbact="prompt">Prompt</button></div>' +
-      '<div class="seg" id="nbTabs"><button type="button" data-nbtab="items" class="' + (nbv.tab === 'items' ? 'on' : '') + '">Einträge (' + all.length + ')</button><button type="button" data-nbtab="packs" class="' + (nbv.tab === 'packs' ? 'on' : '') + '">Pakete (' + nbPackList().length + ')</button></div>';
+      '<div class="seg" id="nbTabs"><button type="button" data-nbtab="items" class="' + (nbv.tab === 'items' ? 'on' : '') + '">Einträge (' + (nbv.hid ? all.length : all.length - c.hid) + ')</button><button type="button" data-nbtab="packs" class="' + (nbv.tab === 'packs' ? 'on' : '') + '">Pakete (' + nbPackList().length + ')</button></div>';
     if(nbv.tab === 'items'){
       if(!all.length){
         h += '<div class="card nbempty"><h2>Deine Notizen in der App</h2><p class="small">Lass Claude deine handgeschriebenen Zusammenfassungen in ein Lernpaket umwandeln. Danach liegen alle Merksprüche, Formeln und Skizzen nach Fächern sortiert hier und lassen sich abfragen.</p>' +
@@ -4177,7 +4185,7 @@ body.menuopen{overflow:hidden}
         Object.keys(NB_TYPES).forEach(function(k){ h += '<option value="' + k + '"' + (nbv.typ === k ? ' selected' : '') + '>' + NB_TYPES[k] + '</option>'; });
         h += '</select></label><label>Schwierigkeit<select id="nbFDif"><option value="all">Alle</option>';
         ['never', 'hard', 'mid', 'easy', 'new'].forEach(function(k){ h += '<option value="' + k + '"' + (nbv.dif === k ? ' selected' : '') + '>' + NB_DIFF[k] + '</option>'; });
-        h += '</select></label></div><div class="nbchips"><button type="button" class="catb' + (nbv.fav ? ' on' : '') + '" data-nbfavtog="1">★ Nur Favoriten (' + c.fav + ')</button></div>';
+        h += '</select></label></div><div class="nbchips"><button type="button" class="catb' + (nbv.fav ? ' on' : '') + '" data-nbfavtog="1">★ Nur Favoriten (' + c.fav + ')</button>' + (c.hid ? '<button type="button" class="catb' + (nbv.hid ? ' on' : '') + '" data-nbhidtog="1">Ausgeblendete (' + c.hid + ')</button>' : '') + '</div>';
         h += '</div><div id="nbList">' + nbListHTML(all) + '</div>';
       }
     }else{
@@ -4188,12 +4196,12 @@ body.menuopen{overflow:hidden}
         h += '<div class="card"><p class="small" style="margin:0">Noch kein Lernpaket. Erstelle mit „Prompt“ oben rechts die Anleitung für Claude oder importiere eine Datei, die du bekommen hast.</p></div>';
       }
       plist.forEach(function(p){
-        var have = !!NB.packs[p.id];
-        h += '<div class="card nbpk" data-pk="' + escA(p.id) + '"><b>' + esc(p.title) + '</b><div class="small">' + (p.author ? 'von ' + esc(p.author) + ' · ' : '') + p.n + ' Einträge · ' + esc(p.added || '') + '</div>';
+        var have = !!NB.packs[p.id], phd = !!m.hid[p.id];
+        h += '<div class="card nbpk' + (phd ? ' hid' : '') + '" data-pk="' + escA(p.id) + '"><b>' + esc(p.title) + '</b>' + (phd ? ' <span class="nbhid">ausgeblendet</span>' : '') + '<div class="small">' + (p.author ? 'von ' + esc(p.author) + ' · ' : '') + p.n + ' Einträge · ' + esc(p.added || '') + '</div>';
         if(!have) h += '<div class="small" style="color:var(--warn);margin-top:4px">Der Inhalt fehlt auf diesem Gerät. Importiere die Datei hier noch einmal.</div>';
         if(have) h += nbDocsHTML(NB.packs[p.id]);
         h += '<div class="row" style="margin-top:8px">' + (have ? '<button type="button" data-nbact="share" style="padding:8px 16px">Teilen</button><button type="button" class="ghost" data-nbact="newin" style="padding:8px 14px">+ Eintrag</button>' : '') +
-          '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
+          (have ? '<button type="button" class="ghost" data-nbact="hidepk" style="padding:8px 14px">' + (phd ? 'Einblenden' : 'Ausblenden') + '</button>' : '') + '<button type="button" class="ghost" data-nbact="delpk" style="padding:8px 14px">Löschen</button></div></div>';
       });
       if(!NB.persist) h += '<div class="small" style="margin-top:8px;color:var(--warn)">Dein Browser erlaubt hier keinen dauerhaften Speicher. Pakete bleiben nur bis zum Schließen der App.</div>';
     }
@@ -4498,7 +4506,7 @@ body.menuopen{overflow:hidden}
     return list;
   }
   function nbQuizSetup(){
-    var all = nbEntries();
+    var all = nbEntries().filter(function(e){ return !e.hid; });
     if(!all.length){ toast('Erst ein Lernpaket importieren'); return; }
     var c = nbCounts(all), m = nbMeta(), sel = {};
     var avail = nbSubIds().filter(function(s){ return c[s]; });
@@ -4663,7 +4671,7 @@ body.menuopen{overflow:hidden}
       var b = g('neDel');
       if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Wirklich löschen?'; setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = 'Eintrag löschen'; } }, 3000); return; }
       e.pack.items = e.pack.items.filter(function(x){ return x !== it; });
-      [m.fav, m.extra, m.stat].forEach(function(obj){ delete obj[gid]; });
+      [m.fav, m.extra, m.stat, m.hid].forEach(function(obj){ delete obj[gid]; });
       m.packs.forEach(function(pr){ if(pr.id === e.pack.id) pr.n = e.pack.items.length; });
       delete nbv.open[gid];
       nbPersist(e.pack); save(); sh.close(); nbDraw(); toast('Eintrag gelöscht');
@@ -4843,6 +4851,10 @@ body.menuopen{overflow:hidden}
       else if(a === 'psync'){ if(nbHooks.syncPacks) nbHooks.syncPacks(true); }
       else if(a === 'docadd'){ var pk3 = b.closest('.nbpk'); if(pk3) nbDocAddSheet(pk3.getAttribute('data-pk')); }
       else if(a === 'quiz'){ nbQuizSetup(); }
+      else if(a === 'hidepk'){
+        var pk4 = b.closest('.nbpk'), pid4 = pk4 && pk4.getAttribute('data-pk');
+        if(pid4){ var mh = nbMeta(); if(mh.hid[pid4]) delete mh.hid[pid4]; else mh.hid[pid4] = 1; save(); nbDraw(); toast(mh.hid[pid4] ? 'Paket ausgeblendet. Es zählt nicht mehr in Liste und Abfrage.' : 'Paket wieder eingeblendet.'); }
+      }
       else if(a === 'share'){ var pk = b.closest('.nbpk'); if(pk) nbShareSheet(pk.getAttribute('data-pk')); }
       else if(a === 'delpk'){
         var pk2 = b.closest('.nbpk'), pid = pk2 && pk2.getAttribute('data-pk');
@@ -4885,12 +4897,18 @@ body.menuopen{overflow:hidden}
     if((b = t.closest('[data-nbtab]'))){ nbv.tab = b.getAttribute('data-nbtab'); nbDraw(); return; }
     if((b = t.closest('[data-nbfavtog]'))){ nbv.fav = !nbv.fav; nbv.limit = 60; nbDraw(); return; }
     if((b = t.closest('[data-nbmore]'))){ nbv.limit += 60; nbDraw(); return; }
+    if((b = t.closest('[data-nbhidtog]'))){ nbv.hid = !nbv.hid; nbv.limit = 60; nbDraw(); return; }
     var gid = nbCardOf(t);
     if(!gid) return;
     if(t.closest('[data-nbfav]')){
       var m2 = nbMeta();
       if(m2.fav[gid]) delete m2.fav[gid]; else m2.fav[gid] = 1;
       save(); nbDraw(); return;
+    }
+    if(t.closest('[data-nbhide]')){
+      var m3 = nbMeta();
+      if(m3.hid[gid]) delete m3.hid[gid]; else m3.hid[gid] = 1;
+      save(); nbDraw(); toast(m3.hid[gid] ? 'Eintrag ausgeblendet.' : 'Eintrag wieder eingeblendet.'); return;
     }
     if(t.closest('[data-nbassign]')){ nbAssignSheet(gid); return; }
     if(t.closest('[data-nbedit]')){ nbEditSheet(gid); return; }
@@ -5305,6 +5323,9 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-21', items:[
+      {t:'Ausblenden im Lernzentrum', x:'Lernpakete (unter „Pakete“) und einzelne Einträge (beim Aufklappen) lassen sich ausblenden, ohne sie zu löschen. Ausgeblendetes taucht nicht in Liste, Abfrage und Chat-Daten auf. Über „Ausgeblendete“ siehst du es und kannst es wieder einblenden.', tab:'home', sel:'#nbBtn'}
+    ]},
     {v:'2026.10.10-20', items:[
       {t:'Coach unter dem Gleitpfad', x:'Ab dem zweiten Eintrag sagt dir ein kurzer Text, wie viele Fragen heute noch fehlen und ob sich Weiterklicken lohnt. Er achtet auf Uhrzeit, heute geklickte Fragen und ob deine Ergebnisse im Lauf des Tages schlechter werden, und nennt eine Prognose für deinen Score am Prüfungstermin.', tab:'home', sel:'#coach'}
     ]},

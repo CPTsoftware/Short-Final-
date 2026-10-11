@@ -8158,6 +8158,7 @@ body.menuopen{overflow:hidden}
     var j = null; try{ j = await r.json(); }catch(e){}
     if(!r.ok){
       var em = (j && j.error) || ('Fehler ' + r.status), g0 = body && (body.me || body.gist);
+      if(path === '/claim' && j && j.hint) em += ' [' + j.hint + ']';
       /* Freigabe-ID gehört dort einem anderen Gerätetoken: Eigentum über das Beschreiben des Gists neu belegen */
       if(!noRetry && em === 'nicht erlaubt' && path !== '/claim' && body && body.tok && g0 && syncCfg && syncCfg.token && Date.now() - (pushClaimTried[g0] || 0) > 70000){
         pushClaimTried[g0] = Date.now();
@@ -8175,7 +8176,8 @@ body.menuopen{overflow:hidden}
       st = 'Schritt 2 (GitHub)';
       await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': {content: a.nonce}}}});
       st = 'Schritt 3';
-      await pushApi('/claim', {gist: g, tok: tok, nonce: a.nonce}, true);
+      var login = ''; try{ var uj = await gh('/user'); login = (uj && uj.login) || ''; }catch(e){}
+      await pushApi('/claim', {gist: g, tok: tok, nonce: a.nonce, login: login}, true);
     }catch(e){ throw new Error(st + ': ' + ((e && e.message) || 'Fehler')); }
     try{ await gh('/gists/' + g, {method: 'PATCH', body: {files: {'sf-claim.json': null}}}); }catch(e){}
   }
@@ -8560,6 +8562,7 @@ body.menuopen{overflow:hidden}
     var el = document.createElement('details'); el.className = 'card settings'; el.id = 'pushCard';
     el.innerHTML = '<summary>Benachrichtigungen (Push)</summary>' +
       '<div class="small pnote">Optional und standardmäßig aus. Dein Gerät meldet sich dafür bei einem kleinen Server an. Dort liegen nur eine anonyme Geräteadresse, deine Uhrzeiten, deine Zeitzone, deine Freigabe-ID und das Netz deiner bestätigten Freunde. Es werden keine Lerndaten und kein API-Schlüssel übertragen. Die Texte erstellt dein Gerät selbst.</div>' +
+      '<div class="prow row"><button class="ghost" id="pushDiag" style="width:100%">Diagnose (Verbindung prüfen)</button></div><div class="small pnote" id="pushDiagOut" style="white-space:pre-wrap;user-select:text"></div>' +
       '<div class="small pnote" id="pushIos" hidden>Auf iPhone und iPad funktioniert das nur, wenn die App auf dem Home-Bildschirm liegt: In Safari auf Teilen tippen, „Zum Home-Bildschirm“ wählen und die App von dort öffnen.</div>' +
       '<div class="pme"><h3>Für dich</h3>' +
       chk('pRemOn', 'Tägliche Erinnerung') +
@@ -8575,7 +8578,7 @@ body.menuopen{overflow:hidden}
       '<div id="pStatBox"><h3>Anonyme Statistik</h3>' +
       chk('pStat', 'Anonymen Stand für die Gesamtübersicht des Betreibers teilen') +
       '<div class="small pnote">Gesendet werden nur Fragenstand, Ziel, Tempo und Datum unter einer zufälligen Nummer. Kein Name, keine Freunde, keine Verbindung zu deinem Konto. Jederzeit abschaltbar, dann wird der Eintrag gelöscht.</div></div>' +
-      '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button><button class="ghost" id="pushDiag">Diagnose</button></div>' +
+      '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button></div>' +
       '<div class="small msg" id="pushMsg" style="margin:8px 14px 0"></div>';
     var anchor = document.getElementById('aiKeyCard') || document.getElementById('syncCard');
     if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling); else (document.getElementById('menuBody') || document.body).appendChild(el);
@@ -8654,7 +8657,7 @@ body.menuopen{overflow:hidden}
     });
     $('pushDiag').addEventListener('click', async function(){
       var L = [], m = pushMe();
-      msg.style.whiteSpace = 'pre-wrap'; msg.textContent = 'Prüfe …';
+      var dout = $('pushDiagOut'); dout.textContent = 'Prüfe …';
       L.push('Build: diag-3 · Rolle: ' + (isIns() ? 'Instructor' : 'Lernender'));
       L.push('Cloud-Sync: ' + (syncCfg && syncCfg.token ? 'ja' : 'nein') + ' · Freigabe-ID: ' + (S.share && S.share.gist ? S.share.gist.slice(0, 8) + '…' : 'keine'));
       L.push('Gerätetoken: ' + (m ? pushSha(m.tok).slice(0, 6) + ' (' + (syncCfg && syncCfg.token ? 'aus Sync abgeleitet' : 'nur dieses Gerät') + ')' : 'keiner (keine Freigabe)'));
@@ -8665,7 +8668,7 @@ body.menuopen{overflow:hidden}
           L.push('Server: OK · Anfragen offen ' + (j.inbox || []).length + (j.inbox && j.inbox.length ? ' (' + j.inbox.map(function(x){ return (x.r === 'i' ? 'Instructor ' : '') + x.n; }).join(', ') + ')' : '') + ' · Freunde ' + (j.out || []).length + ' · Instructors ' + (j.ins || []).length + ' · Schüler ' + (j.wat || []).length + ' · blockiert ' + (j.blocked || []).length);
         }catch(e){ L.push('Server: Fehler „' + ((e && e.message) || '?') + '“' + (e && e.detail ? ' · Neu-Zuordnung: ' + e.detail : '') + (pushClaimErr ? ' · letzter Grund: ' + pushClaimErr : '')); }
       }
-      msg.textContent = L.join('\n');
+      dout.textContent = L.join('\n');
     });
     el.addEventListener('toggle', paint);
     paint();

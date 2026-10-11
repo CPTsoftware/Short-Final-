@@ -6269,6 +6269,15 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-34', autotour:true, items:[
+      {t:'Benachrichtigungen einstellen', x:'Hier schaltest du alles ein oder aus: tägliche Erinnerung, Briefing am Morgen, Debriefing am Abend und Meldungen von Freunden. Außerdem kannst du freiwillig einen anonymen Stand für die Gesamtübersicht teilen. Standardmäßig ist alles aus, bis du es aktivierst.', web:true, menu:true, sel:'#pushCard summary'},
+      {t:'Briefing und Debriefing mit KI', x:'Mit deinem eigenen API-Schlüssel schreibt die KI dir morgens ein kurzes Briefing und abends ein Debriefing. Den Schlüssel trägst du in dieser Karte ein. Er bleibt auf deinem Gerät.', web:true, menu:true, sel:'#aiKeyCard summary'},
+      {t:'Freundschaftsanfragen', x:'Wenn du einen Freundecode eingibst, bekommt dein Freund eine Anfrage und kann sie annehmen. Wer nur einen Code eingibt, wird nicht automatisch verbunden. Geben sich beide gegenseitig den Code, seid ihr sofort verbunden.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Automatische Freund-Meldungen', x:'Verbundene Freunde bekommen automatisch eine Meldung, wenn du Fragen klickst, sie überholst, dein Tagespensum erreichst, ein Abzeichen holst, wieder im Soll bist oder ein gemeinsames Paket aktualisierst. Im Freunde-Fenster kannst du jeden Freund stummschalten, entfernen oder blockieren.', web:true, tab:'home', sel:'#frIcon'}
+    ]},
+    {v:'2026.10.11-33', items:[
+      {t:'Mehr Benachrichtigungen (optional)', x:'Im Menü unter „Benachrichtigungen“ stellst du jetzt alles selbst ein: tägliche Erinnerung, Briefing am Morgen und Debriefing am Abend (mit deinem eigenen API-Schlüssel, die KI schreibt den Text), sowie Meldungen, wenn ein Freund Fragen geklickt, ein Abzeichen geholt hat oder wieder im Soll ist. Auch deine eigenen Meldungen an Freunde schaltest du dort ein oder aus. Standardmäßig ist alles aus. Es werden keine Lerndaten und kein Schlüssel übertragen. Verfügbar, sobald der Betreiber den Dienst eingerichtet hat.', web:true, menu:true, sel:'#menuBtn'}
+    ]},
     {v:'2026.10.11-32', items:[
       {t:'Erinnerungen per Push (optional)', x:'Im Menü kannst du eine oder zwei Uhrzeiten wählen, zu denen dich eine Erinnerung erreicht, auch wenn die App zu ist. Standardmäßig ist das aus. Es werden keine Lerndaten übertragen, die Nachricht erstellt dein Gerät selbst. Verfügbar, sobald der Betreiber den Erinnerungsdienst eingerichtet hat.', web:true, menu:true, sel:'#menuBtn'}
     ]},
@@ -6512,6 +6521,7 @@ body.menuopen{overflow:hidden}
           if(ov.parentNode) ov.parentNode.removeChild(ov);
           done();
           if(tour){ startUpdateTour(missed.concat([latest]), function(){ maybeLook(); }); return; }
+          if(latest.autotour && items.some(function(c){ return !c.notour && c.sel; })){ startUpdateTour([latest], function(){ maybeLook(); }); return; }
           maybeTour(); maybeLook();
         }, 420);
       }
@@ -7050,7 +7060,7 @@ body.menuopen{overflow:hidden}
     var c = S && S.share;
     if(!c || !c.gist) return;
     clearTimeout(frTimer);
-    frTimer = setTimeout(function(){ frPush(false); }, 8000);
+    frTimer = setTimeout(function(){ frPush(false).then(function(){ if(typeof pushEvents === 'function') pushEvents(); }); }, 8000);
   }
   function frRelEval(){
     var me = null, es = null;
@@ -7116,7 +7126,7 @@ body.menuopen{overflow:hidden}
   function frAlerts(){ var o = {badges:true, fragen:true}; try{ var x = JSON.parse(localStorage.getItem(FR_AL) || 'null'); if(x && typeof x === 'object'){ if(x.badges === false) o.badges = false; if(x.fragen === false) o.fragen = false; } }catch(e){} return o; }
   function frEvery(){ return (syncCfg && syncCfg.token) ? 55000 : 300000; }
   function frPop(kind, html){
-    if(!frAlerts()[kind]) return;
+    if(frAlerts()[kind] === false) return;
     var box = document.getElementById('frPops');
     if(!box){ box = document.createElement('div'); box.id = 'frPops'; box.className = 'frpops'; document.body.appendChild(box); }
     var el = document.createElement('div'); el.className = 'frpop'; el.setAttribute('role', 'status'); el.innerHTML = '<div>' + html + '</div>';
@@ -7125,9 +7135,10 @@ body.menuopen{overflow:hidden}
     box.appendChild(el);
     while(box.children.length > 3) box.removeChild(box.firstChild);
     setTimeout(gone, 7000);
+    return el;
   }
   function frNewsDot(){
-    var b = $('frIcon'), n = frNewsLoad().length;
+    var b = $('frIcon'), n = frNewsLoad().length + (typeof pushInboxN === 'function' ? pushInboxN() : 0);
     if(!b) return;
     var dot = b.querySelector('.dotb');
     if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
@@ -7197,6 +7208,7 @@ body.menuopen{overflow:hidden}
     if(!frView || !frView.ov.parentNode) return;
     var b = frView.ov.querySelector('#frBody'), h = '';
     frShareRender();
+    h += (typeof pushReqHtml === 'function' ? pushReqHtml() : '');
     var news = frNewsLoad();
     if(news.length){
       h += '<div class="card frc" style="margin-top:0;border-color:var(--accent)"><b>Neu bei deinen Freunden</b>' + news.slice(-6).reverse().map(function(x){
@@ -7205,16 +7217,17 @@ body.menuopen{overflow:hidden}
       }).join('') + '</div>';
       frNewsSave([]); frNewsDot();
     }
-    h += '<div class="card frc"' + (news.length ? '' : ' style="margin-top:0"') + '><b>Freund hinzufügen</b><div class="small" style="margin:6px 0">Füge den Freundecode oder Link deines Freundes ein. Deinen eigenen Code findest du im Account (Icon oben rechts).</div>' +
+    h += '<div class="card frc"' + (news.length || h ? '' : ' style="margin-top:0"') + '><b>Freund hinzufügen</b><div class="small" style="margin:6px 0">Füge den Freundecode oder Link deines Freundes ein. Deinen eigenen Code findest du im Account (Icon oben rechts).</div>' +
       '<input type="text" id="frCode" placeholder="SF-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%" value="' + escA(frPrefill) + '">' +
       '<input type="text" id="frAlias" placeholder="Name (optional)" maxlength="24" style="width:100%;margin-top:8px">' +
       '<button type="button" data-fract="add" style="width:100%;margin-top:8px">Hinzufügen</button></div>';
     h += '<div class="row" style="margin-top:12px;align-items:center"><b style="flex:1">Deine Freunde</b><button type="button" class="ghost" data-fract="refresh" style="padding:7px 14px">' + (frBusy ? 'Lädt …' : 'Aktualisieren') + '</button></div>';
     if(!S.friends.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
     S.friends.forEach(function(fr, i){
-      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small">aktualisiert ' + esc(frWhen(fr.last)) + '</span></div>' + frCompare(fr) +
-        '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button></div></div>';
+      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small">aktualisiert ' + esc(frWhen(fr.last)) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
+        '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
     });
+    h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
     h += '<div class="small" id="frMsg" style="margin-top:10px">' + esc(frNote) + '</div>';
     var keep = b.querySelector('#frCode'), ka = b.querySelector('#frAlias'), cv = keep ? keep.value : null, av = ka ? ka.value : null;
     b.innerHTML = h;
@@ -7254,6 +7267,7 @@ body.menuopen{overflow:hidden}
       S.friends.push({id:Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist:gid, alias:frTxt(o.querySelector('#frAlias').value, 24), data:d, last:Date.now(), bseen:d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
       frPrefill = '';
       save(); frNote = 'Hinzugefügt: ' + d.name; frRender();
+      if(typeof pushReq === 'function') pushReq(gid).then(function(r){ if(r){ frNote = r.linked ? 'Hinzugefügt und verbunden: ' + d.name : 'Hinzugefügt. Anfrage an ' + d.name + ' gesendet.'; frRender(); } });
       var cd = o.querySelector('#frCode'); if(cd) cd.value = '';
     }, function(e){ frMsg(e && e.message === 'gone' ? 'Code nicht gefunden. Prüfe ihn und frage nach einem neuen.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Das hat nicht geklappt. Bist du online und ist der Code vollständig?'); });
   }
@@ -7284,7 +7298,8 @@ body.menuopen{overflow:hidden}
     }else if(a === 'rm'){
       var i = +t.getAttribute('data-fri');
       if(!arm('Entfernen')) return;
-      S.friends.splice(i, 1); save(); frRender();
+      var gx = S.friends[i] && S.friends[i].gist; S.friends.splice(i, 1); save(); frRender();
+      if(gx && typeof pushUnlink === 'function') pushUnlink(gx);
     }
     if(a === 'start' || a === 'stop' || a === 'renew') setTimeout(frShareRender, 0);
   }
@@ -7430,6 +7445,7 @@ body.menuopen{overflow:hidden}
       return l0(pack).then(function(u){
         nbMeta().packs.forEach(function(x){ if(x.id === pack.id){ x.log = [{t:Date.now(), pub:1}].concat(x.log || []).slice(0, 30); } });
         save();
+        if(typeof pushPack === 'function') pushPack(pack.title, u);
         return u;
       });
     };
@@ -8063,11 +8079,27 @@ body.menuopen{overflow:hidden}
   })();
   /* ---------- Erinnerungen per Push (nur GitHub-Version, standardmäßig aus) ---------- */
   var PUSH_KEY = KEY + '-push', pushCfg = null, pushLast = '';
+  var PK = ['q', 'o', 'g', 'b', 's', 'p'];
+  var PK_LAB = {q: 'Ein Freund hat Fragen geklickt', o: 'Ein Freund hat mich überholt', g: 'Ein Freund hat das Tagespensum erreicht', b: 'Ein Freund hat ein Abzeichen geholt', s: 'Ein Freund ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
   function pushGet(){
-    var c = null; try{ c = JSON.parse(localStorage.getItem(PUSH_KEY) || 'null'); }catch(e){}
+    var raw = null, c = null; try{ raw = localStorage.getItem(PUSH_KEY); c = JSON.parse(raw || 'null'); }catch(e){}
     if(!c || typeof c !== 'object') c = {};
-    if(!Array.isArray(c.times) || !c.times.length) c.times = ['18:00'];
-    c.on = !!c.on; return c;
+    c.on = !!c.on;
+    var oldT = Array.isArray(c.times) && c.times.length ? c.times : ['18:00'];
+    if(!c.rem || typeof c.rem !== 'object') c.rem = {on: true, times: oldT};
+    if(!Array.isArray(c.rem.times) || !c.rem.times.length) c.rem.times = ['18:00'];
+    c.rem.on = c.rem.on !== false;
+    if(!c.brief || typeof c.brief !== 'object') c.brief = {on: false, t: '07:30'};
+    if(!c.debrief || typeof c.debrief !== 'object') c.debrief = {on: false, t: '21:00'};
+    c.brief.on = !!c.brief.on; c.debrief.on = !!c.debrief.on;
+    if(!/^\d\d:\d\d$/.test(c.brief.t || '')) c.brief.t = '07:30';
+    if(!/^\d\d:\d\d$/.test(c.debrief.t || '')) c.debrief.t = '21:00';
+    var migrate = !c.v3;
+    if(!c.fev || typeof c.fev !== 'object' || migrate) c.fev = {};
+    PK.forEach(function(x){ c.fev[x] = migrate ? true : c.fev[x] !== false; });
+    c.v3 = 1; c.stat = !!c.stat;
+    if(migrate && raw) pushPut(c);
+    c.times = c.rem.times; return c;
   }
   function pushPut(c){ try{ localStorage.setItem(PUSH_KEY, JSON.stringify(c)); }catch(e){} }
   function pushOK(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window); }
@@ -8083,37 +8115,331 @@ body.menuopen{overflow:hidden}
     if(!r.ok) throw new Error((j && j.error) || ('Fehler ' + r.status));
     return j;
   }
-  /* Tagesstand lokal ablegen, damit der Service Worker die Nachricht selbst formulieren kann */
-  function pushTouch(){
+  function pushEv(c){ return PK.filter(function(x){ return c.fev[x]; }).join(''); }
+  function pushWantsAi(c){ return (c.brief.on || c.debrief.on) && aikOn(); }
+  function pushTok(c){
+    if(!c.tok || !/^[0-9a-f]{32}$/.test(c.tok)){ c.tok = pushRnd(16); pushPut(c); }
+    return c.tok;
+  }
+  function pushRnd(n){
+    var a = new Uint8Array(n); (window.crypto && window.crypto.getRandomValues ? window.crypto : {getRandomValues: function(x){ for(var i = 0; i < x.length; i++) x[i] = Math.floor(Math.random() * 256); }}).getRandomValues(a);
+    return Array.prototype.map.call(a, function(b){ return (b < 16 ? '0' : '') + b.toString(16); }).join('');
+  }
+  /* Eigene Kennung für Freundschaften: die Freigabe-ID plus ein geheimes Token (bleibt auf diesem Gerät) */
+  function pushMe(){
+    var c = S && S.share;
+    if(!pushCfg || !c || typeof c.gist !== 'string' || !/^[0-9a-f]{20,40}$/.test(c.gist)) return null;
+    return {me: c.gist, tok: pushTok(pushGet())};
+  }
+  function pushPacks(){
+    var a = []; try{ nbMeta().packs.forEach(function(p){ if(typeof p.src === 'string' && /^[0-9a-f]{20,40}$/.test(p.src) && a.indexOf(p.src) < 0) a.push(p.src); }); }catch(e){}
+    return a.slice(0, 30);
+  }
+  function pushMute(){
+    var m = {}; (S.friends || []).forEach(function(f){ if(f.gist && f.mute) m[f.gist] = f.mute; }); return m;
+  }
+  function pushSnap(n){
+    var o = {stand_d: iso(new Date()), stand: n.last.n, ziel: S.target, ziel_datum: S.deadline, diff_zum_plan: Math.round(n.diff), heute_geklickt: n.clicked, heute_noch_offen: Math.max(0, Math.round(n.needToday || 0)), tempo_pro_tag: Math.round(n.paceR)};
+    o.heute = n.clicked; o.rest = o.heute_noch_offen;
     try{
-      if(!pushCfg || !pushGet().on || !window.caches || !S) return;
+      var best = null;
+      SUBJECTS.forEach(function(sj){ var a = analyze(sj.id); if(a.sc !== null && (!best || a.sc < best.score)) best = {name: sj.name, score: Math.round(a.sc * 10) / 10}; });
+      if(best) o.schwaechstes_fach = best;
+    }catch(e){}
+    try{
+      o.freunde = (S.friends || []).filter(function(f){ return f.data && typeof f.data.stand === 'number'; }).slice(0, 5).map(function(f){ return {name: String(f.alias || f.data.name || 'Freund').slice(0, 24), ich_voraus_um: n.last.n - f.data.stand}; });
+    }catch(e){}
+    return o;
+  }
+  var pushAt = 0, pushFh = '';
+  function pushFhash(c){ var m = pushMe(); return (m ? m.me : '') + '|' + pushEv(c) + '|' + JSON.stringify(pushMute()) + '|' + pushPacks().join(',') + '|' + (pushWantsAi(c) ? 1 : 0); }
+  /* Stand lokal ablegen, damit der Service Worker die Nachrichten selbst formulieren kann */
+  function pushTouch(force){
+    try{
+      var c = pushGet();
+      if(!pushCfg || !S) return;
+      var now = Date.now(); if(!force && now - pushAt < 30000) return; pushAt = now;
+      pushStatSend(false);
+      if(!c.on || !window.caches) return;
       var n = homeNums(), st = {d: iso(new Date()), rest: Math.max(0, Math.round(n.needToday || 0)), done: n.goal > 0 && n.needToday <= 0};
-      var js = JSON.stringify(st); if(js === pushLast) return; pushLast = js;
-      window.caches.open('sf-state').then(function(c){ return c.put('state', new Response(js, {headers: {'content-type': 'application/json'}})); }).catch(function(){});
+      var js = JSON.stringify(st);
+      var fr = {}; (S.friends || []).forEach(function(f){ if(f.gist) fr[f.gist] = String(f.alias || (f.data && f.data.name) || '').slice(0, 24); });
+      var cfg = JSON.stringify({url: pushCfg.url, ai: pushWantsAi(c) ? {key: aikGet(), model: 'claude-haiku-5-5'} : null, snap: pushSnap(n), fr: fr});
+      if(js + cfg !== pushLast){
+        pushLast = js + cfg;
+        window.caches.open('sf-state').then(function(ca){ return ca.put('state', new Response(js, {headers: {'content-type': 'application/json'}})); }).catch(function(){});
+        window.caches.open('sf-priv').then(function(ca){ return ca.put('cfg', new Response(cfg, {headers: {'content-type': 'application/json'}})); }).catch(function(){});
+      }
+      var fh = pushFhash(c);
+      if(pushFh && fh !== pushFh){ pushFh = fh; pushSync().catch(function(){}); } else if(!pushFh) pushFh = fh;
     }catch(e){}
   }
+  async function pushSub(){
+    var r = await navigator.serviceWorker.getRegistration();
+    return r && await r.pushManager.getSubscription();
+  }
+  function pushPayload(sub){
+    var c = pushGet(), m = pushMe();
+    var o = {sub: sub.toJSON(), times: c.rem.on ? c.rem.times : [], brief: c.brief.on && aikOn() ? c.brief.t : null, debrief: c.debrief.on && aikOn() ? c.debrief.t : null, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin'), ev: m ? pushEv(c) : ''};
+    if(m){ o.me = m.me; o.tok = m.tok; o.mute = pushMute(); o.pk = pushPacks(); }
+    return o;
+  }
+  async function pushSync(){
+    var sub = await pushSub(); if(!sub || !pushCfg) return;
+    await pushApi('/subscribe', pushPayload(sub));
+  }
+
+  /* ---------- Freunde: Anfragen, Verbindung, Blockieren ---------- */
+  var pushSt = null, pushStAt = 0, pushLk = {}, pushAnn = {}, BLKN = KEY + '-blkn';
+  function pushInboxN(){ return pushSt && pushSt.inbox ? pushSt.inbox.length : 0; }
+  function blkNames(){ try{ var o = JSON.parse(localStorage.getItem(BLKN) || '{}'); return o && typeof o === 'object' ? o : {}; }catch(e){ return {}; } }
+  function blkName(g, n){ var o = blkNames(); if(n) o[g] = String(n).slice(0, 24); try{ localStorage.setItem(BLKN, JSON.stringify(o)); }catch(e){} }
+  async function pushStatus(force){
+    var m = pushMe(); if(!m) return null;
+    if(!force && Date.now() - pushStAt < 20000) return pushSt;
+    pushStAt = Date.now();
+    try{
+      var j = await pushApi('/status', m);
+      pushSt = j; pushLk = {}; (j.out || []).forEach(function(g){ pushLk[g] = 1; });
+    }catch(e){ return pushSt; }
+    (pushSt.inbox || []).forEach(function(x){
+      if(pushAnn[x.from]) return; pushAnn[x.from] = 1;
+      if(typeof frPop !== 'function') return;
+      var el = frPop('anfrage', '<b>' + esc(x.n) + '</b> möchte dein Freund sein<small>Tippe, um die Anfrage zu beantworten</small>');
+      if(el) el.addEventListener('click', function(){ if(typeof frOpen === 'function') frOpen(); });
+    });
+    try{ if(typeof frRender === 'function') frRender(); if(typeof frNewsDot === 'function') frNewsDot(); }catch(e){}
+    return pushSt;
+  }
+  async function pushCall(path, extra){
+    var m = pushMe(); if(!m) throw new Error('nofreigabe');
+    var r = await pushApi(path, Object.assign({}, m, extra || {}));
+    await pushStatus(true); return r;
+  }
+  function pushName(){ return String(S.uname || 'Pilot').slice(0, 24); }
+  async function pushReq(g){
+    if(!pushMe()) return null;
+    try{
+      var r = await pushCall('/req', {to: g, n: pushName()});
+      (S.friends || []).forEach(function(f){ if(f.gist === g){ f.req = Date.now(); } }); save();
+      return r;
+    }catch(e){ return null; }
+  }
+  async function pushAccept(g, n){
+    try{
+      if(!S.friends.some(function(x){ return x.gist === g; })){
+        var d = await frFetchShare(g);
+        S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: g, alias: frTxt(n, 24), data: d, last: Date.now(), bseen: d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
+      }
+      await pushCall('/accept', {from: g, n: pushName()});
+      save(); frMsg('Verbunden mit ' + n + '. Ihr bekommt jetzt gegenseitig Meldungen.');
+    }catch(e){
+      frMsg(e && e.message === 'gone' ? 'Der Freundecode dieses Absenders ist nicht mehr gültig.' : e && e.message === 'limit' ? 'GitHub bremst gerade die Abfragen. Versuche es später noch einmal.' : 'Das hat nicht geklappt. Bist du online?');
+    }
+    try{ frRender(); }catch(e){}
+  }
+  function pushUnlink(g){ if(pushMe()) pushCall('/unlink', {g: g}).catch(function(){}); }
+  function pushReqHtml(){
+    var ib = (pushSt && pushSt.inbox) || [];
+    if(!ib.length) return '';
+    return '<div class="card frc" style="margin-top:0;border-color:var(--accent)"><b>Anfragen</b>' + ib.map(function(x){
+      var at = ' data-pg="' + escA(x.from) + '" data-pn="' + escA(x.n) + '"';
+      return '<div class="pdr"><b>' + esc(x.n) + '</b> möchte dein Freund sein.<div class="small" style="margin-top:4px">Mit „Annehmen“ folgst du ihm auch zurück. Ihr bekommt dann gegenseitig Push-Meldungen.</div><div class="row" style="margin-top:8px"><button type="button" data-pact="racc"' + at + '>Annehmen</button><button type="button" class="ghost" data-pact="rdec"' + at + '>Ablehnen</button><button type="button" class="ghost" data-pact="rblk"' + at + '>Blockieren</button></div></div>';
+    }).join('') + '</div>';
+  }
+  function pushFrHtml(fr){
+    if(!pushCfg) return '';
+    if(!pushMe()) return '<div class="small" style="margin-top:8px">Für Push-Meldungen mit Freunden brauchst du deine Freigabe (Account).</div>';
+    var lk = !!pushLk[fr.gist], pend = !lk && fr.req && Date.now() - fr.req < 30 * 86400000;
+    var h = '<div class="small" style="margin-top:8px">' + (lk ? 'Verbunden: ihr bekommt gegenseitig Push-Meldungen.' : pend ? 'Anfrage gesendet. Sobald dein Freund annimmt, seid ihr verbunden.' : 'Nicht verbunden. Ohne Verbindung gibt es keine Push-Meldungen.') + '</div>';
+    if(!lk) return h + '<div class="row" style="margin-top:6px"><button type="button" class="ghost" data-pact="ask" data-pg="' + escA(fr.gist) + '" style="padding:6px 12px">' + (pend ? 'Anfrage erneut senden' : 'Anfrage senden') + '</button></div>';
+    var mu = fr.mute || '';
+    return h + '<details style="margin-top:6px"><summary class="small" style="cursor:pointer">Meldungen von diesem Freund</summary>' + PK.map(function(k){
+      return '<label class="tg"><span>' + PK_LAB[k].replace('Ein Freund', 'Er').replace('ein gemeinsames Paket', 'ein Paket') + '</span><input type="checkbox" class="sw" data-pmute="' + k + '" data-pg="' + escA(fr.gist) + '"' + (mu.indexOf(k) < 0 ? ' checked' : '') + '></label>';
+    }).join('') + '</details>';
+  }
+  function pushBlkBtn(fr){ return pushCfg && pushMe() ? '<button type="button" class="ghost" data-pact="blk" data-pg="' + escA(fr.gist) + '" style="padding:6px 12px">Blockieren</button>' : ''; }
+  function pushBlkHtml(){
+    var bl = (pushSt && pushSt.blocked) || [];
+    if(!bl.length) return '';
+    var nm = blkNames();
+    return '<div class="card frc"><b>Blockiert</b><div class="small" style="margin-top:4px">Blockierte können dir keine Anfragen mehr schicken und bekommen keine Meldungen von dir.</div>' + bl.map(function(g){
+      return '<div class="pdr" style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0">' + esc(nm[g] || 'Unbekannt') + '</span><button type="button" class="ghost" data-pact="unblk" data-pg="' + escA(g) + '" style="padding:6px 12px">Freigeben</button></div>';
+    }).join('') + '</div>';
+  }
+  document.addEventListener('click', function(ev){
+    var t = ev.target && ev.target.closest ? ev.target.closest('[data-pact]') : null;
+    if(!t) return;
+    var a = t.getAttribute('data-pact'), g = t.getAttribute('data-pg'), n = t.getAttribute('data-pn') || '';
+    function arm(label){
+      if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
+      return true;
+    }
+    function fin(msg){ return function(){ frMsg(msg); try{ frRender(); }catch(e){} }; }
+    function fail(){ frMsg('Das hat nicht geklappt. Bist du online?'); }
+    if(a === 'ask'){ frMsg('Sende Anfrage …'); pushReq(g).then(function(r){ frMsg(r && r.linked ? 'Verbunden.' : r ? 'Anfrage gesendet.' : 'Das hat nicht geklappt. Bist du online?'); try{ frRender(); }catch(e){} }); }
+    else if(a === 'racc'){ frMsg('Verbinde …'); pushAccept(g, n); }
+    else if(a === 'rdec'){ pushCall('/decline', {from: g}).then(fin('Anfrage abgelehnt.'), fail); }
+    else if(a === 'rblk'){ if(!arm('Blockieren')) return; blkName(g, n); pushCall('/block', {g: g}).then(fin('Blockiert.'), fail); }
+    else if(a === 'blk'){
+      if(!arm('Blockieren')) return;
+      var fr0 = S.friends.filter(function(x){ return x.gist === g; })[0];
+      blkName(g, fr0 ? (fr0.alias || (fr0.data && fr0.data.name) || '') : '');
+      S.friends = S.friends.filter(function(x){ return x.gist !== g; }); save();
+      pushCall('/block', {g: g}).then(fin('Blockiert und entfernt.'), fail);
+    }
+    else if(a === 'unblk'){ pushCall('/unblock', {g: g}).then(fin('Freigegeben. Ihr könnt euch wieder Anfragen schicken.'), fail); }
+  });
+  document.addEventListener('change', function(ev){
+    var t = ev.target, k = t && t.getAttribute && t.getAttribute('data-pmute');
+    if(!k) return;
+    var g = t.getAttribute('data-pg'), fr = S.friends.filter(function(x){ return x.gist === g; })[0];
+    if(!fr) return;
+    var mu = (fr.mute || '').replace(k, ''); if(!t.checked) mu += k; fr.mute = mu; save();
+    pushSync().catch(function(){});
+  });
+
+  /* ---------- Eigene Ereignisse an verbundene Freunde melden ---------- */
+  function pushSend(kind, x, extra){
+    var m = pushMe(); if(!m) return Promise.resolve();
+    return pushApi('/event', Object.assign({gist: m.me, tok: m.tok, kind: kind, n: pushName(), x: x || ''}, extra || {})).catch(function(){});
+  }
+  var PEV_KEY = KEY + '-pushev', pevBusy = false;
+  function pushEvents(){
+    try{
+      if(!pushMe()) return;
+      if(pushSt === null){ if(!pevBusy){ pevBusy = true; pushStatus(true).then(function(){ pevBusy = false; if(pushSt) pushEvents(); }, function(){ pevBusy = false; }); } return; }
+      var n = homeNums(), d = iso(new Date());
+      var bd = bdMerge(S.badges, null), ids = Object.keys(bd);
+      var done = n.goal > 0 && n.needToday <= 0;
+      var cur = {d: d, qs: n.clicked, diff: Math.round(n.diff), bd: ids, st: n.last.n, gd: done ? d : ''}, prev = null;
+      try{ prev = JSON.parse(localStorage.getItem(PEV_KEY) || 'null'); }catch(e){}
+      var save2 = function(o){ try{ localStorage.setItem(PEV_KEY, JSON.stringify(o)); }catch(e){} };
+      if(!prev || !Array.isArray(prev.bd)){ save2(cur); return; }
+      var out = {d: d, qs: prev.d === d ? prev.qs : 0, diff: cur.diff, bd: ids, st: cur.st, gd: prev.gd === d ? d : ''};
+      var linked = Object.keys(pushLk).length > 0;
+      if(linked){
+        if(n.clicked >= 50 && n.clicked - out.qs >= 50){ pushSend('q', String(n.clicked)); out.qs = n.clicked; }
+        var fresh = ids.filter(function(id){ return prev.bd.indexOf(id) < 0; });
+        if(fresh.length){
+          var nm = fresh.map(function(id){ var b = BADGES.filter(function(x){ return x.id === id; })[0]; return b ? b.name : null; }).filter(Boolean);
+          if(nm.length) pushSend('b', nm[0] + (nm.length > 1 ? ' und ' + (nm.length - 1) + ' weitere' : ''));
+        }
+        if(typeof prev.diff === 'number' && prev.diff < 0 && cur.diff >= 0) pushSend('s', '');
+        if(done && prev.gd !== d){ pushSend('g', ''); out.gd = d; }
+        if(typeof prev.st === 'number'){
+          (S.friends || []).forEach(function(f){
+            var fs = f.data && f.data.stand;
+            if(pushLk[f.gist] && typeof fs === 'number' && prev.st <= fs && cur.st > fs) pushSend('o', '', {to: [f.gist]});
+          });
+        }
+      }else{ out.qs = Math.max(out.qs, n.clicked); if(done) out.gd = d; }
+      save2(out);
+    }catch(e){}
+  }
+  /* Pakete: nach dem Veröffentlichen die verbundenen Freunde informieren */
+  function pushPack(title, url){
+    var m = /([0-9a-f]{20,40})/i.exec(String(url || ''));
+    if(m && pushMe() && Object.keys(pushLk).length) pushSend('p', String(title || '').slice(0, 40), {p: m[1].toLowerCase()});
+  }
+
+  /* ---------- Anonyme Statistik (freiwillig) ---------- */
+  var pushStatAt = 0, pushStatKey = '';
+  function pushStatSend(force){
+    try{
+      var c = pushGet(); if(!pushCfg) return;
+      if(!c.stat){
+        if(c.statSent && c.sid){ c.statSent = 0; pushPut(c); pushApi('/stat', {sid: c.sid, off: true}).catch(function(){}); }
+        return;
+      }
+      if(!c.sid || !/^[0-9a-f]{24}$/.test(c.sid)){ c.sid = pushRnd(12); pushPut(c); }
+      var n = homeNums(), key = [n.last.n, S.target, Math.round(n.paceR), iso(new Date())].join('|');
+      if(!force && key === pushStatKey && Date.now() - pushStatAt < 6 * 3600000) return;
+      pushStatKey = key; pushStatAt = Date.now();
+      pushApi('/stat', {sid: c.sid, stand: n.last.n, ziel: S.target, tempo: Math.round(n.paceR), d: iso(new Date())}).then(function(){ var c2 = pushGet(); c2.statSent = 1; pushPut(c2); }).catch(function(){});
+    }catch(e){}
+  }
+
+  /* ---------- Versteckte Admin-Ansicht (7 Taps auf das Logo) ---------- */
+  function pushAdmin(){
+    var sh = openSheet('<div class="shead"><h2>Admin</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div class="small">Nur Zahlen. Keine Namen, keine Codes, keine Geräteadressen.</div><input type="password" id="admKey" placeholder="Admin-Schlüssel" autocomplete="off" style="width:100%;margin-top:10px"><button type="button" id="admGo" style="width:100%;margin-top:8px">Anzeigen</button><div id="admOut" style="margin-top:12px"></div>');
+    var o = sh.ov, out = o.querySelector('#admOut');
+    function row(l, v){ return '<tr><td>' + l + '</td><td>' + v + '</td></tr>'; }
+    function draw(j){
+      var st = j.stat || {n: 0}, h = '<table class="frt"><tr><th>Betrieb</th><th></th></tr>' + row('Geräte mit Push', fmt(j.devices)) + row('mit Erinnerung', fmt(j.reminder)) + row('mit Briefing', fmt(j.brief)) + row('mit Debriefing', fmt(j.debrief)) + row('mit Freund-Meldungen', fmt(j.friendPush)) + row('Freundschaften', fmt(j.friendships)) + row('Offene Anfragen', fmt(j.requests)) + row('Blockierungen', fmt(j.blocks)) + '</table>';
+      if(st.n){
+        var mx = Math.max.apply(null, st.buckets.concat([1])), labs = ['0–20 %', '20–40 %', '40–60 %', '60–80 %', '80–100 %'];
+        h += '<table class="frt" style="margin-top:12px"><tr><th>Anonyme Lernstatistik</th><th></th></tr>' + row('Teilnehmer', fmt(st.n)) + row('Aktiv in 7 Tagen', fmt(st.active7)) + row('Ø Fortschritt zum Ziel', String(st.avgPct).replace('.', ',') + ' %') + row('Median', String(st.medPct).replace('.', ',') + ' %') + row('Ø Tempo pro Tag', fmt(st.avgTempo)) + row('Fragen gesamt', fmt(st.totalStand)) + '</table>';
+        h += '<div class="small" style="margin-top:10px">Verteilung nach Fortschritt</div>' + st.buckets.map(function(v, i){ return '<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span class="small" style="width:64px">' + labs[i] + '</span><div style="flex:1;height:14px;border-radius:7px;background:var(--line)"><div style="width:' + Math.round(v / mx * 100) + '%;height:100%;border-radius:7px;background:var(--accent)"></div></div><span class="small" style="width:24px;text-align:right">' + v + '</span></div>'; }).join('');
+      }else h += '<div class="small" style="margin-top:12px">Noch niemand teilt eine anonyme Statistik.</div>';
+      out.innerHTML = h;
+    }
+    function go(){
+      var k = o.querySelector('#admKey').value; if(!k) return;
+      out.textContent = 'Lädt …';
+      pushApi('/admin', {key: k}).then(draw, function(e){ out.textContent = /nicht erlaubt/.test((e && e.message) || '') ? 'Schlüssel falsch oder im Worker nicht eingerichtet (ADMIN_KEY).' : 'Das hat nicht geklappt. Bist du online?'; });
+    }
+    o.querySelector('#admGo').addEventListener('click', go);
+    o.querySelector('#admKey').addEventListener('keydown', function(e){ if(e.key === 'Enter') go(); });
+  }
+  (function adminHook(){
+    var lg = document.getElementById('appLogo'); if(!lg) return;
+    var n = 0, t0 = 0;
+    lg.addEventListener('click', function(){
+      var now = Date.now(); if(now - t0 > 5000) n = 0; t0 = now; n++;
+      if(n >= 7){ n = 0; if(pushCfg) pushAdmin(); }
+    });
+  })();
   function pushUI(){
     if(document.getElementById('pushCard')) return;
     var st = document.createElement('style');
-    st.textContent = '#pushCard{--ic:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z\'/%3E%3Cpath d=\'M10 20a2 2 0 0 0 4 0\'/%3E%3C/svg%3E")}#pushCard label{display:block;margin-top:10px}#pushCard input[type=time]{width:100%;margin-top:4px}#pushCard .pnote{margin:8px 14px 4px}';
+    st.textContent = '#pushCard label{display:block;margin-top:10px}#pushCard input[type=time]{width:100%;margin-top:4px}#pushCard .pnote{margin:8px 14px 4px}#pushCard .pchk{display:flex;align-items:center;gap:10px;margin:12px 14px 0;cursor:pointer}#pushCard .pchk input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--accent)}#pushCard .pchk span{flex:1;min-width:0}#pushCard .ptm{margin:4px 14px 0 44px}#pushCard .ptm input{width:100%;margin:0}#pushCard .ptm.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}#pushCard h3{margin:16px 14px 0;font-size:14px}#pushCard .prow{margin:10px 14px 0}';
     document.head.appendChild(st);
+    function chk(id, txt){ return '<label class="pchk"><input type="checkbox" id="' + id + '"><span>' + txt + '</span></label>'; }
     var el = document.createElement('details'); el.className = 'card settings'; el.id = 'pushCard';
-    el.innerHTML = '<summary>Erinnerungen (Push)</summary>' +
-      '<div class="small pnote">Optional: Du bekommst zu deiner Wunschzeit eine Erinnerung aufs Gerät, auch wenn die App zu ist. Dafür meldet sich dein Gerät bei einem kleinen Server an. Dort liegen nur eine anonyme Geräteadresse, deine Uhrzeiten und deine Zeitzone. Es werden keine Lerndaten und keine Namen übertragen. Den Text der Nachricht erstellt dein Gerät selbst. Ohne Aktivieren passiert nichts, und du kannst es jederzeit wieder ausschalten.</div>' +
+    el.innerHTML = '<summary>Benachrichtigungen (Push)</summary>' +
+      '<div class="small pnote">Optional und standardmäßig aus. Dein Gerät meldet sich dafür bei einem kleinen Server an. Dort liegen nur eine anonyme Geräteadresse, deine Uhrzeiten, deine Zeitzone, deine Freigabe-ID und das Netz deiner bestätigten Freunde. Es werden keine Lerndaten und kein API-Schlüssel übertragen. Die Texte erstellt dein Gerät selbst.</div>' +
       '<div class="small pnote" id="pushIos" hidden>Auf iPhone und iPad funktioniert das nur, wenn die App auf dem Home-Bildschirm liegt: In Safari auf Teilen tippen, „Zum Home-Bildschirm“ wählen und die App von dort öffnen.</div>' +
-      '<label>Uhrzeit<input type="time" id="pushT1" value="18:00"></label>' +
-      '<label>Zweite Uhrzeit (optional)<input type="time" id="pushT2"></label>' +
-      '<div class="row" style="margin-top:10px"><button id="pushOn">Erinnerungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button></div>' +
-      '<div class="small msg" id="pushMsg" style="margin-top:8px"></div>';
+      '<h3>Für dich</h3>' +
+      chk('pRemOn', 'Tägliche Erinnerung') +
+      '<div class="ptm two"><input type="time" id="pushT1" value="18:00" aria-label="Uhrzeit"><input type="time" id="pushT2" aria-label="Zweite Uhrzeit (optional)"></div>' +
+      chk('pBrOn', 'Briefing am Morgen (mit KI)') + '<div class="ptm"><input type="time" id="pBrT" value="07:30" aria-label="Uhrzeit Briefing"></div>' +
+      chk('pDeOn', 'Debriefing am Abend (mit KI)') + '<div class="ptm"><input type="time" id="pDeT" value="21:00" aria-label="Uhrzeit Debriefing"></div>' +
+      '<div class="small pnote" id="pAiNote"></div>' +
+      '<h3>Von Freunden</h3>' +
+      PK.map(function(k){ return chk('pF' + k, PK_LAB[k]); }).join('') +
+      '<div class="small pnote" id="pFNote"></div>' +
+      '<h3>Meine Meldungen an Freunde</h3>' +
+      '<div class="small pnote">Mit jedem bestätigten Freund seid ihr gegenseitig verbunden. Dann bekommt er automatisch eine Meldung, wenn du Fragen geklickt hast, ihn überholst, dein Tagespensum erreichst, ein Abzeichen holst, wieder im Soll bist oder ein gemeinsames Paket aktualisierst. Dein Gerät sendet dafür beim Ereignis deinen Namen und die Art der Meldung an den Server, keine Zahlen. Pro Freund kannst du Meldungen im Freunde-Fenster stummschalten. Dort kannst du Freunde auch entfernen oder blockieren.</div>' +
+      '<h3>Anonyme Statistik</h3>' +
+      chk('pStat', 'Anonymen Stand für die Gesamtübersicht des Betreibers teilen') +
+      '<div class="small pnote">Gesendet werden nur Fragenstand, Ziel, Tempo und Datum unter einer zufälligen Nummer. Kein Name, keine Freunde, keine Verbindung zu deinem Konto. Jederzeit abschaltbar, dann wird der Eintrag gelöscht.</div>' +
+      '<div class="prow row"><button id="pushOn">Benachrichtigungen aktivieren</button><button class="ghost" id="pushTest" hidden>Testnachricht</button><button class="ghost" id="pushOff" hidden>Ausschalten</button></div>' +
+      '<div class="small msg" id="pushMsg" style="margin:8px 14px 0"></div>';
     var anchor = document.getElementById('aiKeyCard') || document.getElementById('syncCard');
     if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling); else (document.getElementById('menuBody') || document.body).appendChild(el);
-    var t1 = el.querySelector('#pushT1'), t2 = el.querySelector('#pushT2'), msg = el.querySelector('#pushMsg');
-    function times(){ var a = []; if(t1.value) a.push(t1.value); if(t2.value && t2.value !== t1.value) a.push(t2.value); return a; }
+    var $ = function(id){ return el.querySelector('#' + id); }, msg = $('pushMsg');
+    function times(){ var a = []; if($('pushT1').value) a.push($('pushT1').value); if($('pushT2').value && $('pushT2').value !== $('pushT1').value) a.push($('pushT2').value); return a; }
+    function readUI(){
+      var c = pushGet();
+      c.rem = {on: $('pRemOn').checked, times: times().length ? times() : c.rem.times};
+      c.brief = {on: $('pBrOn').checked, t: $('pBrT').value || c.brief.t};
+      c.debrief = {on: $('pDeOn').checked, t: $('pDeT').value || c.debrief.t};
+      PK.forEach(function(k){ c.fev[k] = $('pF' + k).checked; });
+      return c;
+    }
     function paint(){
-      var c = pushGet(); t1.value = c.times[0] || '18:00'; t2.value = c.times[1] || '';
-      el.querySelector('#pushOn').textContent = c.on ? 'Zeiten speichern' : 'Erinnerungen aktivieren';
-      el.querySelector('#pushOff').hidden = !c.on; el.querySelector('#pushTest').hidden = !c.on;
-      el.querySelector('#pushIos').hidden = !(pushIOS() && !pushInstalled());
+      var c = pushGet(), ai = aikOn(), me = !!pushMe();
+      $('pRemOn').checked = c.rem.on; $('pushT1').value = c.rem.times[0] || '18:00'; $('pushT2').value = c.rem.times[1] || '';
+      $('pBrOn').checked = c.brief.on && ai; $('pDeOn').checked = c.debrief.on && ai; $('pBrOn').disabled = $('pDeOn').disabled = !ai;
+      $('pBrT').value = c.brief.t; $('pDeT').value = c.debrief.t;
+      $('pAiNote').textContent = ai ? 'Briefing und Debriefing schreibt die KI mit deinem eigenen API-Schlüssel. Dein Gerät ruft sie direkt bei Anthropic auf, die Kosten sind sehr gering. Basis ist dein Stand vom letzten Öffnen der App. Auf dem iPhone kann der Abruf im Hintergrund zu lange dauern. Dann kommt ein kurzer Standardtext.' : 'Briefing und Debriefing brauchen deinen eigenen API-Schlüssel. Trage ihn in der Karte „KI“ weiter oben ein, dann kannst du sie hier einschalten.';
+      PK.forEach(function(k){ $('pF' + k).checked = c.fev[k]; $('pF' + k).disabled = !me; });
+      $('pFNote').textContent = me ? 'Du bekommst Meldungen nur von Freunden, mit denen du verbunden bist. Einzelne Freunde schaltest du im Freunde-Fenster stumm.' : 'Dafür brauchst du zuerst deine Freigabe (Account, Freunde und Freigabe).';
+      $('pStat').checked = c.stat;
+      $('pushOn').textContent = c.on ? 'Einstellungen speichern' : 'Benachrichtigungen aktivieren';
+      $('pushOff').hidden = !c.on; $('pushTest').hidden = !c.on;
+      $('pushIos').hidden = !(pushIOS() && !pushInstalled());
     }
     async function reg(){
       var r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
@@ -8121,48 +8447,68 @@ body.menuopen{overflow:hidden}
       if(!sub) sub = await r.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: pushKeyBytes(pushCfg.key)});
       return sub;
     }
-    el.querySelector('#pushOn').addEventListener('click', async function(){
-      var tt = times(); if(!tt.length){ msg.textContent = 'Bitte mindestens eine Uhrzeit wählen.'; return; }
-      if(!pushOK()){ msg.textContent = pushIOS() && !pushInstalled() ? 'Lege die App zuerst auf den Home-Bildschirm (siehe Hinweis oben) und öffne sie von dort.' : 'Dieser Browser unterstützt keine Erinnerungen.'; return; }
+    $('pStat').addEventListener('change', function(){
+      var c = pushGet(); c.stat = this.checked; pushPut(c); pushStatKey = '';
+      pushStatSend(true); msg.textContent = this.checked ? 'Anonyme Statistik ist an.' : 'Anonyme Statistik ist aus, der Eintrag wird gelöscht.';
+    });
+    $('pushOn').addEventListener('click', async function(){
+      var c = readUI(), friendsOn = !!pushMe() && !!pushEv(c);
+      if(!c.rem.on && !(c.brief.on && aikOn()) && !(c.debrief.on && aikOn()) && !friendsOn){ msg.textContent = 'Wähle mindestens eine Benachrichtigung aus. Freund-Meldungen brauchen deine Freigabe im Account.'; return; }
+      if(c.rem.on && !times().length){ msg.textContent = 'Bitte mindestens eine Uhrzeit für die Erinnerung wählen.'; return; }
+      if(!pushOK()){ msg.textContent = pushIOS() && !pushInstalled() ? 'Lege die App zuerst auf den Home-Bildschirm (siehe Hinweis oben) und öffne sie von dort.' : 'Dieser Browser unterstützt keine Benachrichtigungen.'; return; }
       msg.textContent = 'Einen Moment …';
       try{
-        var c = pushGet();
         if(Notification.permission !== 'granted'){
           var p = await Notification.requestPermission();
           if(p !== 'granted'){ msg.textContent = 'Benachrichtigungen sind nicht erlaubt. Du kannst das in den Einstellungen deines Geräts ändern.'; return; }
         }
         var sub = await reg();
-        await pushApi('/subscribe', {sub: sub.toJSON(), times: tt, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin')});
-        c.on = true; c.times = tt; pushPut(c); pushLast = ''; pushTouch(); paint();
-        msg.textContent = 'Aktiv. Du bekommst die Erinnerung um ' + tt.join(' und ') + ' Uhr.';
+        pushPut(c);
+        await pushApi('/subscribe', pushPayload(sub));
+        c.on = true; pushPut(c); pushLast = ''; pushFh = ''; pushTouch(true); paint();
+        var parts = []; if(c.rem.on) parts.push('Erinnerung um ' + c.rem.times.join(' und ') + ' Uhr');
+        if(c.brief.on && aikOn()) parts.push('Briefing um ' + c.brief.t + ' Uhr'); if(c.debrief.on && aikOn()) parts.push('Debriefing um ' + c.debrief.t + ' Uhr');
+        if(friendsOn) parts.push('Freund-Meldungen');
+        msg.textContent = 'Aktiv: ' + parts.join(', ') + '.';
       }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler'); }
     });
-    el.querySelector('#pushOff').addEventListener('click', async function(){
+    $('pushOff').addEventListener('click', async function(){
       msg.textContent = 'Einen Moment …';
       try{
-        var r = await navigator.serviceWorker.getRegistration(), sub = r && await r.pushManager.getSubscription();
+        var sub = await pushSub();
         if(sub){ try{ await pushApi('/unsubscribe', {endpoint: sub.endpoint}); }catch(e){} await sub.unsubscribe(); }
       }catch(e){}
-      var c = pushGet(); c.on = false; pushPut(c); paint();
-      msg.textContent = 'Ausgeschaltet. Dein Gerät ist beim Server abgemeldet.';
+      try{ if(window.caches){ window.caches.open('sf-priv').then(function(ca){ return ca.delete('cfg'); }).catch(function(){}); } }catch(e){}
+      var c = pushGet(); c.on = false; pushPut(c); pushLast = ''; pushFh = ''; paint();
+      msg.textContent = 'Ausgeschaltet. Dein Gerät ist beim Server abgemeldet. Deine Freundschaften bleiben bestehen.';
     });
-    el.querySelector('#pushTest').addEventListener('click', async function(){
+    $('pushTest').addEventListener('click', async function(){
       msg.textContent = 'Sende …';
       try{
-        var r = await navigator.serviceWorker.getRegistration(), sub = r && await r.pushManager.getSubscription();
-        if(!sub) throw new Error('Gerät nicht angemeldet. Schalte die Erinnerungen neu ein.');
+        var sub = await pushSub();
+        if(!sub) throw new Error('Gerät nicht angemeldet. Schalte die Benachrichtigungen neu ein.');
         await pushApi('/test', {endpoint: sub.endpoint}); msg.textContent = 'Die Testnachricht ist unterwegs. Sie kann einige Sekunden brauchen.';
       }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler'); }
     });
+    el.addEventListener('toggle', paint);
     paint();
   }
   (function pushInit(){
     try{
       fetch('push-config.json', {cache: 'no-store'}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(j){
         if(j && typeof j.url === 'string' && /^https:\/\/[^\s]+$/.test(j.url) && typeof j.key === 'string' && j.key.length > 60 && !/HIER|DEIN/.test(j.url + j.key)){
-          pushCfg = {url: j.url.replace(/\/+$/, ''), key: j.key}; pushUI(); pushTouch();
+          pushCfg = {url: j.url.replace(/\/+$/, ''), key: j.key}; pushUI(); pushTouch(true);
+          pushStatus(true).then(function(){ pushEvents(); });
         }
       }).catch(function(){});
+      document.addEventListener('visibilitychange', function(){ if(!document.hidden && pushCfg) pushStatus(false); });
+      if(navigator.serviceWorker && navigator.serviceWorker.addEventListener){
+        navigator.serviceWorker.addEventListener('message', function(e){
+          if(e && e.data && e.data.sf === 'open-friends'){ pushStatus(true).then(function(){ if(typeof frOpen === 'function') frOpen(); }); }
+        });
+      }
+      var q = ''; try{ q = new URLSearchParams(location.search).get('inbox') || ''; }catch(e){}
+      if(q){ try{ history.replaceState(null, '', location.pathname); }catch(e){} var tries = 0; (function w(){ if(pushCfg){ pushStatus(true).then(function(){ if(typeof frOpen === 'function') frOpen(); }); } else if(tries++ < 20) setTimeout(w, 400); })(); }
     }catch(e){}
   })();
   maybeChangelog();

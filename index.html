@@ -55,7 +55,7 @@ main{max-width:560px;margin:0 auto;padding:70px 14px 32px}
 
 /* Kopfzeile */
 .top{display:flex;align-items:center;gap:7px;margin:6px 0 2px}
-.logo{width:46px;height:42px;margin-right:-2px;flex:none;display:block;overflow:visible}.logo .ln{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.logo .ld{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:0.1 6.2}.logo .lp{fill:none;stroke:var(--accent);stroke-width:2.2}.logo .lt{fill:var(--accent);font:800 15px Arial,sans-serif;text-anchor:middle}.logo .pl{stroke:var(--accent);stroke-width:1.2;transition:fill .5s}
+.logo .lt{fill:var(--accent);font:800 8.5px/1 system-ui,sans-serif;letter-spacing:.2px}.logo{width:52px;height:42px;margin-right:-2px;flex:none;display:block;overflow:visible}.logo .ln{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.logo .ld{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:0.1 6.2}.logo .lp{fill:none;stroke:var(--accent);stroke-width:2.2}.logo .lt{fill:var(--accent);font:800 15px Arial,sans-serif;text-anchor:middle}.logo .pl{stroke:var(--accent);stroke-width:1.2;transition:fill .5s}
 .top h1{flex:1;min-width:0;white-space:nowrap;font-size:22px;font-weight:700;margin:0;letter-spacing:-.4px}
 .clock{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;flex:none}
 .subrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px}.subrow .sub{margin-bottom:0;min-width:0}
@@ -165,6 +165,35 @@ tr.nrow input{font-style:normal;font-size:14px;padding:8px 10px}
 .rwrow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.rwrow:first-child{border-top:0}
 .cdrow{display:contents}.cdrow.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:stretch}.cdrow.two>.card{margin:0;min-width:0;overflow:hidden}
 .cdrow.two>.card{display:flex;flex-direction:column;justify-content:center}.cdc2 .bigd{font-size:34px}.cdc2{text-align:center;border-color:color-mix(in srgb,var(--acc2) 55%,var(--line))}.cdc2 .bigd{color:var(--acc2)}.cdc2 .cd2t{font-weight:700;color:var(--acc2)}.cdc2 .cd2h{font-size:15px;margin-top:2px;font-family:var(--mono)}
+/* Menü: kompakte Liste mit Symbolen in der App-Farbe */
+.mgrp{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 4px 6px}.mgrp:first-child{margin-top:2px}
+.menu details.card.settings{padding:0;margin:0 0 6px;border-radius:14px}
+.menu details.settings>summary{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:46px;font-size:15px;font-weight:650;color:var(--text);list-style:none}
+.menu details.settings>summary::-webkit-details-marker{display:none}
+.menu details.settings>summary::before{content:"";flex:none;width:22px;height:22px;background:var(--accent);-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+.menu details.settings>summary::after{content:"";flex:none;margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s}
+.menu details.settings[open]>summary::after{transform:rotate(45deg)}
+.menu details.settings[open]>summary{border-bottom:1px solid var(--line)}
+.menu details.settings>*:not(summary){margin-left:14px;margin-right:14px}.menu details.settings[open]{padding-bottom:12px}
+#statCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 20V11M12 20V4M19 20v-6'/%3E%3C/svg%3E")}
+#rwCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12a8 8 0 1 0 2.5-5.8M4 4v4.5h4.5M12 8v4.5l3 1.8'/%3E%3C/svg%3E")}
+#lookCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-1 1.5-2-.6-1.3.1-2.5 1.5-2.5H17a3.5 3.5 0 0 0 3.5-3.5C20.5 6.7 16.8 3.5 12 3.5z'/%3E%3Ccircle cx='8' cy='11' r='1'/%3E%3Ccircle cx='11' cy='7.5' r='1'/%3E%3Ccircle cx='15.5' cy='8.5' r='1'/%3E%3C/svg%3E")}
+#examCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2.5'/%3E%3Cpath d='M3.5 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E")}
+#settingsMain{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4M5 4h11l-2 4 2 4H5'/%3E%3C/svg%3E")}
+#wCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h10M18 7h2M4 17h2M10 17h10'/%3E%3Ccircle cx='16' cy='7' r='2'/%3E%3Ccircle cx='8' cy='17' r='2'/%3E%3C/svg%3E")}
+#impCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11M7.5 10.5 12 15l4.5-4.5M4.5 19.5h15'/%3E%3C/svg%3E")}
+#dataCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='6' rx='7.5' ry='3'/%3E%3Cpath d='M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6'/%3E%3C/svg%3E")}
+#syncCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.9 8.6 4.7 4.7 0 0 1 17.5 18z'/%3E%3C/svg%3E")}
+#verCard{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 6.5h12M8 12h12M8 17.5h12M4 6.5h.01M4 12h.01M4 17.5h.01'/%3E%3C/svg%3E")}
+/* Handy-Kopfzeile */
+.hbrk{display:none}
+@media (max-width:560px){
+  .top{flex-wrap:wrap;row-gap:0}
+  .hbrk{display:block;flex:0 0 100%;height:0;order:8}
+  #frIcon,#acIcon{order:9;margin-top:8px;border-radius:999px;padding:6px 12px 6px 10px;line-height:1;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+  #frIcon::after{content:"Freunde"}#acIcon::after{content:"Account"}
+  #frIcon svg,#acIcon svg{width:17px;height:17px}
+}
 .rgw{display:inline-flex;align-items:center}.rgw:empty{display:none}
 .subj{position:relative}
 .sl{position:relative;width:10px;height:10px;border-radius:50%;background:var(--line);flex:none}
@@ -721,13 +750,13 @@ body.menuopen{overflow:hidden}
 <div id="onb" class="onb" hidden></div>
 <main>
   <header class="top">
-    <svg class="logo" id="appLogo" viewBox="-8 0 72 64" role="img" aria-label="Short Final! Logo, die Lichter zeigen deinen Gleitpfad"><path class="ln" d="M26 4C25 22 18 42 5 60M38 4C39 22 46 42 59 60"/><path class="ln" d="M32 6V16M32 24V34M32 42V52" style="stroke-width:3.4"/><path class="ln" d="M17 62h6M41 62h6" style="stroke-width:2.4"/><rect class="lp" x="-6" y="19" width="31" height="13" rx="6.5"/><circle class="pl" cx="0" cy="25.5" r="3.1"/><circle class="pl" cx="6.8" cy="25.5" r="3.1"/><circle class="pl" cx="13.6" cy="25.5" r="3.1"/><circle class="pl" cx="20.4" cy="25.5" r="3.1"/></svg>
+    <svg class="logo" id="appLogo" viewBox="-16 0 80 64" role="img" aria-label="Short Final! Logo, die Lichter zeigen deinen Gleitpfad"><path class="ln" d="M26 4C25 22 18 42 5 60M38 4C39 22 46 42 59 60"/><path class="ln" d="M32 6V16M32 24V34M32 41V46" style="stroke-width:3.4"/><path class="ln" d="M15 51V58M19.2 51V58M23.4 51V58M40.6 51V58M44.8 51V58M49 51V58" style="stroke-width:2"/><text class="lt" x="32" y="58.2" text-anchor="middle">75</text><rect class="lp" x="-13.5" y="19" width="31" height="13" rx="6.5"/><circle class="pl" cx="-7.5" cy="25.5" r="3.1"/><circle class="pl" cx="-0.7" cy="25.5" r="3.1"/><circle class="pl" cx="6.1" cy="25.5" r="3.1"/><circle class="pl" cx="12.9" cy="25.5" r="3.1"/></svg>
     <h1>Short Final!</h1>
     <button class="iconbtn bd" id="bdIcon" aria-label="Abzeichen" title="Abzeichen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.6 13.6 7 21l5-2.6 5 2.6-1.6-7.4"/></svg></button>
     <button class="iconbtn fi" id="frIcon" aria-label="Freunde" title="Freunde"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.5 2 4.5 4.9"/></svg></button>
     <button class="iconbtn ai" id="acIcon" aria-label="Account" title="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg></button>
     <button class="iconbtn" id="themeBtn" aria-label="Tag- oder Nachtmodus wechseln"></button>
-    <button class="iconbtn burger" id="menuBtn" aria-label="Menü und Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
+    <span class="hbrk" aria-hidden="true"></span><button class="iconbtn burger" id="menuBtn" aria-label="Menü und Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
   </header>
   <div class="subrow"><div class="sub" id="sub"></div><span class="clock" id="clock"></span></div>
   <div class="small statrow" style="margin:-8px 0 12px"><span id="status"></span> <a href="#" id="syncLink" hidden>Cloud-Synchronisierung einrichten</a></div>
@@ -756,7 +785,7 @@ body.menuopen{overflow:hidden}
       <div class="small" id="aiMsg" style="margin-top:6px"></div>
     </div>
     <div class="card" id="fcCard"></div>
-    <details class="card settings">
+    <details class="card settings" id="examCard">
       <summary>Prüfungstermin</summary>
       <div class="row" style="margin-top:10px">
         <input type="date" id="examIn">
@@ -844,7 +873,7 @@ body.menuopen{overflow:hidden}
     <div class="row" style="margin-top:10px"><button class="ghost" id="chronBtn">Chronik</button><button class="ghost" id="tourBtn">Tutorial neu starten</button></div>
     <div style="margin-top:10px"><button class="ghost" id="resetBtn">Alle Daten löschen und neu starten</button></div>
   </details>
-    <details class="card settings">
+    <details class="card settings" id="dataCard">
       <summary>Daten sichern und übertragen</summary>
       <div class="small" style="margin:8px 0 10px">„Exportieren“ gibt dir alle deine Daten als Text. Den Text kannst du in einer anderen Version der App unter „Importieren“ einfügen, z. B. nach dem Umzug auf eine eigene Web-App. Importieren ersetzt die aktuellen Daten.</div>
       <textarea id="dataBox" rows="5" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Export-Text oder zum Importieren einfügen"></textarea>
@@ -880,7 +909,7 @@ body.menuopen{overflow:hidden}
   <div id="tabSubj" hidden>
     <div class="grid" id="subjSummary" style="margin-bottom:12px"></div>
     <div id="subjBox"></div>
-    <details class="card settings">
+    <details class="card settings" id="wCard">
       <summary>Gewichtung des Gesamt-Scores</summary>
       <div class="small" style="margin:8px 0 10px">Gesamt-Score = gewichteter Durchschnitt aller eingetragenen Teile. Berichte, die älter als 14 Tage sind, verlieren langsam an Gewicht (bis 40 % nach acht Wochen). Kleine Berichte (Durchgeklickt, falsche Fragen, generell, Simulation) zählen nach Umfang weniger, bis sie ihre volle Größe erreichen (300, 60, 120 bzw. 100 Fragen); die Last-Berichte zählen immer voll. Standard: Prüfungssimulation am niedrigsten, dann falsche Fragen, dann Last 100 &lt; 200 &lt; 300 &lt; 500. Farben: ab 75 % grün, ab 65 % orange. Die Durchgeklickt-Quote zählt zu Beginn mit dem Startgewicht und wird mit jedem Bericht linear ausgeblendet (nach der eingestellten Zahl von Berichten ist sie weg). Startgewicht 0 schaltet sie ab. Bei „Falsche wiederholt“ werden die Prozente aufgewertet: Standardmäßig zählen 50 % richtig wie 75 %.</div>
       <div class="f2" id="wBox"></div>
@@ -1665,6 +1694,7 @@ body.menuopen{overflow:hidden}
            '<div class="' + (isLast ? 'f2' : 'f3') + '"><label>Datum<input type="date" data-rf="d" value="' + today + '"></label>' +
            (isLast ? '' : '<label>Fragen<input type="number" inputmode="numeric" min="0" data-rf="n" placeholder="Anz."></label>') +
            '<label><span data-rf-klabel>' + MODELAB[repForm.mode || 'ok'] + '</span><input type="number" step="any" inputmode="' + ((repForm.mode || 'ok') === 'pct' ? 'decimal' : 'numeric') + '" min="0" data-rf="k" placeholder="' + (repForm.mode === 'pct' ? '%' : 'Anz.') + '"></label></div>' +
+           '<label>Test angefangen am<input type="date" data-rf="s" value="' + today + '"></label><div class="small" style="margin:-2px 0 6px">Mehrere Tage offen? Dann wähle den Beginn: Die Fragen werden bei „zur Gesamtzahl addieren“ gleichmäßig auf diese Tage verteilt.</div>' +
            '<div class="seg" role="group" aria-label="Eingabeart">' + segHTML(repForm.mode || 'ok', 'data-rfmode', i) + '</div>' +
            '<input type="text" class="note-in" data-rf="c" maxlength="300" placeholder="Notiz (optional), z. B. was schwerfiel">' +
            '<label class="tg"><span>Fragen zur Gesamtzahl addieren</span><input type="checkbox" class="sw" data-rf="tot"' + (repForm.tot ? ' checked' : '') + '></label>' +
@@ -1842,7 +1872,8 @@ body.menuopen{overflow:hidden}
       if(cn) rec.c = cn;
       arrOf(s, isLast ? 'last' : cat).push(rec);
       var rops = [{k:'rep', id:SUBJECTS[i].id, kind:isLast ? 'last' : cat, t:rec.t}];
-      if(addTot){ var top = addToTotal(d0, n0); if(top) rops.push(top); }
+      var st1 = q('s'); if(st1 && st1 > d0) st1 = d0;
+      if(addTot){ var top = addToTotal(d0, n0, st1); if(top) rops.push(top); }
       var catName = (CATS.filter(function(c){ return c[0] === cat; })[0] || [0, cat])[1];
       logAdd('Bericht ' + catName + ': ' + SUBJECTS[i].name + ' ' + ok0 + '/' + n0 + ' (' + Math.round(ok0 / n0 * 100) + ' %)' + (addTot ? ' · Gesamt +' + fmt(n0) : ''), rops);
       var keepTot = repForm.tot;
@@ -3528,6 +3559,7 @@ body.menuopen{overflow:hidden}
   var BD_LS = KEY + '-bdseen', BD_T = {b:'#cd7f32', s:'#aab4c4', g:'#f2b705'}, bdT = null;
   var BD_G = {
     plane:'<path fill="currentColor" d="M2 12 5.2 10.9 19.5 10.9C22.2 10.9 23.4 11.6 23.4 12S22.2 13.1 19.5 13.1L5.2 13.1ZM10.8 10.9 7.6 3 10.2 3 16 10.9ZM10.8 13.1 7.6 21 10.2 21 16 13.1ZM3.9 10.9 2.2 7.6 3.9 7.6 6.2 10.9ZM3.9 13.1 2.2 16.4 3.9 16.4 6.2 13.1Z"/>',
+    grid:'<g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></g>',
     star:'<polygon fill="currentColor" points="12,2.5 14.8,9 21.5,9.6 16.4,14 18,20.8 12,17.2 6,20.8 7.6,14 2.5,9.6 9.2,9"/>',
     bolt:'<path fill="currentColor" d="M13 2 5 13.5h5.5L9.5 22 19 9.8h-5.7z"/>',
     flame:'<path fill="currentColor" d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z"/>',
@@ -3581,15 +3613,29 @@ body.menuopen{overflow:hidden}
   bdDef('roc', 'u', 'Raketenstart', '3 Tage in Folge mindestens 500 Fragen', 'rocket', 'g', function(c){ return c.rocket >= 3; }, function(c){ return [c.rocket, 3]; });
   bdDef('mon', 'u', 'Montagsmotor', '300 Fragen an einem Montag', 'bolt', 'b', function(c){ return c.monBest >= 300; }, function(c){ return [c.monBest, 300]; });
   bdDef('cb', 'u', 'Wiedereinstieg', 'Nach 5 Tagen Pause wieder geklickt', 'flame', 'b', function(c){ return c.comeback; });
-  bdDef('sch', 'u', 'Schnapszahl', 'Eine Schnapszahl wie 3.333 oder 11.111 überflogen', 'seven', 's', function(c){ return c.schnaps; });
-  bdDef('n123', 'u', 'Eins-Zwei-Drei', '12.345 Fragen überschritten', 'n123', 's', function(c){ return c.total >= 12345; }, function(c){ return [c.total, 12345]; });
-  bdDef('pi', 'u', 'Kreiszahl', '3.141 Fragen überschritten', 'pi', 'b', function(c){ return c.total >= 3141; }, function(c){ return [c.total, 3141]; });
+  bdDef('sch', 'u', 'Schnapszahl', 'Eine Schnapszahl ab 22.222 (22.222, 33.333 ...) überflogen', 'seven', 's', function(c){ return c.schnaps; });
+  bdDef('n123', 'u', 'Eins-Zwei-Drei', '12.345 Fragen überschritten', 'n123', 's', function(c){ return c.cross123; }, function(c){ return [c.total, 12345]; });
+  bdDef('pi', 'u', 'Kreiszahl', '31.415 Fragen überschritten', 'pi', 's', function(c){ return c.crossPi; }, function(c){ return [c.total, 31415]; });
+  bdDef('kl', 'u', 'Kleinkariert', 'An einem Tag nur 3 bis 10 Fragen getrackt', 'grid', 'b', function(c){ return c.small; });
   bdDef('wcatch', 'w', 'Eingeholt', 'Einen Freund eingeholt', 'handshake', 's', function(c){ return !!c.fx.catch; }, null, true);
   bdDef('wpass', 'w', 'Überholt', 'Einen Freund überholt', 'plane', 'g', function(c){ return !!c.fx.pass; }, null, true);
-  bdDef('whang', 'w', 'Angehängt', 'Weniger als 1 % hinter einem Freund', 'target', 'b', function(c){ return !!c.fx.hang; }, null, true);
+  bdDef('whang', 'w', 'Abgehängt', 'Einen Freund um mindestens zwei Tagespensum abgehängt', 'target', 'b', function(c){ return !!c.fx.hang; }, null, true);
   bdDef('wpack', 'w', 'Rudelflug', 'Drei Freunde hinzugefügt', 'people', 's', function(c){ return c.friends >= 3; }, function(c){ return [c.friends, 3]; }, true);
   bdDef('wcol', 'w', 'Teamarbeit', 'Ein Lernpaket gemeinsam bearbeitet', 'handshake', 's', function(c){ return c.collab; }, null, true);
   var BD_CATS = [['q', 'Fragen'], ['s', 'Serie und Tempo'], ['g', 'Gleitpfad'], ['f', 'Fächer'], ['r', 'Berichte'], ['n', 'Lernzentrum'], ['u', 'Spaß und Challenges'], ['w', 'Mit Freunden'], ['x', 'Sonstiges']];
+  /* Einmaliger Neustart der Abzeichen (Serie und Tempo, Fächer, Spaß und Challenges, Abgehängt): nur Fortschritt nach diesem Tag zählt */
+  var BD_CUT = '2026-10-11';
+  function bdResetId(id){ if(id === 'whang') return true; for(var i = 0; i < BADGES.length; i++) if(BADGES[i].id === id) return BADGES[i].cat === 's' || BADGES[i].cat === 'f' || BADGES[i].cat === 'u'; return false; }
+  function bdCut(){ var f = S && S.bdFrom; return (typeof f === 'string' && f > BD_CUT) ? f : BD_CUT; }
+  function bdPurge(){
+    var ch = false;
+    if(S && S.badges && typeof S.badges === 'object'){
+      Object.keys(S.badges).forEach(function(id){ if(bdResetId(id) && typeof S.badges[id] === 'string' && S.badges[id] <= BD_CUT){ delete S.badges[id]; ch = true; } });
+    }
+    if(S && S.bdx && typeof S.bdx.hang === 'string' && S.bdx.hang <= BD_CUT){ delete S.bdx.hang; ch = true; }
+    if(ch){ var sn = bdSeen(); if(sn){ Object.keys(sn).forEach(function(id){ if(bdResetId(id)) delete sn[id]; }); bdSeenSet(sn); } }
+    return ch;
+  }
   function bdWeb(){ return (typeof STANDALONE !== 'undefined' && STANDALONE); }
   function bdList(){ var web = bdWeb(); return BADGES.filter(function(b){ return !b.web || web; }); }
   function bdMerge(a, b){
@@ -3598,6 +3644,7 @@ body.menuopen{overflow:hidden}
       if(!o || typeof o !== 'object') return;
       Object.keys(o).forEach(function(k){
         if(!/^[a-z0-9]{1,8}$/.test(k) || typeof o[k] !== 'string') return;
+        if(o[k] <= BD_CUT && bdResetId(k)) return;
         if(!out[k] || o[k] < out[k]) out[k] = o[k];
       });
     });
@@ -3617,6 +3664,8 @@ body.menuopen{overflow:hidden}
       var a = parse(es[i - 1].d), b = parse(es[i].d), dd = Math.max(1, days(a, b)), pd = Math.max(0, (es[i].n - es[i - 1].n) / dd);
       for(j = 0; j < dd && j < 400; j++) per[iso(new Date(b.getFullYear(), b.getMonth(), b.getDate() - j))] = pd;
     }
+    var cut = bdCut(), perAll = per; per = {};
+    Object.keys(perAll).forEach(function(k){ if(k > cut) per[k] = perAll[k]; });
     var dt = parse(es[0].d), end = parse(last.d), run = 0, guard = 0;
     c.maxRun = 0; c.bestDay = 0;
     while(dt <= end && guard++ < 1500){
@@ -3633,7 +3682,8 @@ body.menuopen{overflow:hidden}
     c.nsub = SUBJECTS.length; c.pass = 0; c.top = 0; c.reps = 0; c.simOk = false;
     SUBJECTS.forEach(function(sj){
       var a2 = analyze(sj.id), sb = getSub(sj.id);
-      if(a2.sc !== null){ if(a2.sc >= FC_PASS) c.pass++; if(a2.sc > c.top) c.top = a2.sc; }
+      var elg = ['rep', 'last', 'sim', 'gen'].some(function(k){ return (sb[k] || []).some(function(e){ return e && e.d && e.d > cut; }); });
+      if(a2.sc !== null && elg){ if(a2.sc >= FC_PASS) c.pass++; if(a2.sc > c.top) c.top = a2.sc; }
       c.reps += sb.rep.length + sb.last.length + sb.sim.length + sb.gen.length;
       if(sb.sim.some(function(e){ return e.n > 0 && e.ok / e.n * 100 >= FC_PASS; })) c.simOk = true;
     });
@@ -3649,6 +3699,7 @@ body.menuopen{overflow:hidden}
     c.early = false; c.night = false;
     (S.log || []).forEach(function(l){
       if(!l || !l.ts || !(l.ops || []).some(function(o){ return o && (o.k === 'total' || o.k === 'entry'); })) return;
+      if(iso(new Date(l.ts)) <= cut) return;
       var hr = new Date(l.ts).getHours();
       if(hr < 7) c.early = true;
       if(hr >= 23) c.night = true;
@@ -3666,8 +3717,16 @@ body.menuopen{overflow:hidden}
       if(v >= 500){ rr++; if(rr > c.rocket) c.rocket = rr; }else rr = 0;
       if(v > 0){ if(seenAny && gap >= 5) c.comeback = true; seenAny = true; gap = 0; }else if(seenAny) gap++;
     });
-    var SN = [1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888, 9999, 11111, 22222, 33333, 44444];
-    for(i = 1; i < es.length; i++) SN.forEach(function(x){ if(es[i - 1].n < x && es[i].n >= x) c.schnaps = true; });
+    var SN = [22222, 33333, 44444, 55555, 66666, 77777, 88888, 99999];
+    c.crossPi = false; c.cross123 = false; c.small = false;
+    for(i = 1; i < es.length; i++){
+      if(es[i].d <= cut) continue;
+      SN.forEach(function(x){ if(es[i - 1].n < x && es[i].n >= x) c.schnaps = true; });
+      if(es[i - 1].n < 31415 && es[i].n >= 31415) c.crossPi = true;
+      if(es[i - 1].n < 12345 && es[i].n >= 12345) c.cross123 = true;
+      var dv = es[i].n - es[i - 1].n;
+      if(days(parse(es[i - 1].d), parse(es[i].d)) === 1 && dv >= 3 && dv <= 10) c.small = true;
+    }
     return c;
   }
   function bdSeen(){ try{ var o = JSON.parse(localStorage.getItem(BD_LS) || 'null'); return (o && typeof o === 'object') ? o : null; }catch(e){ return null; } }
@@ -3684,6 +3743,7 @@ body.menuopen{overflow:hidden}
   function bdCheck(){
     if(!S || !S.entries || !S.entries.length) return;
     if(typeof frRelEval === 'function'){ try{ frRelEval(); }catch(e){} }
+    var purged = bdPurge();
     var c; try{ c = bdCtx(); }catch(e){ return; }
     var first = !S.badges || typeof S.badges !== 'object';
     if(first) S.badges = {};
@@ -3698,6 +3758,7 @@ body.menuopen{overflow:hidden}
       save();
       if(!first) bdGold(nw);
     }
+    if(purged && !nw.length) save();
     bdBtnUpdate();
   }
   function bdGold(nw){
@@ -4218,7 +4279,36 @@ body.menuopen{overflow:hidden}
     if(S.log.length > 400) S.log = S.log.slice(-400);
   }
   /* Gesamtzahl erhöhen: gleicher Tag wie der letzte Stand erhöht ihn, sonst neuer Eintrag */
-  function addToTotal(dateISO, n){
+  /* Test ueber mehrere Tage: die Fragen werden gleichmaessig auf die Tage von startISO bis dateISO verteilt */
+  function addToTotalSpread(sISO, eISO, n){
+    var es0 = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    var s = sISO < es0[0].d ? es0[0].d : sISO, e = eISO;
+    if(!(s < e)) return null;
+    var cr = [], t, k, i;
+    k = days(parse(s), parse(e)) + 1;
+    if(k > 90) return null;
+    for(i = 0; i < k; i++){
+      var pt = parse(s); t = iso(new Date(pt.getFullYear(), pt.getMonth(), pt.getDate() + i));
+      if(!S.entries.some(function(x){ return x.d === t; })){
+        var prev = null; S.entries.forEach(function(x){ if(x.d < t && (!prev || x.d > prev.d)) prev = x; });
+        S.entries.push({d:t, n:prev ? prev.n : 0, a:1}); cr.push(t);
+      }
+    }
+    var base = Math.floor(n / k), rem = n - base * k, cum = {}, run = 0;
+    for(i = 0; i < k; i++){
+      var pt2 = parse(s), td = iso(new Date(pt2.getFullYear(), pt2.getMonth(), pt2.getDate() + i));
+      run += base + (i >= k - rem ? 1 : 0); cum[td] = run;
+    }
+    S.entries.forEach(function(x){
+      if(x.d < s) return;
+      x.n += (x.d <= e) ? cum[x.d] : n;
+      if(x.d <= e) delete x.a;
+    });
+    S.entries.sort(function(a, b){ return a.d < b.d ? -1 : 1; });
+    return {k:'total', d:e, n:n, created:false, sp:{s:s, cr:cr, cum:cum}};
+  }
+  function addToTotal(dateISO, n, startISO){
+    if(startISO && dateISO && startISO < dateISO){ var sp = addToTotalSpread(startISO, dateISO, n); if(sp) return sp; }
     var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
     var last = es[es.length - 1];
     var d = (dateISO && dateISO > last.d) ? dateISO : last.d;
@@ -4232,7 +4322,10 @@ body.menuopen{overflow:hidden}
   }
   function applyUndo(ops){
     (ops || []).slice().reverse().forEach(function(op){
-      if(op.k === 'total'){
+      if(op.k === 'total' && op.sp){
+        S.entries.forEach(function(x){ if(x.d >= op.sp.s) x.n = Math.max(0, x.n - (x.d <= op.d ? (op.sp.cum[x.d] || 0) : op.n)); });
+        if(op.sp.cr.length && S.entries.length > op.sp.cr.length) S.entries = S.entries.filter(function(x){ return op.sp.cr.indexOf(x.d) < 0; });
+      }else if(op.k === 'total'){
         if(op.created && S.entries.length > 1) S.entries = S.entries.filter(function(e){ return e.d !== op.d; });
         else S.entries.forEach(function(e){ if(e.d === op.d) e.n = Math.max(0, e.n - op.n); });
       }else if(op.k === 'entry'){
@@ -4288,6 +4381,7 @@ body.menuopen{overflow:hidden}
       '<label>Fach<select id="aqSub">' + opts + '</select></label>' +
       '<div id="aqCat" hidden><label>Was hast du gemacht?</label><div class="cats" id="aqCats">' + catBtns + '</div><div class="small" id="aqCatHint"></div></div>' +
       '<div class="f2"><label>Datum<input type="date" id="aqD" value="' + iso(new Date()) + '"></label><label>Geklickte Fragen<input type="number" id="aqN" inputmode="numeric" min="1" placeholder="Anzahl"></label></div>' +
+      '<label>Test angefangen am<input type="date" id="aqS" value="' + iso(new Date()) + '"></label><div class="small" id="aqSh" style="margin:-4px 0 6px">Hattest du den Test mehrere Tage offen? Dann wähle den Beginn: Die Fragen werden gleichmäßig auf diese Tage verteilt.</div>' +
       '<div id="aqQ" hidden><label id="aqQl">Wie viele davon richtig? (optional)</label><div class="seg" id="aqSeg">' + segHTML('ok', 'data-aqmode', 0) + '</div>' +
       '<input type="number" step="any" id="aqV" inputmode="numeric" min="0" placeholder="Optional" style="width:100%"></div>' +
       '<label class="tg"><span>Zur Gesamtzahl addieren</span><input type="checkbox" class="sw" id="aqT" checked></label>' +
@@ -4311,6 +4405,8 @@ body.menuopen{overflow:hidden}
         }
         h += '. ';
       }
+      var sd0 = g('aqS').value, dd0 = g('aqD').value;
+      if(g('aqT').checked && sd0 && dd0 && sd0 < dd0){ var kd = days(parse(sd0), parse(dd0)) + 1; h += 'Verteilt auf ' + kd + ' Tage (etwa ' + fmt(n / kd) + ' pro Tag). '; }
       if(g('aqT').checked){ var nm = homeNums(); h += 'Gesamt: ' + fmt(nm.last.n) + ' → ' + fmt(nm.last.n + n) + '.'; }
       g('aqHint').textContent = h;
     }
@@ -4342,7 +4438,7 @@ body.menuopen{overflow:hidden}
       g('aqV').setAttribute('inputmode', mode === 'pct' ? 'decimal' : 'numeric');
       preview();
     });
-    ['aqN', 'aqV', 'aqT'].forEach(function(id){ g(id).addEventListener('input', preview); g(id).addEventListener('change', preview); });
+    ['aqN', 'aqV', 'aqT', 'aqS', 'aqD'].forEach(function(id){ g(id).addEventListener('input', preview); g(id).addEventListener('change', preview); });
     g('aqSave').addEventListener('click', function(){
       var n = readInt(g('aqN').value), d = g('aqD').value, si = g('aqSub').value, tot = g('aqT').checked, msg = g('aqMsg');
       if(!d || n === null || n < 1){ msg.textContent = 'Bitte Datum und Anzahl der Fragen eintragen.'; return; }
@@ -4369,7 +4465,8 @@ body.menuopen{overflow:hidden}
       }else{
         title += 'ohne Fach +' + fmt(n);
       }
-      if(tot){ var top = addToTotal(d, n); if(top) ops.push(top); title += ' · Gesamt +' + fmt(n); }
+      var st0 = g('aqS').value; if(st0 && st0 > d) st0 = d;
+      if(tot){ var top = addToTotal(d, n, st0); if(top){ ops.push(top); if(top.sp) title += ' · verteilt ab ' + fd(parse(top.sp.s)); } title += ' · Gesamt +' + fmt(n); }
       logAdd(title, ops);
       sh.close();
       if(tot) queueGlideScene();
@@ -6025,8 +6122,20 @@ body.menuopen{overflow:hidden}
   /* ---------- Menü ---------- */
   function buildMenu(){
     var body = $('menuBody');
-    var parts = [$('statCard'), $('rwCard'), $('lookCard'), $('verCard'), $('settingsMain'), document.querySelector('#tabHome details.settings'), $('wBox') && $('wBox').closest('details'), $('dataBox') && $('dataBox').closest('details'), $('impCard'), $('syncCard')];
-    parts.forEach(function(el){ if(el && body) body.appendChild(el); });
+    if(!body) return;
+    var groups = [
+      ['Auswertung', ['statCard', 'rwCard']],
+      ['Aussehen', ['lookCard']],
+      ['Ziel und Termin', ['examCard', 'settingsMain', 'wCard']],
+      ['Daten', ['impCard', 'dataCard', 'syncCard']],
+      ['Info', ['verCard']]
+    ];
+    groups.forEach(function(g){
+      var els = g[1].map(function(id){ return $(id); }).filter(Boolean);
+      if(!els.length) return;
+      var h = document.createElement('div'); h.className = 'mgrp'; h.textContent = g[0]; body.appendChild(h);
+      els.forEach(function(el){ body.appendChild(el); });
+    });
   }
   function openMenu(){
     $('menu').hidden = false; $('menuOv').hidden = false;
@@ -6158,6 +6267,14 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-29', items:[
+      {t:'Abzeichen neu gestartet', x:'Serien und Tempo, Fächer sowie Spaß und Challenges beginnen für alle von vorn. Es zählt nur, was ab jetzt in der App eingetragen wird. Die Fragen-Meilensteine kannst du weiterhin aus deiner Dokumentation aktivieren.', menu:true, sel:'#bdBtn'},
+      {t:'Neu: Kleinkariert, Abgehängt', x:'Kleinkariert: ein Tag mit 3 bis 10 getrackten Fragen. Abgehängt ersetzt Angehängt: Du führst mindestens zwei Tagespensum vor einem Freund. Schnapszahl zählt ab 22.222, die Kreiszahl liegt bei 31.415.', menu:true, sel:'#bdBtn'},
+      {t:'Test angefangen am', x:'Beim Tracken und beim Testbericht gibst du an, wann der Test begonnen wurde. Die Fragen werden gleichmäßig auf die Tage verteilt (Verlauf, Tempo, Tagesziel, Abzeichen).', tab:'main', sel:'#routeCard'},
+      {t:'Kompakteres Menü', x:'Das Burgermenü ist in Gruppen sortiert, kompakter, und jeder Punkt hat ein Symbol in deiner Farbe.', menu:true, sel:'#menuBtn'},
+      {t:'Handy-Kopfzeile', x:'Auf dem Handy bleiben oben nur Abzeichen, Hell/Dunkel und Menü. Freunde und Account sitzen darunter, der Titel bleibt lesbar.', tab:'home', sel:'#menuBtn'},
+      {t:'Logo überarbeitet', x:'Die PAPI-Lichter haben Abstand zur Landebahn, und unten steht die Schwellenmarkierung mit der 75.', tab:'home', sel:'#appLogo'}
+    ]},
     {v:'2026.10.11-28', items:[
       {t:'Wochen- und Monats-Rewind', x:'Jeden Montag und zum Monatsanfang gibt es einen Rückblick: Fragen im Vergleich zum Zeitraum davor, dein Klickverhalten, lustige Fakten und ein Ausblick. Du kannst ihn überspringen und im Menü unter „Rewind“ jederzeit nochmal ansehen.', menu:true, sel:'#rwCard summary', open:'#rwCard'},
       {t:'Zweiter Countdown', x:'In der Individualisierung kannst du einen zweiten Countdown (zum Beispiel für den Pretest) neben den ersten setzen. Er nutzt die zweite Farbe des Themes.', menu:true, sel:'#lookCard summary', open:'#lookCard'},
@@ -6921,17 +7038,18 @@ body.menuopen{overflow:hidden}
     frTimer = setTimeout(function(){ frPush(false); }, 8000);
   }
   function frRelEval(){
-    var me = null;
-    try{ var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }); me = es[es.length - 1].n; }catch(e){ return; }
+    var me = null, es = null;
+    try{ es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }); me = es[es.length - 1].n; }catch(e){ return; }
     if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {};
     var fx = S.bdx, today = iso(new Date()), chg = false;
+    var gl = 0; try{ var nw0 = new Date(); gl = dayGoal(es, new Date(nw0.getFullYear(), nw0.getMonth(), nw0.getDate()), parse(S.deadline)).goal; }catch(e){ gl = 0; }
     (S.friends || []).forEach(function(fr){
       var f = fr.data && fr.data.stand;
       if(typeof f !== 'number') return;
       var rel = me > f ? 'a' : (me === f ? 'e' : 'b');
       if(fr.rel === 'b' && rel === 'a' && !fx.pass){ fx.pass = today; chg = true; }
       if(fr.rel === 'b' && (rel === 'a' || rel === 'e') && !fx.catch){ fx.catch = today; chg = true; }
-      if(rel === 'b' && f > 0 && (f - me) / f < 0.01 && !fx.hang){ fx.hang = today; chg = true; }
+      if(rel === 'a' && gl > 0 && (me - f) >= 2 * gl && !fx.hang){ fx.hang = today; chg = true; }
       fr.rel = rel;
     });
     if(chg) save();

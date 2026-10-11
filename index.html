@@ -739,7 +739,7 @@ body.menuopen{overflow:hidden}
   <div class="card chartwrap">
     <h2>Verlauf</h2>
     <div id="chart"></div>
-    <div class="small">Cyan gestrichelt = Soll-Linie · Magenta = dein Stand</div>
+    <div class="small">Cyan gestrichelt = Soll-Linie · Magenta = dein Stand · Magenta gepunktet = Prognose</div>
   </div>
 
   <div class="card">
@@ -959,6 +959,34 @@ body.menuopen{overflow:hidden}
     }
     return ch;
   }
+  /* gewichtetes aktuelles Tempo: jeder Tag zaehlt mit Halbwertszeit 10 Tage */
+  function tempoRec(es, lastD){
+    var wS = 0, vS = 0, hl = 10;
+    for(var i = 1; i < es.length; i++){
+      var a = parse(es[i - 1].d), b = parse(es[i].d), dd = Math.max(1, days(a, b));
+      var per = Math.max(0, (es[i].n - es[i - 1].n) / dd);
+      for(var j = 1; j <= dd; j++){
+        var age = Math.max(0, days(b, lastD)) + (dd - j), w = Math.pow(0.5, age / hl);
+        wS += w; vS += w * per;
+      }
+    }
+    return wS > 0 ? vS / wS : 0;
+  }
+  /* Tagesziel: Rest ab gestern geteilt durch verbleibende Tage (Rueckstand ist drin) */
+  function dayGoal(es, today, endD){
+    var yN = null, i;
+    for(i = es.length - 1; i >= 0; i--){ if(parse(es[i].d) < today){ yN = es[i].n; break; } }
+    if(yN === null) yN = es[0].n;
+    var last = es[es.length - 1];
+    var clicked = parse(last.d).getTime() === today.getTime() ? Math.max(0, last.n - yN) : 0;
+    var goal = Math.max(0, S.target - yN) / Math.max(1, days(today, endD));
+    return {goal:goal, clicked:clicked, left:Math.max(0, Math.ceil(goal - clicked - 0.0001)), yN:yN};
+  }
+  function projDate(remaining, pace, lastD){
+    if(!(pace > 0)) return null;
+    var pd = new Date(lastD.getTime()); pd.setDate(pd.getDate() + Math.ceil(remaining / pace));
+    return pd;
+  }
   function render(){
     if(fillGaps()) save();
     var entries = S.entries.slice().sort(function(a,b){ return a.d<b.d?-1:1; });
@@ -983,6 +1011,7 @@ body.menuopen{overflow:hidden}
     var planPerDay = span/total;
     var elapsed = days(baseD, lastD);
     var pace = elapsed>0 ? (last.n-base.n)/elapsed : 0;
+    var paceR = tempoRec(entries, lastD), dg = dayGoal(entries, today, endD);
 
     $('sub').textContent = 'Ziel: ' + fmt(S.target) + ' Fragen bis ' + fd(endD) + endD.getFullYear() +
       ' · Start: ' + fd(baseD) + ' mit ' + fmt(base.n);
@@ -1018,19 +1047,18 @@ body.menuopen{overflow:hidden}
     stats.push(['Tage übrig', String(days(today, endD) < 0 ? 0 : days(today, endD))]);
     stats.push(['Nötig pro Tag', done ? '0' : fmt(perDay)]);
     stats.push(['Plan-Tempo', fmt(planPerDay) + ' / Tag']);
-    stats.push(['Dein Ø-Tempo', pace>0 ? fmt(pace) + ' / Tag' : '–']);
-    var proj = '–', projCls = '';
-    if(pace>0){
-      var dn = Math.ceil(remaining/pace);
-      var pd = new Date(lastD.getTime()); pd.setDate(pd.getDate()+dn);
-      proj = fd(pd) + pd.getFullYear();
-      projCls = pd <= endD ? 'good' : 'bad';
+    stats.push(['Aktuelles Tempo · Ø gesamt ' + (pace>0 ? fmt(pace) : '–'), paceR>0 ? fmt(paceR) + ' / Tag' : '–']);
+    var proj = '–', projCls = '', pk = 'Prognose Ziel';
+    var pdR = projDate(remaining, paceR, lastD), pdA = projDate(remaining, pace, lastD);
+    if(pdR){
+      proj = fd(pdR) + pdR.getFullYear();
+      projCls = pdR <= endD ? 'good' : 'bad';
       if(done) proj = 'fertig';
+      if(pdA && !done) pk = 'Prognose Ziel · bei Ø gesamt ' + fd(pdA) + pdA.getFullYear();
     }
-    stats.push(['Prognose Ziel', '<span class="' + projCls + '">' + proj + '</span>']);
-    stats.push(['Soll heute', fmt(planToday)]);
-    var gap = planToday - last.n;
-    stats.push(['Heute noch zu klicken', gap>0 ? fmt(gap) : '0 ✓']);
+    stats.push([pk, '<span class="' + projCls + '">' + proj + '</span>']);
+    stats.push(['Soll-Linie heute (Info)', fmt(planToday)]);
+    stats.push(['Heute noch zu klicken · Tagesziel ' + fmt(dg.goal), done || dg.left <= 0 ? '0 ✓' : fmt(dg.left)]);
     $('stats').innerHTML = stats.map(function(s){
       return '<div class="stat"><div class="v">' + s[1] + '</div><div class="k">' + s[0] + '</div></div>';
     }).join('');
@@ -1055,6 +1083,10 @@ body.menuopen{overflow:hidden}
     var tx = X(today);
     if(today>=baseD && today<=endD){
       g += '<line x1="'+tx+'" x2="'+tx+'" y1="'+T+'" y2="'+(T+ph)+'" stroke="var(--text)" stroke-opacity=".25"/>';
+    }
+    if(pdR && !done && paceR > 0){
+      var pe = pdR > endD ? endD : pdR, pn = pdR > endD ? last.n + paceR * Math.max(0, days(lastD, endD)) : S.target;
+      g += '<line x1="'+X(lastD)+'" y1="'+Y(last.n)+'" x2="'+X(pe)+'" y2="'+Y(Math.min(pn, ymax))+'" stroke="var(--accent)" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round" stroke-opacity=".75"/>';
     }
     var pts = entries.map(function(e){ return X(parse(e.d)).toFixed(1)+','+Y(e.n).toFixed(1); }).join(' ');
     g += '<polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>';
@@ -1960,10 +1992,11 @@ body.menuopen{overflow:hidden}
     var daysLeft = Math.max(1, days(refD, endD));
     var remaining = Math.max(0, S.target - last.n);
     var elapsed = days(baseD, lastD);
-    return {
+    var dgn = dayGoal(es, today, endD);
+    return {goal:dgn.goal, clicked:dgn.clicked, paceR:tempoRec(es, lastD),
       base:base, last:last, lastD:lastD, today:today, planPerDay:span / total,
       planToday:plan(today), diff:last.n - plan(lastD),
-      needToday:Math.max(0, plan(tomorrow) - last.n),
+      needToday:dgn.left,
       perDay:remaining / daysLeft, pace:elapsed > 0 ? (last.n - base.n) / elapsed : 0, remaining:remaining
     };
   }
@@ -2003,7 +2036,7 @@ body.menuopen{overflow:hidden}
     var cT = tod ? Math.max(0, tod.n - lb.n) : 0;
     var gap = n.needToday;
     var tomorrow = new Date(n.today.getTime()); tomorrow.setDate(tomorrow.getDate() + 1);
-    var ahead = gap > 0 ? 0 : Math.max(0, n.diff - n.planPerDay * days(n.lastD, tomorrow));
+    var ahead = gap > 0 ? 0 : Math.max(0, n.clicked - n.goal);
     /* Ermüdung: Quote der heutigen Berichte, nach Fragenzahl gewichtet, frühe gegen späte Hälfte */
     var reps = [];
     SUBJECTS.forEach(function(sj){ events(getSub(sj.id)).forEach(function(e){ if(e.d === todayISO && e.n > 0) reps.push({t:e.t, ok:e.ok, n:e.n}); }); });
@@ -2049,17 +2082,22 @@ body.menuopen{overflow:hidden}
     };
     var qtxt = c.tired ? 'Deine Quote ist heute von ' + Math.round(c.q1) + ' % auf ' + Math.round(c.q2) + ' % gefallen.' : '';
     if(c.gap <= 0){
-      if(c.tired) out.push('Du bist heute im Soll. ' + qtxt + ' Qualität schlägt jetzt Menge: Mach lieber Schluss, statt noch mehr nachzulegen.');
-      else if(c.ahead >= 0.5 * c.cap) out.push('Du bist heute schon im Soll und hast etwa ' + f(c.ahead) + ' Fragen Vorsprung. Locker bleiben, der Rest ist Bonus.');
-      else out.push('Du bist heute im Soll. Weiter wie bisher.');
+      if(c.tired) out.push('Tagesziel geschafft. ' + qtxt + ' Qualität schlägt jetzt Menge: Mach lieber Schluss, statt noch mehr nachzulegen.');
+      else if(c.ahead >= 0.5 * c.cap) out.push('Dein Tagesziel ist schon geschafft und du hast etwa ' + f(c.ahead) + ' Fragen extra. Locker bleiben, der Rest ist Bonus.');
+      else out.push('Tagesziel geschafft. Weiter so.');
     }else if(c.tired || tiredByVolume){
-      out.push('Für heute reicht es. ' + (c.tired ? qtxt : 'Du hast heute schon ' + f(c.cT) + ' Fragen geklickt.') + ' Dir fehlen noch ' + f(c.gap) + ' zum Soll: Hänge ' + spread(c.gap) + ' an dein Pensum (etwa ' + f(c.cap) + ' am Tag), dann bist du wieder im Soll.');
+      out.push('Für heute reicht es. ' + (c.tired ? qtxt : 'Du hast heute schon ' + f(c.cT) + ' Fragen geklickt.') + ' Dir fehlen noch ' + f(c.gap) + ' zum Tagesziel: Hänge ' + spread(c.gap) + ' an dein Pensum (etwa ' + f(c.cap) + ' am Tag), dann bist du wieder im Plan.');
     }else if(!night && c.gap <= Math.max(120, 0.45 * c.cap) && c.h < 21){
-      out.push('Noch ' + f(c.gap) + ' Fragen, dann bist du heute im Soll. ' + (c.gap <= 0.3 * c.cap ? 'Klick weiter, das ist locker machbar.' : 'Das schaffst du noch, wenn du jetzt dranbleibst.'));
+      out.push('Noch ' + f(c.gap) + ' Fragen, dann hast du dein Tagesziel. ' + (c.gap <= 0.3 * c.cap ? 'Klick weiter, das ist locker machbar.' : 'Das schaffst du noch, wenn du jetzt dranbleibst.'));
     }else if(night){
       out.push('Heute fehlen noch ' + f(c.gap) + ' Fragen' + (c.gap <= 0.35 * c.cap ? ', das wäre noch drin.' : ', rechnerisch wird das knapp.') + ' Wenn du fit bist, macht es Sinn weiterzuklicken. Wenn du müde bist, geh schlafen und hol es nach: ' + spread(c.gap) + '.');
     }else{
       out.push('Heute fehlen noch ' + f(c.gap) + ' Fragen. Das ist viel für den Rest des Tages. Klick, was gut geht, und verteile den Rest: ' + spread(c.gap) + '.');
+    }
+    if(c.n.diff < -c.n.planPerDay && c.n.paceR > 0){
+      var pdc = projDate(c.n.remaining, c.n.paceR, c.n.lastD), okT = c.n.paceR >= c.n.perDay;
+      out.push('<span class="cp">Rückstand zur Soll-Linie: ' + f(-c.n.diff) + ' Fragen, im Tagesziel (' + f(c.n.perDay) + ' pro Tag) schon eingerechnet. ' +
+        (okT ? 'Dein aktuelles Tempo (' + f(c.n.paceR) + ' am Tag) reicht dafür.' : 'Dein aktuelles Tempo (' + f(c.n.paceR) + ' am Tag) reicht noch nicht' + (pdc ? ', so wärst du am ' + fd(pdc) + pdc.getFullYear() + ' fertig.' : '.')) + '</span>');
     }
     if(c.proj !== null && c.dToExam !== null && c.dToExam > 0){
       var ds = fd(c.ed) + c.ed.getFullYear(), pr = c.proj.toFixed(0), cu = c.cur.toFixed(0), part = c.cnt < SUBJECTS.length ? ' (aus ' + c.cnt + ' von ' + SUBJECTS.length + ' Fächern)' : '';
@@ -2089,10 +2127,10 @@ body.menuopen{overflow:hidden}
     var st = [
       ['Stand ' + fd(n.lastD), cuHTML('stand', n.last.n, 'home', false)],
       [n.diff >= 0 ? 'Vorsprung zum Soll' : 'Rückstand zum Soll', '<span class="' + (n.diff >= 0 ? 'good' : 'bad') + '">' + sign(Math.round(n.diff)) + '</span>'],
-      ['Heute noch zu klicken (Plan)', n.needToday > 0 ? fmt(n.needToday) : '0 ✓'],
+      ['Heute noch zu klicken (Tagesziel ' + fmt(n.goal) + ')', n.needToday > 0 ? fmt(n.needToday) : '0 ✓'],
       ['Nötig pro Tag ab jetzt', fmt(n.perDay)],
       ['Ø Fächer-Score (' + scs.length + ' / ' + SUBJECTS.length + ')', '<span class="' + cls(avg) + '">' + (avg === null ? '–' : avg.toFixed(1).replace('.', ',') + ' %') + '</span>'],
-      ['Dein Ø-Tempo', n.pace > 0 ? fmt(n.pace) + ' / Tag' : '–']
+      ['Aktuelles Tempo', n.paceR > 0 ? fmt(n.paceR) + ' / Tag' : '–']
     ];
     papiMount('papiHome', n.last.n >= S.target ? null : (n.planPerDay > 0 ? n.diff / n.planPerDay : 0), 'home');
     $('homeStats').innerHTML = st.map(function(x){
@@ -2182,9 +2220,11 @@ body.menuopen{overflow:hidden}
         stand: n.last.n, stand_vom: n.last.d,
         soll_laut_plan_heute: Math.round(n.planToday),
         vorsprung_zum_soll: Math.round(n.diff),
-        heute_noch_zu_klicken_laut_plan: Math.round(n.needToday),
+        tagesziel: Math.round(n.goal),
+        heute_noch_zu_klicken_laut_tagesziel: Math.round(n.needToday),
         noetig_pro_tag: Math.round(n.perDay),
-        bisheriges_tempo_pro_tag: Math.round(n.pace),
+        aktuelles_tempo_pro_tag_gewichtet: Math.round(n.paceR),
+        durchschnittstempo_gesamt: Math.round(n.pace),
         verlauf: S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; })
       },
       faecher: [], faecher_ohne_daten: []
@@ -2949,7 +2989,7 @@ body.menuopen{overflow:hidden}
         var dl = Math.max(1, days(d.n.today, parse(S.deadline))), need = Math.round(Math.max(0, rec - d.N) / dl);
         h += '<div class="aih">Empfehlung</div><div style="font-size:14px">' + (close ? 'Du bist fast am Ziel, aber die Fächer tragen noch nicht. ' : '') +
              'Bei deiner bisherigen Lernkurve brauchst du rechnerisch etwa <b>' + fmt(rec) + '</b> Fragen, damit alle Fächer sicher über ' + FC_PASS + ' % liegen.</div>' +
-             '<div class="small" style="margin-top:4px">Das wären ' + fmt(need) + ' Fragen pro Tag bis ' + fd(parse(S.deadline)) + ' (bisher ' + fmt(Math.round(d.n.pace)) + ').</div>' +
+             '<div class="small" style="margin-top:4px">Das wären ' + fmt(need) + ' Fragen pro Tag bis ' + fd(parse(S.deadline)) + ' (aktuell ' + fmt(Math.round(d.n.paceR || d.n.pace)) + ').</div>' +
              '<button id="fcApply" data-t="' + rec + '" style="margin-top:8px">Ziel auf ' + fmt(rec) + ' setzen</button>';
       }else{
         h += '<div class="aih">Empfehlung</div><div style="font-size:14px">Mit der bisherigen Lernkurve würde auch eine deutlich höhere Zahl allein nicht reichen. Wiederhole gezielt die falschen Fragen der schwächsten Fächer, statt nur mehr zu klicken.</div>';
@@ -5347,6 +5387,9 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-23', items:[
+      {t:'Realistisches Tempo und Tagesziel', x:'Das aktuelle Tempo zählt jetzt stärker als alte Wochen (Halbwertszeit etwa 10 Tage). Die Prognose rechnet damit, zusätzlich siehst du das Datum bei deinem Gesamt-Ø und eine gepunktete Prognose-Linie im Verlauf. „Heute noch zu klicken“ ist jetzt dein Tagesziel (Rest geteilt durch die verbleibenden Tage), der Rückstand ist darin schon verteilt. Die Soll-Linie bleibt als Info.', tab:'main', sel:'#stats'}
+    ]},
     {v:'2026.10.10-22', items:[
       {t:'Hell, Dunkel oder Automatisch', x:'Die Darstellung lässt sich dauerhaft einstellen: Automatisch (folgt deinem Gerät), Hell oder Dunkel. Tippe oben auf das Sonne- oder Mond-Symbol, um durchzuschalten, oder wähle es unter „Individualisierung“.', tab:'home', sel:'#themeBtn'}
     ]},

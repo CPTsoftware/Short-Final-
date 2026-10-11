@@ -867,7 +867,7 @@ body.menuopen{overflow:hidden}
     ['radar', 'Radar', 'Blip auf dem Schirm']
   ];
   var AI_PROVS = [['claude', 'Claude', 'claude.ai'], ['chatgpt', 'ChatGPT', 'chatgpt.com'], ['gemini', 'Gemini', 'gemini.google.com']];
-  var LOOK_DEF = {accent:'magenta', cd:'flap', st:'papi', ai:'claude', hap:true};
+  var LOOK_DEF = {accent:'magenta', cd:'flap', st:'papi', ai:'claude', hap:true, theme:'auto'};
   var appStart = Date.now();
   var STANDALONE = true;
 
@@ -3634,17 +3634,25 @@ body.menuopen{overflow:hidden}
     if(a) return a === 'dark';
     return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
-  function themeIcon(){ $('themeBtn').innerHTML = effDark() ? ICON_SUN : ICON_MOON; }
+  var ICON_AUTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>';
+  var THEME_NAME = {auto:'Automatisch (nach Gerät)', light:'Hell', dark:'Dunkel'};
+  function themeIcon(){
+    var b = $('themeBtn'); if(!b) return;
+    var m = (S && S.look && S.look.theme) || 'auto';
+    b.innerHTML = m === 'light' ? ICON_SUN : (m === 'dark' ? ICON_MOON : ICON_AUTO);
+    b.setAttribute('aria-label', 'Darstellung: ' + THEME_NAME[m] + '. Tippen zum Wechseln');
+    b.title = 'Darstellung: ' + THEME_NAME[m];
+  }
   try{
     var savedTheme = localStorage.getItem(THEME_KEY);
     if(savedTheme === 'light' || savedTheme === 'dark') document.documentElement.setAttribute('data-theme', savedTheme);
   }catch(e){}
   themeIcon();
   $('themeBtn').addEventListener('click', function(){
-    var next = effDark() ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
-    themeIcon();
+    lookNorm();
+    var cur = S.look.theme, next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
+    lookSet('theme', next);
+    toast('Darstellung: ' + THEME_NAME[next]);
   });
 
   renderSubjects();
@@ -5001,6 +5009,11 @@ body.menuopen{overflow:hidden}
     if(!ST_STYLES.some(function(c){ return c[0] === S.look.st; })) S.look.st = 'papi';
     if(!AI_PROVS.some(function(c){ return c[0] === S.look.ai; })) S.look.ai = 'claude';
     if(typeof S.look.hap !== 'boolean') S.look.hap = true;
+    if(['auto', 'light', 'dark'].indexOf(S.look.theme) < 0){
+      var sv = null;
+      try{ sv = localStorage.getItem(KEY + '-theme'); }catch(e){}
+      S.look.theme = (sv === 'light' || sv === 'dark') ? sv : 'auto';
+    }
     return S.look;
   }
   function hexRgb(h){ return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
@@ -5021,7 +5034,14 @@ body.menuopen{overflow:hidden}
     var t = document.documentElement.getAttribute('data-theme');
     return t === 'dark' || (t !== 'light' && !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
   }
+  function applyTheme(){
+    var m = (S && S.look && S.look.theme) || 'auto', root = document.documentElement, cur = root.getAttribute('data-theme'), want = m === 'auto' ? null : m;
+    if(cur !== want){ if(want) root.setAttribute('data-theme', want); else root.removeAttribute('data-theme'); }
+    try{ if(m === 'auto') localStorage.removeItem(KEY + '-theme'); else localStorage.setItem(KEY + '-theme', m); }catch(e){}
+    themeIcon();
+  }
   function applyLook(){
+    applyTheme();
     var st = document.documentElement.style, props = ['--accent', '--on-accent', '--mag', '--glow1'];
     var a = S && S.look && S.look.accent, pair = (a && a !== 'magenta') ? lookPair(a) : null;
     if(!pair){ props.forEach(function(p){ st.removeProperty(p); }); return; }
@@ -5047,7 +5067,10 @@ body.menuopen{overflow:hidden}
     lookNorm();
     var L = S.look, cur = L.accent;
     var rs = function(key){ return '<button type="button" class="lkrs" data-lkreset="' + key + '"' + (L[key] === LOOK_DEF[key] ? ' disabled' : '') + '>Auf Standard</button>'; };
-    var h = '<div class="lkhr"><h3 class="lkh">App-Farbe</h3>' + rs('accent') + '</div><div class="lkleg">★ = Standard</div><div class="lkcol">';
+    var h = '<div class="lkhr"><h3 class="lkh">Darstellung</h3>' + rs('theme') + '</div><div class="seg" role="group" aria-label="Darstellung">';
+    [['auto', 'Automatisch'], ['light', 'Hell'], ['dark', 'Dunkel']].forEach(function(t){ h += '<button type="button" data-lkth="' + t[0] + '" class="' + (L.theme === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; });
+    h += '</div><div class="lkleg" style="margin-top:6px">Automatisch folgt dem Hell- oder Dunkelmodus deines Geräts. Das Sonne- und Mond-Symbol oben wechselt ebenfalls. ★ Standard: Automatisch</div>';
+    h += '<div class="lkhr"><h3 class="lkh">App-Farbe</h3>' + rs('accent') + '</div><div class="lkleg">★ = Standard</div><div class="lkcol">';
     LOOK_COLORS.forEach(function(c){
       h += '<button type="button" class="lksw' + (cur === c[0] ? ' on' : '') + (c[0] === LOOK_DEF.accent ? ' lkdefsw' : '') + '" data-lkacc="' + c[0] + '" style="background:' + lookSwatchColor(c) + '" aria-label="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '" title="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '"></button>';
     });
@@ -5071,7 +5094,7 @@ body.menuopen{overflow:hidden}
       h += '</div>';
     }
     h += '<div class="lkhr"><h3 class="lkh">Vibration</h3>' + rs('hap') + '</div><label class="tg"><span>Handy vibriert bei Berichten, Einträgen und Meilensteinen <span class="lkdef">★ Standard: an</span></span><input type="checkbox" class="sw" data-lkhap="1"' + (L.hap ? ' checked' : '') + '></label><div class="small" style="margin-top:4px">Auf dem iPhone gibt es nur ein leichtes Tippen, und nur in Safari ab iOS 17.4.</div>';
-    var allDef = L.accent === LOOK_DEF.accent && L.cd === LOOK_DEF.cd && L.st === LOOK_DEF.st && L.hap === LOOK_DEF.hap && (!webl || L.ai === LOOK_DEF.ai);
+    var allDef = L.accent === LOOK_DEF.accent && L.cd === LOOK_DEF.cd && L.st === LOOK_DEF.st && L.hap === LOOK_DEF.hap && L.theme === LOOK_DEF.theme && (!webl || L.ai === LOOK_DEF.ai);
     return h + '<button type="button" class="ghost lkall" data-lkreset="all"' + (allDef ? ' disabled' : '') + '>Alles auf Standard zurücksetzen</button>';
   }
   function lookRefresh(){
@@ -5095,7 +5118,7 @@ body.menuopen{overflow:hidden}
   function lookReset(key){
     lookNorm();
     if(key === 'all'){
-      S.look.accent = LOOK_DEF.accent; S.look.cd = LOOK_DEF.cd; S.look.st = LOOK_DEF.st; S.look.ai = LOOK_DEF.ai; S.look.hap = LOOK_DEF.hap;
+      S.look.accent = LOOK_DEF.accent; S.look.cd = LOOK_DEF.cd; S.look.st = LOOK_DEF.st; S.look.ai = LOOK_DEF.ai; S.look.hap = LOOK_DEF.hap; S.look.theme = LOOK_DEF.theme;
       save(); applyLook(); cdMode = null; renderCountdown(); lookRefresh(); stRedraw(); renderAI();
     }else if(LOOK_DEF[key] !== undefined){
       lookSet(key, LOOK_DEF[key]);
@@ -5106,6 +5129,7 @@ body.menuopen{overflow:hidden}
     if(!t || !t.closest) return;
     if((b = t.closest('[data-lkacc]'))){ lookSet('accent', b.getAttribute('data-lkacc')); return; }
     if((b = t.closest('[data-lkreset]'))){ if(!b.disabled) lookReset(b.getAttribute('data-lkreset')); return; }
+    if((b = t.closest('[data-lkth]'))){ lookSet('theme', b.getAttribute('data-lkth')); return; }
     if((b = t.closest('[data-lkst]'))){ lookSet('st', b.getAttribute('data-lkst')); return; }
     if((b = t.closest('[data-lkai]'))){ lookSet('ai', b.getAttribute('data-lkai')); return; }
     if((b = t.closest('[data-lkcd]'))){ lookSet('cd', b.getAttribute('data-lkcd')); }
@@ -5323,6 +5347,9 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.10-22', items:[
+      {t:'Hell, Dunkel oder Automatisch', x:'Die Darstellung lässt sich dauerhaft einstellen: Automatisch (folgt deinem Gerät), Hell oder Dunkel. Tippe oben auf das Sonne- oder Mond-Symbol, um durchzuschalten, oder wähle es unter „Individualisierung“.', tab:'home', sel:'#themeBtn'}
+    ]},
     {v:'2026.10.10-21', items:[
       {t:'Ausblenden im Lernzentrum', x:'Lernpakete (unter „Pakete“) und einzelne Einträge (beim Aufklappen) lassen sich ausblenden, ohne sie zu löschen. Ausgeblendetes taucht nicht in Liste, Abfrage und Chat-Daten auf. Über „Ausgeblendete“ siehst du es und kannst es wieder einblenden.', tab:'home', sel:'#nbBtn'}
     ]},

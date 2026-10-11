@@ -8682,7 +8682,7 @@ body.menuopen{overflow:hidden}
         }
       }).catch(function(){});
       document.addEventListener('visibilitychange', function(){ if(!document.hidden && pushCfg) pushStatus(false); });
-      setInterval(function(){ if(!document.hidden && pushCfg && !isIns()) pushStatus(true); }, 30000);
+      setInterval(function(){ if(!document.hidden && pushCfg && !isIns()) pushStatus(true); }, 10000);
       if(navigator.serviceWorker && navigator.serviceWorker.addEventListener){
         navigator.serviceWorker.addEventListener('message', function(e){
           if(e && e.data && e.data.sf === 'refresh'){ if(pushCfg) pushStatus(true); }

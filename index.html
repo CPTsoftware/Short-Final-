@@ -81,7 +81,7 @@ h2{font-size:14.5px;font-weight:700;margin:0 0 12px}
 .papi .lights i{width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 0 10px 2px rgba(255,255,255,.55)}
 .papi .lights i.r{background:#ff3d4f;box-shadow:0 0 10px 2px rgba(255,61,79,.6)}
 .papi .plbl{font-size:12.5px;color:var(--muted)}
-.papi-tile{display:flex;justify-content:center;padding:16px 10px}
+.papi-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px}
 
 /* Flugplan-Streifen */
 .barlbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
@@ -352,6 +352,8 @@ body.nbopen{overflow:hidden}
 .addq.lz{background:#f09d37;border-color:#f09d37;color:#1b1204;display:flex;flex-direction:column;align-items:center;gap:1px;padding:11px 18px;animation:lzpulse 3.4s ease-in-out infinite}
 .addq.lz b{font-size:16px;letter-spacing:.02em}
 .addq.lz span{font-size:12px;font-weight:600;opacity:.8}
+#bdBtn{background:transparent;color:var(--text);border:1.5px solid var(--accent);display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 18px}#bdBtn b{font-size:16px;letter-spacing:.02em}#bdBtn span{font-size:12px;font-weight:600;opacity:.75}
+.bdg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px}.bdc{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px;border:1px solid var(--line);border-radius:14px;min-width:0}.bdc b{font-size:13.5px;overflow-wrap:anywhere}.bdc.off{opacity:.78}.bdc.fresh{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}.bdc .small{font-size:11.5px;line-height:1.3}.bdh{margin:12px 0 0;font-size:14px}.bdnew{font-size:10.5px;font-weight:800;color:var(--accent);letter-spacing:.06em}
 @keyframes lzpulse{0%,100%{box-shadow:0 0 0 0 rgba(240,157,55,0);filter:brightness(1)}50%{box-shadow:0 0 20px 3px rgba(240,157,55,.55);filter:brightness(1.07)}}
 @media (prefers-reduced-motion: reduce){.addq.lz{animation:none}}
 .nbdocs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
@@ -585,7 +587,7 @@ body.menuopen{overflow:hidden}
   .grid{grid-template-columns:repeat(4,1fr)}
   #tabHome,#tabMain{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #tabHome>*,#tabMain>*{margin:0 !important}
-  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#frBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
+  #tabHome>#cdCard,#tabHome>#addQBtn,#tabHome>#nbBtn,#tabHome>#frBtn,#tabHome>#bdBtn,#tabHome>#greet,#tabHome>#papiHome,#tabHome>#homeStats,#tabMain>#verdict,#tabMain>#routeCard,#tabMain>#stats,#tabMain>.card:last-child{grid-column:1 / -1}
   #subjBox{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
   #subjBox>.card{margin:0}
   .sheetov{align-items:center}
@@ -695,6 +697,7 @@ body.menuopen{overflow:hidden}
     <button class="addq" id="addQBtn">Fragen Tracken</button>
     <button class="addq lz" id="nbBtn"><b>Lernzentrum</b><span>Notizen und Lernpakete</span></button>
     <button class="addq" id="frBtn"><b>Freunde</b><span>Fortschritt vergleichen</span></button>
+    <button class="addq" id="bdBtn"><b>Abzeichen</b><span id="bdSub">&nbsp;</span></button>
     <div class="stat papi-tile" id="papiHome" style="margin-bottom:10px" hidden></div>
     <div class="coach" id="coach" hidden></div>
     <div class="grid" id="homeStats" style="margin-bottom:12px"></div>
@@ -732,7 +735,7 @@ body.menuopen{overflow:hidden}
       <svg class="plane" id="barPlane" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 12 5.2 10.9 19.5 10.9C22.2 10.9 23.4 11.6 23.4 12S22.2 13.1 19.5 13.1L5.2 13.1ZM10.8 10.9 7.6 3 10.2 3 16 10.9ZM10.8 13.1 7.6 21 10.2 21 16 13.1ZM3.9 10.9 2.2 7.6 3.9 7.6 6.2 10.9ZM3.9 13.1 2.2 16.4 3.9 16.4 6.2 13.1Z"/></svg>
       <b class="bug" id="barPlan"></b>
     </div>
-    <div class="small">Flugzeug = dein Stand · Raute = Soll heute</div>
+    <div class="small">Flugzeug = dein Stand · Raute = Tagesziel heute</div>
   </div>
 
   <div class="grid" id="stats" style="margin-bottom:12px"></div>
@@ -740,7 +743,7 @@ body.menuopen{overflow:hidden}
   <div class="card chartwrap">
     <h2>Verlauf</h2>
     <div id="chart"></div>
-    <div class="small">Cyan gestrichelt = Soll-Linie · Magenta = dein Stand · Magenta gepunktet = Prognose</div>
+    <div class="small">Cyan gestrichelt = Plan ab jetzt (Tagesziel) · Cyan blass = ursprüngliche Soll-Linie · Magenta = dein Stand · Magenta gepunktet = Prognose</div>
   </div>
 
   <div class="card">
@@ -975,13 +978,13 @@ body.menuopen{overflow:hidden}
   }
   /* Tagesziel: Rest ab gestern geteilt durch verbleibende Tage (Rueckstand ist drin) */
   function dayGoal(es, today, endD){
-    var yN = null, i;
-    for(i = es.length - 1; i >= 0; i--){ if(parse(es[i].d) < today){ yN = es[i].n; break; } }
-    if(yN === null) yN = es[0].n;
+    var yN = null, yD = null, i;
+    for(i = es.length - 1; i >= 0; i--){ if(parse(es[i].d) < today){ yN = es[i].n; yD = parse(es[i].d); break; } }
+    if(yN === null){ yN = es[0].n; yD = parse(es[0].d); }
     var last = es[es.length - 1];
     var clicked = parse(last.d).getTime() === today.getTime() ? Math.max(0, last.n - yN) : 0;
     var goal = Math.max(0, S.target - yN) / Math.max(1, days(today, endD));
-    return {goal:goal, clicked:clicked, left:Math.max(0, Math.ceil(goal - clicked - 0.0001)), yN:yN};
+    return {goal:goal, clicked:clicked, left:Math.max(0, Math.ceil(goal - clicked - 0.0001)), yN:yN, yD:yD};
   }
   function projDate(remaining, pace, lastD){
     if(!(pace > 0)) return null;
@@ -1031,11 +1034,11 @@ body.menuopen{overflow:hidden}
     }
     $('verdictTxt').innerHTML = vt;
     runCountUps($('verdictTxt'));
-    papiMount('papiMain', done ? null : (planPerDay > 0 ? diff / planPerDay : 0), 'main');
+    papiMount('papiMain', done ? null : glideR(last.n, dg), 'main', dg.goal);
 
     // bar
     var pct = Math.min(100, last.n/S.target*100);
-    var pp = Math.min(100, Math.max(0, planToday/S.target*100));
+    var pp = Math.min(100, Math.max(0, (dg.yN + dg.goal)/S.target*100));
     $('barFill').style.width = pct+'%';
     $('barPlan').style.left = pp + '%';
     $('barPlane').style.left = pct + '%';
@@ -1080,7 +1083,8 @@ body.menuopen{overflow:hidden}
     }
     g += '<text x="'+L+'" y="'+(H-8)+'" font-size="10" fill="var(--muted)">'+fd(baseD)+'</text>';
     g += '<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" font-size="10" fill="var(--muted)">'+fd(endD)+'</text>';
-    g += '<line x1="'+X(baseD)+'" y1="'+Y(base.n)+'" x2="'+X(endD)+'" y2="'+Y(S.target)+'" stroke="var(--cy)" stroke-width="1.8" stroke-dasharray="5 4"/>';
+    g += '<line x1="'+X(baseD)+'" y1="'+Y(base.n)+'" x2="'+X(endD)+'" y2="'+Y(S.target)+'" stroke="var(--cy)" stroke-width="1.2" stroke-dasharray="2 4" stroke-opacity=".4"/>';
+    if(!done) g += '<line x1="'+X(dg.yD)+'" y1="'+Y(dg.yN)+'" x2="'+X(endD)+'" y2="'+Y(S.target)+'" stroke="var(--cy)" stroke-width="2" stroke-dasharray="5 4"/>';
     var tx = X(today);
     if(today>=baseD && today<=endD){
       g += '<line x1="'+tx+'" x2="'+tx+'" y1="'+T+'" y2="'+(T+ph)+'" stroke="var(--text)" stroke-opacity=".25"/>';
@@ -1122,6 +1126,7 @@ body.menuopen{overflow:hidden}
     $('setTarget').value = S.target;
     $('setDeadline').value = S.deadline;
     maybeCelebrate();
+    bdSoon();
   }
 
   S = load();
@@ -1195,6 +1200,7 @@ body.menuopen{overflow:hidden}
               look: (d.look && typeof d.look === 'object') ? JSON.parse(JSON.stringify(d.look)) : S.look,
               milestone: Math.max(typeof d.milestone === 'number' ? d.milestone : 0, S.milestone || 0),
               allGreen: (typeof d.allGreen === 'boolean') ? d.allGreen : S.allGreen,
+              badges: bdMerge(S.badges, d.badges),
               papi: (function(){
                 var a = (d.papi && typeof d.papi === 'object') ? JSON.parse(JSON.stringify(d.papi)) : null, b = S.papi || null;
                 if(!a) return b;
@@ -1274,7 +1280,7 @@ body.menuopen{overflow:hidden}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null,
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null,
       share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
     }));
   }
@@ -1773,6 +1779,15 @@ body.menuopen{overflow:hidden}
   var PAPI_W = {bg:'#fff', gl:'rgba(255,255,255,.55)'}, PAPI_R = {bg:'#ff3d4f', gl:'rgba(255,61,79,.6)'};
   var PAPI_LABELS = ['Unter dem Gleitpfad', 'Leicht unter dem Gleitpfad', 'Auf dem Gleitpfad', 'Leicht über dem Gleitpfad', 'Über dem Gleitpfad'];
   function papiW(r){ return r >= 1 ? 4 : (r >= 0.3 ? 3 : (r > -0.3 ? 2 : (r > -1 ? 1 : 0))); }
+  /* Lage zum aktuellen Plan: Ziel fuer heute = Stand von gestern + Tagesziel, Einheit = ein Tagesziel */
+  function glideR(lastN, dg){ return dg.goal > 0 ? (lastN - (dg.yN + dg.goal)) / dg.goal : 0; }
+  /* Fragen bis zum naechsten Licht */
+  function glideNext(w, r, goal){
+    if(w >= 4 || !(goal > 0)) return null;
+    var thr = [0, -1, -0.3, 0.3, 1][w + 1], strict = w < 2, need = (thr - r) * goal;
+    need = strict ? Math.floor(need + 1e-9) + 1 : Math.ceil(need - 1e-9);
+    return Math.max(1, need);
+  }
 
   /* Plant das Flackern einmal pro Zustand und Tab. Solange sich der Zustand nicht ändert, bleibt der Plan gleich,
      damit ein späteres Neuzeichnen (z. B. nach dem Laden der Daten) die Animation nicht abbricht. */
@@ -1964,7 +1979,7 @@ body.menuopen{overflow:hidden}
     return '<div class="papi" role="img" aria-label="' + lab + '">' + inner + '<div class="plbl">' + lab + '</div></div>';
   }
   /* Zeichnet die Lichter nur neu, wenn sich Zustand oder Animationsplan geändert haben */
-  function papiMount(id, r, ctx){
+  function papiMount(id, r, ctx, goal){
     var el = $(id);
     if(!el || typeof PAPI_LABELS === 'undefined' || !PAPI_LABELS) return;
     if(r === null){ el.innerHTML = ''; el.removeAttribute('data-sig'); el.hidden = true; return; }
@@ -1978,9 +1993,15 @@ body.menuopen{overflow:hidden}
     }
     var w = papiW(r), pl = papiPlan(w, ctx);
     var sig = lookSt() + ':' + w + ':' + pl.lo + ':' + pl.hi + ':' + pl.x.toFixed(2) + ':' + (pl.vis ? 1 : 0);
-    if(el.getAttribute('data-sig') === sig && el.firstChild) return;
-    el.setAttribute('data-sig', sig);
-    el.innerHTML = papiHTML(w, pl);
+    if(el.getAttribute('data-sig') !== sig || !el.firstChild){
+      el.setAttribute('data-sig', sig);
+      el.innerHTML = papiHTML(w, pl);
+    }
+    var nx = glideNext(w, r, goal), ne = el.querySelector('.gpnext');
+    var txt = nx === null ? (w >= 4 ? 'Ganz oben: mehr als ein Tagesziel voraus.' : '') : 'Noch +' + fmt(nx) + ' Fragen bis „' + stLabel(lookSt(), w + 1, false) + '“';
+    if(!txt){ if(ne && ne.parentNode) ne.parentNode.removeChild(ne); return; }
+    if(!ne){ ne = document.createElement('div'); ne.className = 'small gpnext'; ne.style.cssText = 'text-align:center;margin-top:6px;width:100%'; el.appendChild(ne); }
+    if(ne.textContent !== txt) ne.textContent = txt;
   }
   function homeNums(){
     var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
@@ -1995,7 +2016,7 @@ body.menuopen{overflow:hidden}
     var remaining = Math.max(0, S.target - last.n);
     var elapsed = days(baseD, lastD);
     var dgn = dayGoal(es, today, endD);
-    return {goal:dgn.goal, clicked:dgn.clicked, paceR:tempoRec(es, lastD),
+    return {goal:dgn.goal, clicked:dgn.clicked, rGlide:glideR(last.n, dgn), paceR:tempoRec(es, lastD),
       base:base, last:last, lastD:lastD, today:today, planPerDay:span / total,
       planToday:plan(today), diff:last.n - plan(lastD),
       needToday:dgn.left,
@@ -2134,12 +2155,13 @@ body.menuopen{overflow:hidden}
       ['Ø Fächer-Score (' + scs.length + ' / ' + SUBJECTS.length + ')', '<span class="' + cls(avg) + '">' + (avg === null ? '–' : avg.toFixed(1).replace('.', ',') + ' %') + '</span>'],
       ['Aktuelles Tempo', n.paceR > 0 ? fmt(n.paceR) + ' / Tag' : '–']
     ];
-    papiMount('papiHome', n.last.n >= S.target ? null : (n.planPerDay > 0 ? n.diff / n.planPerDay : 0), 'home');
+    papiMount('papiHome', n.last.n >= S.target ? null : n.rGlide, 'home', n.goal);
     $('homeStats').innerHTML = st.map(function(x){
       return '<div class="stat"><div class="v">' + x[1] + '</div><div class="k">' + x[0] + '</div></div>';
     }).join('');
     runCountUps($('homeStats'));
     coachRender();
+    bdSoon();
   }
 
   function aiStamp(ts){
@@ -3234,6 +3256,156 @@ body.menuopen{overflow:hidden}
     }
   }
 
+
+  /* ---------- Abzeichen ---------- */
+  var BD_LS = KEY + '-bdseen', BD_T = {b:'#cd7f32', s:'#aab4c4', g:'#f2b705'}, bdT = null;
+  var BD_G = {
+    plane:'<path fill="currentColor" d="M2 12 5.2 10.9 19.5 10.9C22.2 10.9 23.4 11.6 23.4 12S22.2 13.1 19.5 13.1L5.2 13.1ZM10.8 10.9 7.6 3 10.2 3 16 10.9ZM10.8 13.1 7.6 21 10.2 21 16 13.1ZM3.9 10.9 2.2 7.6 3.9 7.6 6.2 10.9ZM3.9 13.1 2.2 16.4 3.9 16.4 6.2 13.1Z"/>',
+    star:'<polygon fill="currentColor" points="12,2.5 14.8,9 21.5,9.6 16.4,14 18,20.8 12,17.2 6,20.8 7.6,14 2.5,9.6 9.2,9"/>',
+    bolt:'<path fill="currentColor" d="M13 2 5 13.5h5.5L9.5 22 19 9.8h-5.7z"/>',
+    flame:'<path fill="currentColor" d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z"/>',
+    target:'<g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></g><circle cx="12" cy="12" r="1.8" fill="currentColor"/>',
+    book:'<path fill="currentColor" d="M4 4h6.5a2 2 0 0 1 1.5.7A2 2 0 0 1 13.5 4H20v14.5h-6.5a2 2 0 0 0-1.5.8 2 2 0 0 0-1.5-.8H4z"/>',
+    check:'<path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.5l5 5 10-11"/>',
+    flag:'<path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 3v18"/><path fill="currentColor" d="M6.5 4h12l-3.2 4 3.2 4h-12z"/>',
+    cloud:'<path fill="currentColor" d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5 4.3 4.3 0 0 1 17.5 18z"/>',
+    people:'<circle cx="8.5" cy="8" r="3.2" fill="currentColor"/><circle cx="16.5" cy="9" r="2.6" fill="currentColor"/><path fill="currentColor" d="M2.5 19c0-3.4 2.7-5.5 6-5.5s6 2.1 6 5.5zM14.5 19c.1-2 .9-3.3 2-4 3 0 5 1.6 5 4z"/>'
+  };
+  var BADGES = [];
+  function bdDef(id, cat, name, desc, g, tier, test, prog, web){ BADGES.push({id:id, cat:cat, name:name, desc:desc, g:g, tier:tier, test:test, prog:prog || null, web:!!web}); }
+  bdDef('q1', 'q', 'Rollbahn', '1.000 Fragen geklickt', 'plane', 'b', function(c){ return c.total >= 1000; }, function(c){ return [c.total, 1000]; });
+  bdDef('q5', 'q', 'Abgehoben', '5.000 Fragen geklickt', 'plane', 'b', function(c){ return c.total >= 5000; }, function(c){ return [c.total, 5000]; });
+  bdDef('q10', 'q', 'Steigflug', '10.000 Fragen geklickt', 'plane', 's', function(c){ return c.total >= 10000; }, function(c){ return [c.total, 10000]; });
+  bdDef('qh', 'q', 'Reiseflughöhe', 'Die Hälfte deines Fragenziels', 'plane', 's', function(c){ return c.total >= c.target / 2; }, function(c){ return [c.total, Math.round(c.target / 2)]; });
+  bdDef('q25', 'q', 'Anflug', '25.000 Fragen geklickt', 'plane', 's', function(c){ return c.total >= 25000; }, function(c){ return [c.total, 25000]; });
+  bdDef('q30', 'q', 'Final', '30.000 Fragen geklickt', 'plane', 'g', function(c){ return c.total >= 30000; }, function(c){ return [c.total, 30000]; });
+  bdDef('qz', 'q', 'Gelandet', 'Fragenziel erreicht', 'star', 'g', function(c){ return c.total >= c.target; }, function(c){ return [c.total, c.target]; });
+  bdDef('s3', 's', 'Warmlaufen', '3 Tage in Folge Fragen geklickt', 'flame', 'b', function(c){ return c.maxRun >= 3; }, function(c){ return [c.maxRun, 3]; });
+  bdDef('s7', 's', 'Wochenflug', '7 Tage in Folge', 'flame', 's', function(c){ return c.maxRun >= 7; }, function(c){ return [c.maxRun, 7]; });
+  bdDef('s14', 's', 'Dauerläufer', '14 Tage in Folge', 'flame', 's', function(c){ return c.maxRun >= 14; }, function(c){ return [c.maxRun, 14]; });
+  bdDef('s30', 's', 'Unaufhaltsam', '30 Tage in Folge', 'flame', 'g', function(c){ return c.maxRun >= 30; }, function(c){ return [c.maxRun, 30]; });
+  bdDef('d5', 's', 'Starker Tag', '500 Fragen an einem Tag', 'bolt', 's', function(c){ return c.bestDay >= 500; }, function(c){ return [c.bestDay, 500]; });
+  bdDef('d10', 's', 'Tausender', '1.000 Fragen an einem Tag', 'bolt', 'g', function(c){ return c.bestDay >= 1000; }, function(c){ return [c.bestDay, 1000]; });
+  bdDef('g2', 'g', 'Auf dem Gleitpfad', 'Auf dem Gleitpfad oder darüber', 'target', 'b', function(c){ return !c.standby && c.w >= 2; });
+  bdDef('g4', 'g', 'Über dem Gleitpfad', 'Mehr als ein Tagesziel voraus', 'target', 'g', function(c){ return !c.standby && c.w >= 4; });
+  bdDef('f1', 'f', 'Bestanden', 'Ein Fach über ' + FC_PASS + ' %', 'check', 'b', function(c){ return c.pass >= 1; });
+  bdDef('f90', 'f', 'Mit Auszeichnung', 'Ein Fach über 90 %', 'star', 'g', function(c){ return c.top >= 90; });
+  bdDef('f3', 'f', 'Dreier-Crew', 'Drei Fächer über ' + FC_PASS + ' %', 'check', 's', function(c){ return c.pass >= 3; }, function(c){ return [c.pass, 3]; });
+  bdDef('fa', 'f', 'Volle Besatzung', 'Alle Fächer über ' + FC_PASS + ' %', 'check', 'g', function(c){ return c.nsub > 0 && c.pass >= c.nsub; }, function(c){ return [c.pass, c.nsub]; });
+  bdDef('r10', 'r', 'Berichte-Sammler', '10 Berichte abgegeben', 'book', 'b', function(c){ return c.reps >= 10; }, function(c){ return [c.reps, 10]; });
+  bdDef('r50', 'r', 'Protokollführer', '50 Berichte abgegeben', 'book', 's', function(c){ return c.reps >= 50; }, function(c){ return [c.reps, 50]; });
+  bdDef('sim', 'r', 'Prüfungsreif', 'Simulation mit mindestens ' + FC_PASS + ' %', 'check', 'g', function(c){ return c.simOk; });
+  bdDef('n1', 'n', 'Notizbuch', 'Ersten Lernzentrum-Eintrag angelegt', 'book', 'b', function(c){ return c.notes >= 1; });
+  bdDef('n50', 'n', 'Wissensspeicher', '50 Einträge im Lernzentrum', 'book', 's', function(c){ return c.notes >= 50; }, function(c){ return [c.notes, 50]; });
+  bdDef('e30', 'x', 'Letzte Meile', 'Noch 30 Tage bis zur Prüfung', 'flag', 'b', function(c){ return c.toExam !== null && c.toExam <= 30 && c.toExam >= 0; });
+  bdDef('wc', 'x', 'Cloud-Pilot', 'Cloud-Synchronisierung verbunden', 'cloud', 'b', function(c){ return c.cloud; }, null, true);
+  bdDef('wf', 'x', 'Co-Pilot', 'Einen Freund hinzugefügt', 'people', 'b', function(c){ return c.friends >= 1; }, null, true);
+  bdDef('ws', 'x', 'Funkverkehr', 'Eigene Freigabe gestartet', 'people', 's', function(c){ return c.shared; }, null, true);
+  var BD_CATS = [['q', 'Fragen'], ['s', 'Serie und Tempo'], ['g', 'Gleitpfad'], ['f', 'Fächer'], ['r', 'Berichte'], ['n', 'Lernzentrum'], ['x', 'Sonstiges']];
+  function bdWeb(){ return (typeof STANDALONE !== 'undefined' && STANDALONE); }
+  function bdList(){ var web = bdWeb(); return BADGES.filter(function(b){ return !b.web || web; }); }
+  function bdMerge(a, b){
+    var out = {};
+    [a, b].forEach(function(o){
+      if(!o || typeof o !== 'object') return;
+      Object.keys(o).forEach(function(k){
+        if(!/^[a-z0-9]{1,8}$/.test(k) || typeof o[k] !== 'string') return;
+        if(!out[k] || o[k] < out[k]) out[k] = o[k];
+      });
+    });
+    return out;
+  }
+  function bdSvg(b, on, px){
+    var col = on ? BD_T[b.tier] : 'var(--muted)';
+    return '<svg class="bdm' + (on ? '' : ' off') + '" width="' + px + '" height="' + px + '" style="width:' + px + 'px;height:' + px + 'px;max-width:none;flex:none" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="' + (on ? '#141c33' : 'var(--bg)') + '" stroke="' + col + '" stroke-width="' + (on ? 4 : 2.5) + '"/>' +
+      (on ? '<circle cx="32" cy="32" r="23" fill="none" stroke="' + col + '" stroke-opacity=".35" stroke-width="1.5"/>' : '') +
+      '<g transform="translate(16 16) scale(1.33)" style="color:' + col + '" opacity="' + (on ? 1 : 0.45) + '">' + BD_G[b.g] + '</g></svg>';
+  }
+  function bdCtx(){
+    var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }), last = es[es.length - 1];
+    var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var c = {total:last.n, target:S.target, n:homeNums()}, per = {}, i, j;
+    for(i = 1; i < es.length; i++){
+      var a = parse(es[i - 1].d), b = parse(es[i].d), dd = Math.max(1, days(a, b)), pd = Math.max(0, (es[i].n - es[i - 1].n) / dd);
+      for(j = 0; j < dd && j < 400; j++) per[iso(new Date(b.getFullYear(), b.getMonth(), b.getDate() - j))] = pd;
+    }
+    var dt = parse(es[0].d), end = parse(last.d), run = 0, guard = 0;
+    c.maxRun = 0; c.bestDay = 0;
+    while(dt <= end && guard++ < 1500){
+      var v = per[iso(dt)] || 0;
+      if(v > 0){ run++; if(run > c.maxRun) c.maxRun = run; }else run = 0;
+      if(v > c.bestDay) c.bestDay = v;
+      dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+    }
+    c.bestDay = Math.round(c.bestDay);
+    var yest = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+    c.runNow = end >= yest ? run : 0;
+    c.standby = stIsStandby();
+    c.w = papiW(c.n.rGlide);
+    c.nsub = SUBJECTS.length; c.pass = 0; c.top = 0; c.reps = 0; c.simOk = false;
+    SUBJECTS.forEach(function(sj){
+      var a2 = analyze(sj.id), sb = getSub(sj.id);
+      if(a2.sc !== null){ if(a2.sc >= FC_PASS) c.pass++; if(a2.sc > c.top) c.top = a2.sc; }
+      c.reps += sb.rep.length + sb.last.length + sb.sim.length + sb.gen.length;
+      if(sb.sim.some(function(e){ return e.n > 0 && e.ok / e.n * 100 >= FC_PASS; })) c.simOk = true;
+    });
+    c.notes = 0;
+    try{ Object.keys(NB.packs).forEach(function(k){ var p = NB.packs[k]; if(p && Array.isArray(p.items)) c.notes += p.items.length; }); }catch(e){}
+    try{ var ex = examDate(); c.toExam = days(today, new Date(ex.getFullYear(), ex.getMonth(), ex.getDate())); }catch(e){ c.toExam = null; }
+    c.cloud = !!(typeof syncCfg !== 'undefined' && syncCfg && syncCfg.gistId);
+    c.friends = (S.friends && S.friends.length) || 0;
+    c.shared = !!(S.share && S.share.gist);
+    return c;
+  }
+  function bdSeen(){ try{ var o = JSON.parse(localStorage.getItem(BD_LS) || 'null'); return (o && typeof o === 'object') ? o : null; }catch(e){ return null; } }
+  function bdSeenSet(o){ try{ localStorage.setItem(BD_LS, JSON.stringify(o)); }catch(e){} }
+  function bdBtnUpdate(){
+    var el = $('bdSub'); if(!el || !S.badges) return;
+    var list = bdList(), got = list.filter(function(b){ return S.badges[b.id]; }).length, seen = bdSeen() || {}, fresh = list.filter(function(b){ return S.badges[b.id] && !seen[b.id]; }).length;
+    var t = got + ' von ' + list.length + ' freigeschaltet' + (fresh ? ' · ' + fresh + ' neu' : '');
+    if(el.textContent !== t) el.textContent = t;
+  }
+  function bdCheck(){
+    if(!S || !S.entries || !S.entries.length) return;
+    var c; try{ c = bdCtx(); }catch(e){ return; }
+    var first = !S.badges || typeof S.badges !== 'object';
+    if(first) S.badges = {};
+    var today = iso(new Date()), nw = [];
+    bdList().forEach(function(b){
+      if(S.badges[b.id]) return;
+      var ok = false; try{ ok = !!b.test(c); }catch(e){}
+      if(ok){ S.badges[b.id] = today; nw.push(b); }
+    });
+    if(nw.length){
+      if(first){ var sn = {}; nw.forEach(function(b){ sn[b.id] = 1; }); var old = bdSeen() || {}; Object.keys(old).forEach(function(k){ sn[k] = 1; }); bdSeenSet(sn); }
+      save();
+      if(!first) toast(nw.length === 1 ? 'Neues Abzeichen: ' + nw[0].name : nw.length + ' neue Abzeichen: ' + nw.slice(0, 3).map(function(b){ return b.name; }).join(', ') + (nw.length > 3 ? ' …' : ''));
+    }
+    bdBtnUpdate();
+  }
+  function bdSoon(){ clearTimeout(bdT); bdT = setTimeout(bdCheck, 1500); }
+  function bdOpen(){
+    bdCheck();
+    var c = bdCtx(), list = bdList(), seen = bdSeen() || {}, bd = S.badges || {}, got = 0;
+    var h = '<div class="shead"><h2>Abzeichen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>';
+    list.forEach(function(b){ if(bd[b.id]) got++; });
+    h += '<div class="small">' + got + ' von ' + list.length + ' freigeschaltet · längste Serie ' + c.maxRun + (c.maxRun === 1 ? ' Tag' : ' Tage') + (c.runNow ? ' · aktuell ' + c.runNow : '') + '</div>';
+    BD_CATS.forEach(function(ct){
+      var items = list.filter(function(b){ return b.cat === ct[0]; });
+      if(!items.length) return;
+      h += '<h3 class="bdh">' + ct[1] + '</h3><div class="bdg">' + items.map(function(b){
+        var on = !!bd[b.id], fresh = on && !seen[b.id], pr = null;
+        if(!on && b.prog){ try{ pr = b.prog(c); }catch(e){} }
+        var sub = on ? 'seit ' + fd(parse(bd[b.id])) + parse(bd[b.id]).getFullYear() : (pr ? fmt(Math.round(Math.min(pr[0], pr[1]))) + ' / ' + fmt(Math.round(pr[1])) : 'noch gesperrt');
+        return '<div class="bdc ' + (on ? 'on' : 'off') + (fresh ? ' fresh' : '') + '">' + bdSvg(b, on, 56) + (fresh ? '<span class="bdnew">NEU</span>' : '') + '<b>' + esc(b.name) + '</b><span class="small">' + esc(b.desc) + '</span><span class="small">' + esc(sub) + '</span></div>';
+      }).join('') + '</div>';
+    });
+    openSheet(h);
+    var sn = {}; Object.keys(bd).forEach(function(k){ sn[k] = 1; }); bdSeenSet(sn); bdBtnUpdate();
+  }
+  var bdB = $('bdBtn');
+  if(bdB) bdB.addEventListener('click', bdOpen);
+
   /* Nach jedem Eintrag: Flugzeug sucht den Gleitpfad und bleibt auf der Höhe, die das PAPI anzeigt */
   var GLIDE_OFF = [22, 11, 0, -16, -36];
   var GLIDE_TXT = [
@@ -3288,7 +3460,7 @@ body.menuopen{overflow:hidden}
     if(stIsStandby()) return;
     var n = homeNums();
     if(n.last.n >= S.target) return;
-    var w = papiW(n.planPerDay > 0 ? n.diff / n.planPerDay : 0);
+    var w = papiW(n.rGlide);
     enqueueOverlay(function(done){ showGlide(w, done); }, 6400);
   }
 
@@ -3452,6 +3624,7 @@ body.menuopen{overflow:hidden}
     if(typeof o.milestone === 'number') S.milestone = o.milestone; else delete S.milestone;
     S.papi = (o.papi && typeof o.papi === 'object') ? clone(o.papi) : null;
     if(typeof o.allGreen === 'boolean') S.allGreen = o.allGreen; else delete S.allGreen;
+    S.badges = bdMerge(S.badges, o.badges);
     ensureS();
     save();
     render(); renderSubjects(); renderHome();
@@ -5393,6 +5566,11 @@ body.menuopen{overflow:hidden}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.11-25', items:[
+      {t:'Plan-Linie, Raute und Gleitpfad', x:'Die gestrichelte Linie im Verlauf führt jetzt von deinem Stand direkt zum Ziel (dein Tagesziel als Steigung), die ursprüngliche Soll-Linie bleibt blass im Hintergrund. Die Raute auf der Flugroute und die Gleitpfadanzeige richten sich nach deinem Tagesziel für heute. Darunter steht, wie viele Fragen noch bis zum nächsten Licht fehlen.', tab:'main', sel:'#chart'},
+      {t:'Abzeichen', x:'Auf dem Startbildschirm findest du jetzt „Abzeichen“: Meilensteine bei Fragen, Serien, Gleitpfad, Fächern, Berichten und Lernzentrum. Neue Abzeichen werden mit einem Hinweis freigeschaltet, gesperrte zeigen deinen Fortschritt.', tab:'home', sel:'#bdBtn'},
+      {t:'Abzeichen mit Freunden', x:'In „Freunde“ kannst du freigeben, welche Abzeichen du hast, und siehst im Vergleich, wer welche hat. Erhält ein Freund ein neues Abzeichen, bekommst du beim Öffnen oder Aktualisieren der App einen Hinweis.', web:true, tab:'home', sel:'#frBtn'}
+    ]},
     {v:'2026.10.11-24', items:[
       {t:'Freunde vergleichen', x:'Unter „Freunde“ auf dem Startbildschirm gibst du einen Freigabe-Code weiter und siehst den Fortschritt deiner Freunde im Vergleich zu deinem. Du wählst selbst, was sichtbar ist (Stand, Tempo, Score, Fächer, Verlauf). Deinen Token gibst du nie weiter. Die Daten aktualisieren sich beim Öffnen der App und über „Aktualisieren“.', web:true, tab:'home', sel:'#frBtn'},
       {t:'Pakete abgleichen mit Änderungsverlauf', x:'Unter „Pakete“ zeigt „Änderungen“, was bei einem geteilten Lernpaket neu oder anders ist. Du übernimmst Änderungen einzeln oder alle. Der Verlauf merkt sich, was wann übernommen oder veröffentlicht wurde.', web:true, menu:false, tab:'home', sel:'#nbBtn'},
@@ -5605,7 +5783,7 @@ body.menuopen{overflow:hidden}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.share ? [S.share.gist, S.share.f] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
+  function dataHash(){ return JSON.stringify([S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.share ? [S.share.gist, S.share.f] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S) return;
     var h = dataHash();
@@ -5670,8 +5848,9 @@ body.menuopen{overflow:hidden}
       if(typeof d.uname === 'string') S.uname = d.uname;
       if(d.look && typeof d.look === 'object') S.look = cp(d.look);
       if(d.ai) S.ai = cp(d.ai);
+      S.badges = bdMerge(S.badges, d.badges);
       if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || ''}; }
-      if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0}; }); }
+      if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen}; }); }
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
       S.updatedAt = d.updatedAt || Date.now();
       delete S.fresh;
@@ -6015,7 +6194,8 @@ body.menuopen{overflow:hidden}
   })();
   function frCfg(){
     if(!S.share || typeof S.share !== 'object') S.share = {gist:null};
-    if(!S.share.f || typeof S.share.f !== 'object') S.share.f = {stand:true, tempo:true, score:true, faecher:false, verlauf:false};
+    if(!S.share.f || typeof S.share.f !== 'object') S.share.f = {stand:true, tempo:true, score:true, faecher:false, verlauf:false, badges:true};
+    if(typeof S.share.f.badges !== 'boolean') S.share.f.badges = !S.share.gist;
     if(!Array.isArray(S.friends)) S.friends = [];
     return S.share;
   }
@@ -6023,7 +6203,7 @@ body.menuopen{overflow:hidden}
   function frTxt(v, n){ return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, n); }
   function frDate(v){ return (typeof v === 'string' && /^\d{4}-\d\d-\d\d$/.test(v)) ? v : null; }
   function frMine(all){
-    var c = frCfg(), f = all ? {stand:1, tempo:1, score:1, faecher:1, verlauf:0} : c.f, n = homeNums();
+    var c = frCfg(), f = all ? {stand:1, tempo:1, score:1, faecher:1, verlauf:0, badges:1} : c.f, n = homeNums();
     var o = {format:'short-final-share', v:1, name:frTxt(S.uname, 24) || 'Pilot', t:Date.now()};
     if(f.stand){ o.stand = n.last.n; o.stand_d = n.last.d; o.ziel = S.target; o.ziel_datum = S.deadline; o.diff = Math.round(n.diff); }
     if(f.tempo){ o.tempo = Math.round(n.paceR); o.tempo_gesamt = Math.round(n.pace); }
@@ -6036,6 +6216,7 @@ body.menuopen{overflow:hidden}
     if(f.score){ o.score = scs.length ? Math.round(scs.reduce(function(a, b){ return a + b; }, 0) / scs.length * 10) / 10 : null; o.score_n = scs.length; }
     if(f.faecher) o.faecher = fa;
     if(f.verlauf) o.verlauf = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90).map(function(e){ return {d:e.d, n:e.n}; });
+    if(f.badges){ var bd0 = bdMerge(S.badges, null); o.badges = Object.keys(bd0).map(function(k){ return {id:k, d:bd0[k]}; }); }
     return o;
   }
   function frHash(o){ return JSON.stringify(o, function(k, v){ return k === 't' ? undefined : v; }); }
@@ -6066,6 +6247,10 @@ body.menuopen{overflow:hidden}
     if(frDate(o.stand_d)) r.stand_d = o.stand_d;
     if(frDate(o.ziel_datum)) r.ziel_datum = o.ziel_datum;
     if(Array.isArray(o.faecher)) r.faecher = o.faecher.slice(0, 20).map(function(x){ x = x || {}; return {id:frTxt(x.id, 20), name:frTxt(x.name, 40), sc:frN(x.sc), clicked:frN(x.clicked)}; });
+    if(Array.isArray(o.badges)){
+      var known = {}; bdList().forEach(function(b){ known[b.id] = 1; });
+      r.badges = o.badges.slice(0, 60).filter(function(x){ return x && known[x.id] && frDate(x.d); }).map(function(x){ return {id:x.id, d:x.d}; });
+    }
     if(Array.isArray(o.verlauf)) r.verlauf = o.verlauf.slice(-120).filter(function(x){ return x && frDate(x.d) && frN(x.n) !== null; }).map(function(x){ return {d:x.d, n:Number(x.n)}; });
     return r;
   }
@@ -6102,10 +6287,40 @@ body.menuopen{overflow:hidden}
     var chain = Promise.resolve();
     S.friends.forEach(function(fr){
       chain = chain.then(function(){
-        return frFetchShare(fr.gist).then(function(d){ fr.data = d; fr.last = Date.now(); fr.err = null; }, function(e){ fr.err = (e && e.message) || 'http'; });
+        return frFetchShare(fr.gist).then(function(d){
+          if(d.badges){
+            var ids = d.badges.map(function(x){ return x.id; });
+            if(Array.isArray(fr.bseen)){
+              ids.forEach(function(id){
+                if(fr.bseen.indexOf(id) >= 0) return;
+                var bb = bdList().filter(function(b){ return b.id === id; })[0];
+                if(bb) frNewsAdd(fr.alias || d.name || 'Freund', bb);
+              });
+            }
+            fr.bseen = ids;
+          }
+          fr.data = d; fr.last = Date.now(); fr.err = null;
+        }, function(e){ fr.err = (e && e.message) || 'http'; });
       });
     });
-    return chain.then(function(){ frBusy = false; frStore(); frRender(); });
+    return chain.then(function(){ frBusy = false; frStore(); frRender(); frNewsFlush(); });
+  }
+  /* Hinweise auf neue Abzeichen von Freunden (nur beim Öffnen oder Aktualisieren der App, kein Push) */
+  var FR_NEWS = KEY + '-frnews', frFresh = [];
+  function frNewsLoad(){ try{ var a = JSON.parse(localStorage.getItem(FR_NEWS) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+  function frNewsSave(a){ try{ localStorage.setItem(FR_NEWS, JSON.stringify(a.slice(-20))); }catch(e){} }
+  function frNewsAdd(name, b){ var a = frNewsLoad(); a.push({n:String(name).slice(0, 24), b:b.id, t:Date.now()}); frNewsSave(a); frFresh.push({n:name, b:b}); }
+  function frNewsFlush(){
+    frNewsDot();
+    if(!frFresh.length) return;
+    var f = frFresh.splice(0, frFresh.length);
+    toast(f.length === 1 ? f[0].n + ' hat das Abzeichen „' + f[0].b.name + '“ erhalten' : f.length + ' neue Abzeichen bei Freunden');
+  }
+  function frNewsDot(){
+    var b = $('frBtn'), sp = b && b.querySelector('span'), n = frNewsLoad().length;
+    if(!sp) return;
+    var t = 'Fortschritt vergleichen' + (n ? ' · ' + n + ' neu' : '');
+    if(sp.textContent !== t) sp.textContent = t;
   }
   function frDel(gid){
     if(!gid || !syncCfg || !syncCfg.token) return Promise.resolve();
@@ -6147,6 +6362,13 @@ body.menuopen{overflow:hidden}
       }).join('');
       h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Score je Fach</summary><table class="frt"><tr><th></th><th>Du</th><th>' + nm + '</th></tr>' + fr2 + '</table></details>';
     }
+    if(d.badges){
+      var mb = bdMerge(S.badges, null), fb = {}; d.badges.forEach(function(x){ fb[x.id] = x.d; });
+      var lst = bdList(), mine = lst.filter(function(b){ return mb[b.id]; }).length, theirs = lst.filter(function(b){ return fb[b.id]; }).length;
+      h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Abzeichen: du ' + mine + ' · ' + nm + ' ' + theirs + '</summary><div class="bdg">' + lst.filter(function(b){ return mb[b.id] || fb[b.id]; }).map(function(b){
+        return '<div class="bdc ' + (mb[b.id] ? 'on' : 'off') + '">' + bdSvg(b, !!fb[b.id], 40) + '<b>' + esc(b.name) + '</b><span class="small">' + (mb[b.id] ? 'du ✓' : 'du –') + ' · ' + (fb[b.id] ? nm + ' ✓' : nm + ' –') + '</span></div>';
+      }).join('') + '</div></details>';
+    }
     if(d.verlauf && d.verlauf.length > 1){
       var mine = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90);
       var all = mine.concat(d.verlauf), t0 = parse(all.reduce(function(a, e){ return e.d < a ? e.d : a; }, all[0].d)), t1 = parse(all.reduce(function(a, e){ return e.d > a ? e.d : a; }, all[0].d));
@@ -6156,12 +6378,20 @@ body.menuopen{overflow:hidden}
     }
     return h;
   }
-  var FR_LAB = {stand:'Gesamtstand, Ziel und Vorsprung/Rückstand', tempo:'Tempo', score:'Ø Fächer-Score', faecher:'Score und Anzahl je Fach', verlauf:'Verlaufskurve (letzte 90 Einträge)'};
+  var FR_LAB = {stand:'Gesamtstand, Ziel und Vorsprung/Rückstand', tempo:'Tempo', score:'Ø Fächer-Score', faecher:'Score und Anzahl je Fach', verlauf:'Verlaufskurve (letzte 90 Einträge)', badges:'Abzeichen'};
   function frRender(){
     if(!frView || !frView.ov.parentNode) return;
     var c = frCfg(), b = frView.ov.querySelector('#frBody'), h = '';
     var hasTok = !!(syncCfg && syncCfg.token);
-    h += '<div class="card frc" style="margin-top:0"><b>Meine Freigabe</b>';
+    var news = frNewsLoad();
+    if(news.length){
+      h += '<div class="card frc" style="margin-top:0;border-color:var(--accent)"><b>Neu bei deinen Freunden</b>' + news.slice(-6).reverse().map(function(x){
+        var bb = bdList().filter(function(b){ return b.id === x.b; })[0];
+        return bb ? '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' + bdSvg(bb, true, 32) + '<span class="small" style="font-size:13px"><b>' + esc(x.n) + '</b> hat „' + esc(bb.name) + '“ erhalten</span></div>' : '';
+      }).join('') + '</div>';
+      frNewsSave([]); frNewsDot();
+    }
+    h += '<div class="card frc"' + (news.length ? '' : ' style="margin-top:0"') + '><b>Meine Freigabe</b>';
     if(!c.gist){
       h += '<div class="small" style="margin-top:6px">Teile deinen Fortschritt mit Freunden. Sie bekommen einen Freigabe-Code, nie deinen Token. Du wählst, was sichtbar ist.</div>';
     }else{
@@ -6198,7 +6428,7 @@ body.menuopen{overflow:hidden}
     if(S.friends.some(function(x){ return x.gist === gid; })){ frMsg('Diesen Freund hast du schon hinzugefügt.'); return; }
     frMsg('Lade …');
     frFetchShare(gid).then(function(d){
-      S.friends.push({id:Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist:gid, alias:frTxt(o.querySelector('#frAlias').value, 24), data:d, last:Date.now()});
+      S.friends.push({id:Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist:gid, alias:frTxt(o.querySelector('#frAlias').value, 24), data:d, last:Date.now(), bseen:d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
       frPrefill = '';
       save(); frNote = 'Hinzugefügt: ' + d.name; frRender();
       var cd = o.querySelector('#frCode'); if(cd) cd.value = '';
@@ -6247,6 +6477,8 @@ body.menuopen{overflow:hidden}
   var frB = $('frBtn');
   if(frB) frB.addEventListener('click', frOpen);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) frPull(false); });
+  setInterval(function(){ if(!document.hidden) frPull(false); }, 600000);
+  frNewsDot();
   setTimeout(function(){
     var id = null;
     try{ id = new URLSearchParams(location.search).get('friend'); }catch(e){}

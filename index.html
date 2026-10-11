@@ -54,11 +54,12 @@ main{max-width:560px;margin:0 auto;padding:70px 14px 32px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Kopfzeile */
-.top{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
-.top h1{flex:1;font-size:24px;font-weight:700;margin:0;letter-spacing:-.4px}
+.top{display:flex;align-items:center;gap:7px;margin:6px 0 2px}
+.logo{width:46px;height:42px;margin-right:-2px;flex:none;display:block;overflow:visible}.logo .ln{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.logo .ld{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:0.1 6.2}.logo .lp{fill:none;stroke:var(--accent);stroke-width:2.2}.logo .lt{fill:var(--accent);font:800 15px Arial,sans-serif;text-anchor:middle}.logo .pl{stroke:var(--accent);stroke-width:1.2;transition:fill .5s}
+.top h1{flex:1;min-width:0;white-space:nowrap;font-size:22px;font-weight:700;margin:0;letter-spacing:-.4px}
 .clock{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;flex:none}
 .subrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px}.subrow .sub{margin-bottom:0;min-width:0}
-.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px;border-radius:50%;line-height:0;position:relative}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:7px;border-radius:50%;line-height:0;position:relative}
 .iconbtn .dotb{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;box-sizing:border-box}
 .iconbtn.fi svg,.iconbtn.ai svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .iconbtn svg{width:18px;height:18px}
@@ -210,7 +211,7 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .obsum{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card2);font-size:14px;line-height:1.7}
 
 /* Fallblatt-Countdown */
-.flaps{display:flex;justify-content:center;gap:16px;margin:12px 0 10px}
+.flaps{display:flex;justify-content:center;gap:16px;margin:12px 0 10px}.flaps.s6{gap:9px}.flaps.s6 .fl{width:27px;height:46px;font-size:31px}
 .fg{text-align:center}
 .fr{display:flex;gap:4px;justify-content:center;margin-bottom:5px}
 .fl{position:relative;width:34px;height:56px;perspective:260px;font-family:var(--mono);font-weight:700;font-size:38px;color:#f3f6ff}
@@ -521,6 +522,7 @@ body.nbopen{overflow:hidden}
 .lkleg{font-size:11.5px;color:var(--muted);margin:-2px 0 8px}
 .lkall{width:100%;margin-top:16px}
 .lkpv.st{position:relative;height:56px;width:100%;overflow:visible}
+.fhst{display:block;width:92px!important;height:46px!important;flex:none}
 .lkpv.st .stp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.38);transform-origin:50% 50%;pointer-events:none;white-space:nowrap}
 .lkcd.st{grid-template-columns:repeat(2,1fr)}
 .nbnewimg{max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;display:block}
@@ -701,6 +703,7 @@ body.menuopen{overflow:hidden}
 <div id="onb" class="onb" hidden></div>
 <main>
   <header class="top">
+    <svg class="logo" id="appLogo" viewBox="-8 0 72 64" role="img" aria-label="Short Final! Logo, die Lichter zeigen deinen Gleitpfad"><path class="ln" d="M26 4C25 22 18 42 5 60M38 4C39 22 46 42 59 60"/><path class="ln" d="M32 6V16M32 24V34M32 42V52" style="stroke-width:3.4"/><path class="ln" d="M17 62h6M41 62h6" style="stroke-width:2.4"/><rect class="lp" x="-6" y="19" width="31" height="13" rx="6.5"/><circle class="pl" cx="0" cy="25.5" r="3.1"/><circle class="pl" cx="6.8" cy="25.5" r="3.1"/><circle class="pl" cx="13.6" cy="25.5" r="3.1"/><circle class="pl" cx="20.4" cy="25.5" r="3.1"/></svg>
     <h1>Short Final!</h1>
     <button class="iconbtn bd" id="bdIcon" aria-label="Abzeichen" title="Abzeichen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.6 13.6 7 21l5-2.6 5 2.6-1.6-7.4"/></svg></button>
     <button class="iconbtn fi" id="frIcon" aria-label="Freunde" title="Freunde"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.5 2 4.5 4.9"/></svg></button>
@@ -1857,6 +1860,17 @@ body.menuopen{overflow:hidden}
     var L = S.look, list = L.multi ? L[kind + 's'] : [L[kind]];
     return list[lkIdx[kind] % list.length];
   }
+  function logoUpdate(){
+    var lg = document.getElementById('appLogo');
+    if(!lg || !S) return;
+    var w = 2, off = false;
+    try{ off = stIsStandby(); if(!off) w = papiW(homeNums().rGlide); }catch(e){ off = true; }
+    var ls = lg.querySelectorAll('.pl');
+    for(var i = 0; i < ls.length; i++){
+      ls[i].style.fill = off ? 'transparent' : (i < w ? PAPI_W.bg : PAPI_R.bg);
+      ls[i].style.filter = off ? '' : 'drop-shadow(0 0 2px ' + (i < w ? PAPI_W.gl : PAPI_R.gl) + ')';
+    }
+  }
   function lookSt(){
     var v = lookPick('st');
     for(var i = 0; i < ST_STYLES.length; i++) if(ST_STYLES[i][0] === v) return v;
@@ -2072,7 +2086,7 @@ body.menuopen{overflow:hidden}
     if(ms > 0){
       var tm = Math.floor(ms / 60000), d = Math.floor(tm / 1440), hh = Math.floor(tm / 60) % 24, mm = tm % 60;
       h += '<div class="bigd">' + d + (d === 1 ? ' Tag' : ' Tage') + '</div>';
-      h += '<div style="font-size:16px;margin-top:2px;font-family:var(--mono)">' + hh + ' Std ' + (mm < 10 ? '0' : '') + mm + ' Min</div>';
+      h += '<div style="font-size:16px;margin-top:2px;font-family:var(--mono)">' + hh + ' Std ' + (mm < 10 ? '0' : '') + mm + ' Min' + ((S.look && S.look.sec) ? ' ' + (Math.floor(ms / 1000) % 60 < 10 ? '0' : '') + Math.floor(ms / 1000) % 60 + ' Sek' : '') + '</div>';
       h += '<div class="small" style="margin-top:6px">bis ' + when + '</div>';
     }else if(days(new Date(now.getFullYear(), now.getMonth(), now.getDate()), new Date(ex.getFullYear(), ex.getMonth(), ex.getDate())) === 0){
       h += '<div class="bigd">Heute ist Prüfung</div><div class="small" style="margin-top:6px">' + when + '</div>';
@@ -2198,6 +2212,7 @@ body.menuopen{overflow:hidden}
     runCountUps($('homeStats'));
     coachRender();
     bdSoon();
+    logoUpdate();
     if(typeof GREET_TIME !== 'undefined' && typeof renderGreeting === 'function') renderGreeting();
     if(typeof frHomeRender === 'function') frHomeRender();
   }
@@ -3181,32 +3196,33 @@ body.menuopen{overflow:hidden}
       el.classList.remove('go');
     }, (delay || 0) + 520);
   }
-  function buildFlaps(nd){
+  function buildFlaps(nd, ws){
     function grp(n, label){
       var t = '';
       for(var k = 0; k < n; k++) t += flapHTML();
       return '<div class="fg"><div class="fr">' + t + '</div><div class="small">' + label + '</div></div>';
     }
-    return '<div class="small">Countdown bis zur Prüfung</div><div class="flaps" role="img">' + grp(nd, 'Tage') + grp(2, 'Std') + grp(2, 'Min') + '</div><div class="small" id="cdWhen"></div>';
+    return '<div class="small">Countdown bis zur Prüfung</div><div class="flaps' + (ws ? ' s6' : '') + '" role="img">' + grp(nd, 'Tage') + grp(2, 'Std') + grp(2, 'Min') + (ws ? grp(2, 'Sek') : '') + '</div><div class="small" id="cdWhen"></div>';
   }
   function renderCountdown(){
     var el = $('cdCard');
     if(!el) return;
     var ex = examDate(), now = new Date(), ms = ex - now;
     if(ms <= 0){ cdMode = 'text'; renderCountdownStatic(); return; }
-    var tm = Math.floor(ms / 60000), d = Math.floor(tm / 1440), hh = Math.floor(tm / 60) % 24, mm = tm % 60;
+    var tm = Math.floor(ms / 60000), d = Math.floor(tm / 1440), hh = Math.floor(tm / 60) % 24, mm = tm % 60, ws = !!(S.look && S.look.sec), ss = Math.floor(ms / 1000) % 60;
     var sty = lookPick('cd') || 'flap';
     if(sty === 'text'){ cdMode = 'text'; renderCountdownStatic(); return; }
     if(sty === 'board' || sty === 'ring' || sty === 'route' || sty === 'analog'){ cdMode = 'v-' + sty; el.innerHTML = cdVariant(sty, d, hh, mm, ex, now, ms); analogUpdate(); return; }
     var ds = String(d); if(ds.length < 2) ds = '0' + ds;
-    if(cdMode !== 'flap' || cdDigits !== ds.length){
-      el.innerHTML = buildFlaps(ds.length);
-      cdMode = 'flap'; cdDigits = ds.length;
+    var dkey = ds.length + (ws ? 10 : 0);
+    if(cdMode !== 'flap' || cdDigits !== dkey){
+      el.innerHTML = buildFlaps(ds.length, ws);
+      cdMode = 'flap'; cdDigits = dkey;
     }
     var when = fd(ex) + ex.getFullYear() + ((S.examTime && S.examTime !== '00:00') ? ', ' + S.examTime + ' Uhr' : '');
     $('cdWhen').textContent = 'bis ' + when;
     el.querySelector('.flaps').setAttribute('aria-label', d + ' Tage, ' + hh + ' Stunden, ' + mm + ' Minuten');
-    var vals = ds + (hh < 10 ? '0' : '') + hh + (mm < 10 ? '0' : '') + mm;
+    var vals = ds + (hh < 10 ? '0' : '') + hh + (mm < 10 ? '0' : '') + mm + (ws ? (ss < 10 ? '0' : '') + ss : '');
     var tiles = el.querySelectorAll('.fl');
     for(var k = 0; k < tiles.length; k++) setFlap(tiles[k], vals.charAt(k), k * 90);
   }
@@ -5466,6 +5482,10 @@ body.menuopen{overflow:hidden}
     if(k === 'route') return '<span class="pvroute"><i></i><b></b></span>';
     return '<span class="pvtxt">36 Tage</span>';
   }
+  function stMini(k, w){
+    var inner = k === 'papi' ? '<div class="papi">' + papiLights(w, {lo:-1, hi:-1, x:0}) + '</div>' : '<div class="stbox">' + stInst(k, w, null) + '</div>';
+    return '<span class="lkpv st fhst"><span class="stp">' + inner + '</span></span>';
+  }
   function stPreview(k){
     var inner = k === 'papi' ? '<div class="papi">' + papiLights(3, {lo:-1, hi:-1, x:0}) + '</div>' : '<div class="stbox">' + stInst(k, 3, null) + '</div>';
     return '<span class="stp">' + inner + '</span>';
@@ -5495,7 +5515,7 @@ body.menuopen{overflow:hidden}
       '<label class="tg lkmulti"><span>Mehrere Anzeigen wählen und abwechseln</span><input type="checkbox" class="sw" data-lkmulti="1"' + (L.multi ? ' checked' : '') + '></label>' +
       '<div class="lkleg">Aus: ein Tipp wählt eine Anzeige. An: ein Tipp fügt sie hinzu oder nimmt sie wieder heraus, und die gewählten wechseln sich ab.</div>' +
       '<div class="seg" role="group" aria-label="Wechsel">' + [['start', 'Bei App-Start'], ['30', 'Alle 30 s'], ['60', 'Jede Minute']].map(function(t){ return '<button type="button" data-lkrot="' + t[0] + '" class="' + (L.rot === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
-      '<label class="tg"><span>Sekundenzeiger bei der Uhr</span><input type="checkbox" class="sw" data-lksec="1"' + (L.sec ? ' checked' : '') + '></label><div class="lkleg">Zeigt Sekunden bei der Analoguhr und in der kleinen Uhrzeit unter dem Titel.</div>';
+      '<label class="tg"><span>Sekundenzeiger bei der Uhr</span><input type="checkbox" class="sw" data-lksec="1"' + (L.sec ? ' checked' : '') + '></label><div class="lkleg">Zeigt Sekunden beim Countdown (alle Varianten) und in der kleinen Uhrzeit unter dem Titel.</div>';
     var webl = (typeof STANDALONE !== 'undefined' && STANDALONE);
     if(webl){
       h += '<div class="lkhr"><h3 class="lkh">KI-Assistent</h3>' + rs('ai') + '</div><div class="lkleg">Für Analyse und Gespräch. Lernpakete erstellt immer Claude.</div><div class="lkcd ai">';
@@ -5590,23 +5610,24 @@ body.menuopen{overflow:hidden}
   function cdVariant(sty, d, hh, mm, ex, now, ms){
     var when = 'bis ' + fd(ex) + ex.getFullYear() + ((S.examTime && S.examTime !== '00:00') ? ', ' + S.examTime + ' Uhr' : '');
     var p2 = function(n){ return (n < 10 ? '0' : '') + n; };
-    var aria = d + ' Tage, ' + hh + ' Stunden, ' + mm + ' Minuten';
+    var ws = !!(S.look && S.look.sec), ss = Math.floor(ms / 1000) % 60, sx = ws ? ' ' + p2(ss) + ' Sek' : '';
+    var aria = d + ' Tage, ' + hh + ' Stunden, ' + mm + ' Minuten' + (ws ? ', ' + ss + ' Sekunden' : '');
     var h = '<div class="small">Countdown bis zur Prüfung</div>';
     if(sty === 'board'){
-      h += '<div class="cdbd" role="img" aria-label="' + aria + '"><div class="bdr"><span>PRÜFUNG</span><span>' + (d > 7 ? 'ON TIME' : 'BOARDING') + '</span></div><div class="bdt"><b>' + p2(d) + '</b><i>T</i><b>' + p2(hh) + '</b><i>H</i><b>' + p2(mm) + '</b><i>M</i></div></div>';
+      h += '<div class="cdbd" role="img" aria-label="' + aria + '"><div class="bdr"><span>PRÜFUNG</span><span>' + (d > 7 ? 'ON TIME' : 'BOARDING') + '</span></div><div class="bdt"><b>' + p2(d) + '</b><i>T</i><b>' + p2(hh) + '</b><i>H</i><b>' + p2(mm) + '</b><i>M</i>' + (ws ? '<b>' + p2(ss) + '</b><i>S</i>' : '') + '</div></div>';
     }else if(sty === 'analog'){
       var tk = '';
       for(var q = 0; q < 12; q++) tk += '<line class="t" x1="0" y1="-41" x2="0" y2="' + (q % 3 ? -38 : -35) + '" transform="rotate(' + (q * 30) + ')"/>';
       h += '<svg class="ancl" viewBox="-50 -50 100 100" role="img" aria-label="Analoguhr UTC. ' + aria + '"><circle class="f" r="46"/>' + tk + '<line class="hh" id="anH" y2="-21" stroke-width="3.2"/><line class="mh" id="anM" y2="-32" stroke-width="2.2"/>' + (S.look.sec ? '<line class="sh" id="anS" y1="7" y2="-36"/>' : '') + '<circle class="dot" r="2.4"/></svg>' +
-        '<div class="bigd" style="text-align:center">' + d + (d === 1 ? ' Tag' : ' Tage') + '</div><div style="font-size:15px;font-family:var(--mono);text-align:center">' + hh + ' Std ' + p2(mm) + ' Min</div>';
+        '<div class="bigd" style="text-align:center">' + d + (d === 1 ? ' Tag' : ' Tage') + '</div><div style="font-size:15px;font-family:var(--mono);text-align:center">' + hh + ' Std ' + p2(mm) + ' Min' + sx + '</div>';
     }else if(sty === 'ring'){
       var sp = cdSpanMs(ex), totalD = Math.max(d, Math.round(sp.total / 86400000));
-      h += '<div class="cdrings" role="img" aria-label="' + aria + '">' + cdRing(d / totalD, d, d === 1 ? 'Tag' : 'Tage') + cdRing(hh / 24, hh, 'Std') + cdRing(mm / 60, mm, 'Min') + '</div>';
+      h += '<div class="cdrings" role="img" aria-label="' + aria + '">' + cdRing(d / totalD, d, d === 1 ? 'Tag' : 'Tage') + cdRing(hh / 24, hh, 'Std') + cdRing(mm / 60, mm, 'Min') + (ws ? cdRing(ss / 60, ss, 'Sek') : '') + '</div>';
     }else{
       var sp2 = cdSpanMs(ex), prog = Math.max(0, Math.min(1, (now - sp2.start) / sp2.total)), pc = (prog * 100).toFixed(1);
       var plane = '<svg viewBox="-16 -13 32 26" class="cdpl" aria-hidden="true"><path fill="currentColor" d="M13,0 L4,-2.2 L-3,-12 L-7,-12 L-4,-2.4 L-11,-2 L-13,-5 L-16,-5 L-14,0 L-16,5 L-13,5 L-11,2 L-4,2.4 L-7,12 L-3,12 L4,2.2 Z"/></svg>';
       h += '<div class="bigd">' + d + (d === 1 ? ' Tag' : ' Tage') + '</div><div class="cdrt" role="img" aria-label="' + aria + '"><div class="cdln"><i style="width:' + pc + '%"></i><span style="left:' + pc + '%">' + plane + '</span></div></div>' +
-        '<div style="font-size:15px;font-family:var(--mono)">' + hh + ' Std ' + p2(mm) + ' Min</div>';
+        '<div style="font-size:15px;font-family:var(--mono)">' + hh + ' Std ' + p2(mm) + ' Min' + sx + '</div>';
     }
     return h + '<div class="small" style="margin-top:8px">' + when + '</div>';
   }
@@ -5622,8 +5643,8 @@ body.menuopen{overflow:hidden}
   var secTimer = null;
   function lookSecSync(){
     var want = !!(S && S.look && S.look.sec);
-    if(want && !secTimer) secTimer = setInterval(function(){ if(document.hidden) return; tickClock(); analogUpdate(); }, 1000);
-    else if(!want && secTimer){ clearInterval(secTimer); secTimer = null; tickClock(); }
+    if(want && !secTimer) secTimer = setInterval(function(){ if(document.hidden) return; tickClock(); if(document.getElementById('anH')) analogUpdate(); else renderCountdown(); }, 1000);
+    else if(!want && secTimer){ clearInterval(secTimer); secTimer = null; tickClock(); cdMode = null; renderCountdown(); }
   }
   function lookRotTick(){
     if(!S || !S.look || document.hidden) return;
@@ -5806,6 +5827,9 @@ body.menuopen{overflow:hidden}
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
     {v:'2026.10.11-27', items:[
+      {t:'Sekundenzeiger auch beim Countdown', x:'Der Sekundenzeiger zeigt Sekunden jetzt bei allen Countdown-Anzeigen (Fallblatt, Anzeigetafel, Ringe, Flugroute, Minimal, Analoguhr).', menu:true, sel:'#lookCard summary', open:'#lookCard'},
+      {t:'Zustandsanzeigen der Freunde', x:'Der PAPI-Status (in der Anzeige, die der Freund gewählt hat) erscheint in der Rangliste, der Liste und im Vergleich. Im Zahnrad der Freunde-Karte kannst du auf deine eigene Anzeige umstellen.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Logo in der Ecke', x:'Oben links steht jetzt der Umriss des Logos: Landebahn mit PAPI-Lichtern. Die Linien nehmen deine App-Farbe an, und die Lichter zeigen live deinen Gleitpfad.', tab:'home', sel:'#appLogo'},
       {t:'Abzeichen oben rechts', x:'Das Abzeichen-Symbol sitzt jetzt oben rechts in der Kopfzeile. Wenn du ein neues Abzeichen freischaltest, gibt es eine goldene Animation, und der große Abzeichen-Knopf kommt zurück auf den Startbildschirm und leuchtet gold, bis du ihn öffnest.', tab:'home', sel:'#bdIcon'},
       {t:'Mehr Abzeichen und Challenges', x:'Neue Abzeichen für Frühaufsteher, Nachtflug, Wochenendflug, Raketenstart, Montagsmotor, Wiedereinstieg, Schnapszahlen, 3.141 und 12.345 Fragen.', tab:'home', sel:'#bdIcon'},
       {t:'Abzeichen im Duell mit Freunden', x:'Neu: Freund eingeholt, Freund überholt, Freund angehängt (weniger als 1 % dahinter), Rudelflug mit drei Freunden und Teamarbeit an einem gemeinsamen Lernpaket.', web:true, tab:'home', sel:'#bdIcon'},
@@ -6476,7 +6500,7 @@ body.menuopen{overflow:hidden}
     if(f.score){ o.score = scs.length ? Math.round(scs.reduce(function(a, b){ return a + b; }, 0) / scs.length * 10) / 10 : null; o.score_n = scs.length; }
     if(f.faecher) o.faecher = fa;
     if(f.verlauf) o.verlauf = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90).map(function(e){ return {d:e.d, n:e.n}; });
-    if(f.papi){ try{ o.papi = stIsStandby() ? null : papiW(n.rGlide); }catch(e){} }
+    if(f.papi){ try{ o.papi = stIsStandby() ? null : papiW(n.rGlide); o.pst = lookSt(); o.sb = stIsStandby() ? 1 : 0; }catch(e){} }
     if(f.stats){ try{ o.stats = statCompute(); }catch(e){} }
     if(f.badges){ var bd0 = bdMerge(S.badges, null); o.badges = Object.keys(bd0).map(function(k){ return {id:k, d:bd0[k]}; }); }
     return o;
@@ -6518,6 +6542,8 @@ body.menuopen{overflow:hidden}
     if(frDate(o.heute_d)) r.heute_d = o.heute_d;
     if(frDate(o.ziel_datum)) r.ziel_datum = o.ziel_datum;
     if(Array.isArray(o.faecher)) r.faecher = o.faecher.slice(0, 20).map(function(x){ x = x || {}; return {id:frTxt(x.id, 20), name:frTxt(x.name, 40), sc:frN(x.sc), clicked:frN(x.clicked)}; });
+    if(ST_STYLES.some(function(c){ return c[0] === o.pst; })) r.pst = o.pst;
+    if(o.sb) r.sb = 1;
     if(o.papi !== undefined && o.papi !== null && frN(o.papi) !== null) r.papi = Math.max(0, Math.min(4, Math.round(frN(o.papi))));
     if(o.stats && typeof o.stats === 'object') r.stats = frStatsClean(o.stats);
     if(Array.isArray(o.badges)){
@@ -6665,7 +6691,7 @@ body.menuopen{overflow:hidden}
     row('Aktuelles Tempo pro Tag', me.tempo, d.tempo, 1);
     row('Tempo gesamt pro Tag', me.tempo_gesamt, d.tempo_gesamt, 1);
     row('Ø Fächer-Score in %', me.score, d.score, 'f1h');
-    var h = '<table class="frt"><tr><th></th><th>Du</th><th>' + nm + '</th></tr>' + rows.join('') + '</table>';
+    var h = (typeof fhStateRow === 'function' ? fhStateRow(me, d, nm) : '') + '<table class="frt"><tr><th></th><th>Du</th><th>' + nm + '</th></tr>' + rows.join('') + '</table>';
     if(d.faecher && d.faecher.length){
       var mf = {}; me.faecher.forEach(function(x){ mf[x.id] = x; });
       var fr2 = d.faecher.map(function(x){
@@ -7262,17 +7288,28 @@ body.menuopen{overflow:hidden}
     if(typeof h.on !== 'boolean') h.on = true;
     if(h.mode !== 'board') h.mode = 'list';
     if(['stand', 'heute', 'tempo'].indexOf(h.metric) < 0) h.metric = 'stand';
+    if(typeof h.own !== 'boolean') h.own = true;
     if(!h.g || typeof h.g !== 'object') h.g = {};
     ['verlauf', 'heute', 'tempo'].forEach(function(k){ if(typeof h.g[k] !== 'boolean') h.g[k] = (k === 'heute'); });
     return h;
   }
-  function fhPapi(w){ return (typeof w === 'number') ? '<span class="frp"><span class="papi">' + papiLights(w, {lo:-1, hi:-1, x:0}) + '</span></span>' : '<span></span>'; }
+  function fhStyle(e){ var c = fhCfg(); return (c.own && ST_STYLES.some(function(x){ return x[0] === e.pst; })) ? e.pst : lookSt(); }
+  function fhPapi(w, e){
+    if(typeof w !== 'number') return '<span></span>';
+    return stMini(fhStyle(e || {}), w);
+  }
+  function fhStateRow(me, d, nm){
+    if(typeof d.papi !== 'number' && typeof me.papi !== 'number') return '';
+    var cfg = fhCfg(), my = {pst:lookSt()}, th = {pst:d.pst};
+    function cell(lab, w, e){ return '<div style="text-align:center;min-width:0"><div class="small">' + lab + '</div>' + (typeof w === 'number' ? stMini(fhStyle(e), w) : '<div class="small" style="height:46px;line-height:46px">–</div>') + '</div>'; }
+    return '<div style="display:flex;justify-content:space-around;gap:8px;margin-top:6px">' + cell('Du', me.papi, my) + cell(nm, d.papi, th) + '</div>';
+  }
   function fhEntries(){
-    var me = frMine(true), today = iso(new Date()), out = [{name:'Du', me:true, stand:me.stand, heute:me.heute || 0, tempo:me.tempo || 0, papi:me.papi, verlauf:S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90)}];
+    var me = frMine(true), today = iso(new Date()), out = [{name:'Du', me:true, pst:lookSt(), stand:me.stand, heute:me.heute || 0, tempo:me.tempo || 0, papi:me.papi, verlauf:S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }).slice(-90)}];
     (S.friends || []).forEach(function(fr){
       var d = fr.data;
       if(!d) return;
-      out.push({name:fr.alias || d.name || 'Freund', stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, papi:d.papi, verlauf:d.verlauf});
+      out.push({name:fr.alias || d.name || 'Freund', pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, papi:d.papi, verlauf:d.verlauf});
     });
     return out;
   }
@@ -7286,11 +7323,11 @@ body.menuopen{overflow:hidden}
       var rows = es.filter(function(e){ return fhVal(e, cfg.metric) !== null; }).sort(function(a, b){ return fhVal(b, cfg.metric) - fhVal(a, cfg.metric); }), mx = Math.max.apply(null, rows.map(function(e){ return fhVal(e, cfg.metric); }).concat([1]));
       rows.forEach(function(e, i){
         var v = fhVal(e, cfg.metric);
-        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + '</span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi) + '<span class="v"><b>' + fmt(v) + '</b><small>' + (cfg.metric === 'tempo' ? 'pro Tag' : cfg.metric === 'heute' ? 'heute' : 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + '</span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + fmt(v) + '</b><small>' + (cfg.metric === 'tempo' ? 'pro Tag' : cfg.metric === 'heute' ? 'heute' : 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
       });
     }else{
       es.forEach(function(e){
-        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span></span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span></span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
       });
     }
     var g = cfg.g;
@@ -7310,7 +7347,7 @@ body.menuopen{overflow:hidden}
       }else h += '<h3 class="sth">Verlauf im Vergleich</h3><div class="small">Freunde müssen ihren Verlauf freigeben, damit er hier erscheint.</div>';
     }
     if(fhSettings){
-      h += '<div class="fhs"><b class="small">Diagramme auf dem Startbildschirm</b>' +
+      h += '<div class="fhs"><label class="tg"><span>Anzeige der Freunde in deren eigenem Stil</span><input type="checkbox" class="sw" data-fhown="1"' + (cfg.own ? ' checked' : '') + '></label><b class="small">Diagramme auf dem Startbildschirm</b>' +
         [['heute', 'Heute geklickt'], ['tempo', 'Tempo pro Tag'], ['verlauf', 'Verlauf im Vergleich']].map(function(x){ return '<label class="tg"><span>' + x[1] + '</span><input type="checkbox" class="sw" data-fhg="' + x[0] + '"' + (g[x[0]] ? ' checked' : '') + '></label>'; }).join('') +
         '<button type="button" class="ghost" data-fhoff="1" style="width:100%;margin-top:8px">Karte ausblenden</button><div class="small" style="margin-top:4px">Wieder einblenden: Account, Freunde auf dem Startbildschirm.</div></div>';
     }
@@ -7337,6 +7374,7 @@ body.menuopen{overflow:hidden}
       });
       fhEl.addEventListener('change', function(ev){
         var t = ev.target, k = t && t.getAttribute && t.getAttribute('data-fhg');
+        if(t && t.getAttribute && t.getAttribute('data-fhown')){ fhCfg().own = !!t.checked; save(); frHomeRender(); return; }
         if(k){ fhCfg().g[k] = !!t.checked; save(); frHomeRender(); }
       });
     }

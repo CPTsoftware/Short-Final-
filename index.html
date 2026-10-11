@@ -8152,16 +8152,16 @@ body.menuopen{overflow:hidden}
     var s = b64.replace(/-/g, '+').replace(/_/g, '/'); while(s.length % 4) s += '=';
     var raw = atob(s), out = new Uint8Array(raw.length); for(var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i); return out;
   }
-  var pushClaimTried = {};
+  var pushClaimTried = {}, pushClaimErr = '';
   async function pushApi(path, body, noRetry){
     var r = await fetch(pushCfg.url + path, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
     var j = null; try{ j = await r.json(); }catch(e){}
     if(!r.ok){
       var em = (j && j.error) || ('Fehler ' + r.status), g0 = body && (body.me || body.gist);
       /* Freigabe-ID gehört dort einem anderen Gerätetoken: Eigentum über das Beschreiben des Gists neu belegen */
-      if(!noRetry && em === 'nicht erlaubt' && path !== '/claim' && body && body.tok && g0 && syncCfg && syncCfg.token && !pushClaimTried[g0]){
-        pushClaimTried[g0] = 1;
-        try{ await pushClaim(g0, body.tok); }catch(e){ var er = new Error(em); er.detail = (e && e.message) || ''; throw er; }
+      if(!noRetry && em === 'nicht erlaubt' && path !== '/claim' && body && body.tok && g0 && syncCfg && syncCfg.token && Date.now() - (pushClaimTried[g0] || 0) > 70000){
+        pushClaimTried[g0] = Date.now();
+        try{ await pushClaim(g0, body.tok); pushClaimErr = ''; }catch(e){ pushClaimErr = (e && e.message) || 'Fehler'; var er = new Error(em); er.detail = pushClaimErr; throw er; }
         return pushApi(path, body, true);
       }
       throw new Error(em);
@@ -8632,7 +8632,7 @@ body.menuopen{overflow:hidden}
         if(c.brief.on && aikOn() && !nIns) parts.push('Briefing um ' + c.brief.t + ' Uhr'); if(c.debrief.on && aikOn() && !nIns) parts.push('Debriefing um ' + c.debrief.t + ' Uhr');
         if(friendsOn) parts.push('Freund-Meldungen');
         msg.textContent = 'Aktiv: ' + parts.join(', ') + '.';
-      }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler') + (e && e.detail ? ' (Neu-Zuordnung gescheitert: ' + e.detail + (/Schritt 2/.test(e.detail) ? '. Dein GitHub-Token auf diesem Gerät darf die Freigabe-Datei nicht ändern, vermutlich ist es ein anderes GitHub-Konto als am PC' : '') + ')' : (e && e.message === 'nicht erlaubt' ? (syncCfg && syncCfg.token ? ' (Neu-Zuordnung wurde in dieser Sitzung schon versucht, App schließen und neu öffnen)' : ' (auf diesem Gerät ist keine Cloud-Synchronisierung verbunden, dafür brauchst du den GitHub-Token wie am PC)') : '')); }
+      }catch(e){ msg.textContent = 'Das hat nicht geklappt: ' + ((e && e.message) || 'unbekannter Fehler') + (e && e.detail ? ' (Neu-Zuordnung gescheitert: ' + e.detail + (/Schritt 2/.test(e.detail) ? '. Dein GitHub-Token auf diesem Gerät darf die Freigabe-Datei nicht ändern, vermutlich ist es ein anderes GitHub-Konto als am PC' : '') + ')' : (e && e.message === 'nicht erlaubt' ? (syncCfg && syncCfg.token ? ' (Neu-Zuordnung gescheitert: ' + (pushClaimErr || 'kein Grund bekannt, in einer Minute noch einmal versuchen') + (/Schritt 2/.test(pushClaimErr) ? '. Dein GitHub-Token auf diesem Gerät darf die Freigabe-Datei nicht ändern, vermutlich ist es ein anderes GitHub-Konto als am PC' : /Schritt 1/.test(pushClaimErr) ? '. Der Server meldet einen Fehler, ist der Worker aktuell?' : '') + ')' : ' (auf diesem Gerät ist keine Cloud-Synchronisierung verbunden, dafür brauchst du den GitHub-Token wie am PC)') : '')); }
     });
     $('pushOff').addEventListener('click', async function(){
       msg.textContent = 'Einen Moment …';

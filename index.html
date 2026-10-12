@@ -7196,6 +7196,19 @@ body.menuopen{overflow:hidden}
   }
   function frMsg(t){ frNote = t || ''; Array.prototype.forEach.call(document.querySelectorAll('#frMsg, #acShMsg'), function(el){ el.textContent = frNote; }); }
   function frF1(v){ return v === null || v === undefined ? '–' : (Math.round(v * 10) / 10).toString().replace('.', ','); }
+  /* PAPI des Freundes tagesaktuell: eigener Wert, solange er heute online war, sonst frisch berechnet */
+  function frPapi(d){
+    if(!d || typeof d.papi !== 'number') return d ? d.papi : undefined;
+    try{
+      var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate()), td = iso(today);
+      if(d.heute_d === td) return d.papi;
+      if(typeof d.stand !== 'number' || typeof d.ziel !== 'number' || typeof d.ziel_datum !== 'string') return d.papi;
+      if(d.stand >= d.ziel) return d.papi;
+      var yN = d.stand, goal = Math.max(0, d.ziel - yN) / Math.max(1, days(today, parse(d.ziel_datum)));
+      var r = goal > 0 ? (d.stand - (yN + goal)) / goal : 0;
+      return papiW(r);
+    }catch(e){ return d.papi; }
+  }
   function frWhen(ts){
     if(!ts) return 'noch nie';
     var d = new Date(ts), now = new Date();
@@ -7813,7 +7826,7 @@ body.menuopen{overflow:hidden}
       '.fhr{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.fhr:first-of-type{border-top:0}.fhr.me{background:linear-gradient(90deg,color-mix(in srgb,var(--pm) 8%,transparent),transparent)}.fhr .nm{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fhr .v{text-align:right;font-variant-numeric:tabular-nums}.fhr .v b{display:block;font-size:15px}.fhr .v small{color:var(--muted);font-size:11px}' +
       '.fhr .rk{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:var(--track);color:var(--text)}.fhr .rk.r1{background:#f2b705;color:#2a1d00}.fhr .rk.r2{background:#aab4c4;color:#10151f}.fhr .rk.r3{background:#cd7f32;color:#1d1204}' +
       '.fhb{grid-column:2 / -1;height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin-top:-2px}.fhb i{display:block;height:100%;background:var(--accent);border-radius:3px}' +
-      '.frp .lights{gap:4px;padding:4px 8px}.frp .lights i{width:9px;height:9px;box-shadow:0 0 5px 1px rgba(255,255,255,.5)}.frp .lights i.r{box-shadow:0 0 5px 1px rgba(255,61,79,.55)}.frp .papi{gap:0}' +
+      '.fhseen{display:block;font-size:11px;font-weight:400;color:var(--muted);line-height:1.2}.frp .lights{gap:4px;padding:4px 8px}.frp .lights i{width:9px;height:9px;box-shadow:0 0 5px 1px rgba(255,255,255,.5)}.frp .lights i.r{box-shadow:0 0 5px 1px rgba(255,61,79,.55)}.frp .papi{gap:0}' +
       '.rk{position:relative;overflow:visible}.rk .cap{position:absolute;left:50%;top:-19px;width:30px;height:21px;margin-left:-15px;transform:rotate(-10deg);filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));pointer-events:none}.fhc{max-width:480px;margin:0 auto}.fhc .stc{max-width:100%}.fhs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}.fhleg{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted);margin-top:4px}.fhleg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}';
     document.head.appendChild(st);
   })();
@@ -7836,10 +7849,11 @@ body.menuopen{overflow:hidden}
     return stMini(fhStyle(e || {}), w);
   }
   function fhStateRow(me, d, nm){
-    if(typeof d.papi !== 'number' && typeof me.papi !== 'number') return '';
+    var dp = frPapi(d);
+    if(typeof dp !== 'number' && typeof me.papi !== 'number') return '';
     var cfg = fhCfg(), my = {pst:lookSt()}, th = {pst:d.pst};
     function cell(lab, w, e){ return '<div style="text-align:center;min-width:0"><div class="small">' + lab + '</div>' + (typeof w === 'number' ? stMini(fhStyle(e), w) : '<div class="small" style="height:46px;line-height:46px">–</div>') + '</div>'; }
-    return '<div style="display:flex;justify-content:space-around;gap:8px;margin-top:6px">' + cell('Du', me.papi, my) + cell(nm, d.papi, th) + '</div>';
+    return '<div style="display:flex;justify-content:space-around;gap:8px;margin-top:6px">' + cell('Du', me.papi, my) + cell(nm, dp, th) + '</div>';
   }
   /* Fragen im Zeitraum seit 'from' (ISO) aus einem Verlauf mit Gesamtstaenden */
   function fhPer(vl, from){
@@ -7856,7 +7870,7 @@ body.menuopen{overflow:hidden}
     (S.friends || []).forEach(function(fr){
       var d = fr.data;
       if(!d) return;
-      out.push({name:fr.alias || d.name || 'Freund', ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:d.papi, verlauf:d.verlauf});
+      out.push({name:fr.alias || d.name || 'Freund', ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf});
     });
     return out;
   }
@@ -7897,11 +7911,11 @@ body.menuopen{overflow:hidden}
       var rows = es.filter(function(e){ return fhVal(e, cfg.metric) !== null; }).sort(function(a, b){ return fhVal(b, cfg.metric) - fhVal(a, cfg.metric); }), mx = Math.max.apply(null, rows.map(function(e){ return fhVal(e, cfg.metric); }).concat([1]));
       rows.forEach(function(e, i){
         var v = fhVal(e, cfg.metric);
-        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + (v > 0 && rows.length > 1 && v === fhVal(rows[0], cfg.metric) ? fhCap() : '') + '</span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + fmt(v) + '</b><small>' + ({tempo:'pro Tag', heute:'heute', woche:'diese Woche', monat:'diesen Monat'}[cfg.metric] || 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + (v > 0 && rows.length > 1 && v === fhVal(rows[0], cfg.metric) ? fhCap() : '') + '</span><span class="nm">' + esc(e.name) + (e.seen && !e.me ? '<small class="fhseen">zuletzt online ' + esc(frWhen(e.seen)) + '</small>' : '') + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + fmt(v) + '</b><small>' + ({tempo:'pro Tag', heute:'heute', woche:'diese Woche', monat:'diesen Monat'}[cfg.metric] || 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
       });
     }else{
       es.forEach(function(e){
-        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span></span><span class="nm">' + esc(e.name) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + '"><span></span><span class="nm">' + esc(e.name) + (e.seen && !e.me ? '<small class="fhseen">zuletzt online ' + esc(frWhen(e.seen)) + '</small>' : '') + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
       });
     }
     var g = cfg.g, fcols = fhCols(es);
@@ -8765,7 +8779,7 @@ body.menuopen{overflow:hidden}
         (typeof d.diff === 'number' ? '<span>Soll <b style="color:' + (d.diff >= 0 ? 'var(--good,#1d8f3f)' : 'var(--bad,#d12f3f)') + '">' + (d.diff >= 0 ? '+' : '') + fmt(d.diff) + '</b></span>' : '') +
         (typeof d.heute === 'number' ? '<span>Heute <b>' + fmt(d.heute_d === today ? d.heute : 0) + '</b></span>' : '') + (typeof d.tempo === 'number' ? '<span>Tempo <b>' + fmt(d.tempo) + '</b>/Tag</span>' : '') +
         (typeof d.score === 'number' ? '<span>Ø Score <b>' + frF1(d.score) + ' %</b></span>' : '') + '</div>';
-      if(typeof d.papi === 'number') h += '<div style="display:flex;justify-content:center;margin-top:8px">' + stMini(d.pst && ST_STYLES.some(function(x){ return x[0] === d.pst; }) ? d.pst : 'papi', d.papi) + '</div>';
+      if(typeof frPapi(d) === 'number') h += '<div style="display:flex;justify-content:center;margin-top:8px">' + stMini(d.pst && ST_STYLES.some(function(x){ return x[0] === d.pst; }) ? d.pst : 'papi', frPapi(d)) + '</div>';
       if(d.faecher && d.faecher.length) h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Score je Fach</summary><table class="frt"><tr><th></th><th>Score</th><th>Geklickt</th></tr>' + d.faecher.map(function(x){ return '<tr><td>' + esc(x.name) + '</td><td>' + frF1(x.sc) + '</td><td>' + (x.clicked === null || x.clicked === undefined ? '–' : fmt(x.clicked)) + '</td></tr>'; }).join('') + '</table></details>';
       if(d.badges){ var bl = bdList(), got = {}; d.badges.forEach(function(x){ got[x.id] = x.d; }); h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Abzeichen: ' + bl.filter(function(b){ return got[b.id]; }).length + ' von ' + bl.length + '</summary><div class="bdg">' + bl.filter(function(b){ return got[b.id]; }).map(function(b){ return '<div class="bdc on">' + bdSvg(b, true, 40) + '<b>' + esc(b.name) + '</b></div>'; }).join('') + '</div></details>'; }
       if(d.stats) h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Statistiken und Fakten</summary>' + statHTML(d.stats, nm) + '</details>';

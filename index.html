@@ -735,6 +735,27 @@ body.menuopen{overflow:hidden}
   .clscene .pl.w{animation:none;fill:#fff}
   .appr .ld{animation:none;opacity:.9}
 }
+
+.lkcol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lksw.lkchip{width:auto;height:auto;border-radius:12px;justify-content:flex-start;gap:9px;padding:6px 10px;border:2px solid var(--line);background:var(--card2);box-shadow:none;font-size:13px;font-weight:600;color:var(--text);text-align:left;min-width:0}
+.lksw.lkchip.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.lksw.lkchip span{line-height:1.15;overflow-wrap:anywhere}
+.lkdot{width:28px;height:28px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--line)}
+.lkcol .lkcustom{grid-column:1/-1;width:auto;height:40px;border-radius:12px}.lkcol .lkcustom span{color:#fff;font-weight:700;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* Zweit- und Drittfarbe der Farbkombis */
+html.has2 .addq.lz{background:linear-gradient(135deg,var(--s2),var(--s3));border-color:var(--s2);color:var(--on-s2)}
+html.has2 .addq.lz span{color:var(--on-s3)}
+html.has2 .tabs{border-bottom:3px solid var(--s2);border-image:linear-gradient(90deg,var(--accent),var(--s2) 55%,var(--s3)) 1}
+html.has2 .tab:not(.on){border-color:color-mix(in srgb,var(--s2) 50%,transparent)}
+html.has2 .card{border-top:3px solid var(--s2)}
+html.has2 .card h2,html.has2 .lkh{text-decoration:underline;text-decoration-color:var(--s2);text-decoration-thickness:3px;text-underline-offset:5px}
+html.has2 button.ghost{border-color:var(--s2);color:var(--acc2)}
+html.has2 .iconbtn{color:var(--acc2);border-color:color-mix(in srgb,var(--s2) 65%,var(--line))}
+html.has2 .sw:checked{background:var(--s2);border-color:var(--s2)}
+html.has2 .route .done{background:linear-gradient(90deg,var(--accent),var(--s2) 60%,var(--s3))}
+html.has2 .stc .bar.b2{fill:var(--s2)}
+html.has2 .catb:not(.on){border-color:color-mix(in srgb,var(--s2) 55%,var(--line))}
+html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 .wel{position:fixed;inset:0;z-index:400;background:#070b18;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;transition:opacity .45s}
 .wel.out{opacity:0;pointer-events:none}
 .wel-p{display:flex;flex-direction:column;gap:14px;margin-bottom:30px}
@@ -938,8 +959,21 @@ body.menuopen{overflow:hidden}
     ['teal', 'Türkis', '#0a8f86', '#3fe0d0'],
     ['blue', 'Blau', '#1f6fe0', '#5aa2ff'],
     ['violet', 'Violett', '#7a3fd6', '#b48cff'],
-    ['red', 'Rot', '#d12f3f', '#ff6b78']
+    ['red', 'Rot', '#d12f3f', '#ff6b78'],
+    ['beach', 'Beach', '#A39461', '#A39461'],
+    ['passion', 'Passion', '#E3261B', '#E3261B'],
+    ['sea', 'Sea', '#2382CF', '#2382CF'],
+    ['island', 'Island', '#168B5B', '#168B5B'],
+    ['sunshine', 'Sunshine', '#F5A623', '#F5A623'],
+    ['flypink', 'FlyPink', '#D51F61', '#D51F61'],
+    ['sge', 'SGE', '#C8102E', '#C8102E', '#242329'],
+    ['kranichc', 'Kranich classic', '#001B6C', '#001B6C', '#FFCC00'],
+    ['kranich', 'Kranich', '#101A35', '#101A35'],
+    ['box', 'BOX', '#FFCC00', '#FFCC00', '#555B60'],
+    ['boxy', 'BOX yellow', '#FFCC00', '#FFCC00', '#D40511'],
+    ['wings', 'Wings', '#8B123C', '#8B123C', '#00A9D6', '#80D1E8']
   ];
+  function lookEntry(a){ for(var i = 0; i < LOOK_COLORS.length; i++) if(LOOK_COLORS[i][0] === a) return LOOK_COLORS[i]; return null; }
   var CD_STYLES = [
     ['flap', 'Fallblatt', 'Klassisch mit Klappziffern'],
     ['board', 'Anzeigetafel', 'Wie am Flughafen'],
@@ -5752,17 +5786,31 @@ body.menuopen{overflow:hidden}
   }
   function applyLook(){
     applyTheme();
-    var st = document.documentElement.style, props = ['--accent', '--on-accent', '--mag', '--glow1', '--pm', '--acc2'];
+    var st = document.documentElement.style, props = ['--accent', '--on-accent', '--mag', '--glow1', '--pm', '--acc2', '--s2', '--on-s2', '--s3', '--on-s3'];
     var a = S && S.look && S.look.accent, pair = (a && a !== 'magenta') ? lookPair(a) : null;
-    if(!pair){ props.forEach(function(p){ st.removeProperty(p); }); return; }
+    if(!pair){ props.forEach(function(p){ st.removeProperty(p); }); document.documentElement.classList.remove('has2'); return; }
     var dark = darkTheme(), col = dark ? pair.d : pair.l, rgb = hexRgb(col);
     st.setProperty('--accent', col); st.setProperty('--mag', col); st.setProperty('--pm', pair.d);
     (function(){ var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), hu = 0;
       if(mx !== mn){ var dd = mx - mn; hu = mx === r ? ((g - b) / dd) % 6 : (mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4); hu = (hu * 60 + 360) % 360; }
-      if(mx - mn > 0.12 && Math.abs(hu - 195) < 50) st.setProperty('--acc2', dark ? '#ffb347' : '#c26a00'); else st.removeProperty('--acc2'); })();
+      var ent = lookEntry(a);
+      if(ent && ent[4]){ var sc = ent[4], sl = lumOf(sc); if(dark && sl < 0.2) sc = mixHex(sc, 255, 0.55); else if(!dark && sl > 0.6) sc = mixHex(sc, 0, 0.4); st.setProperty('--acc2', sc); }
+      else if(mx - mn > 0.12 && Math.abs(hu - 195) < 50) st.setProperty('--acc2', dark ? '#ffb347' : '#c26a00'); else st.removeProperty('--acc2'); })();
     st.setProperty('--on-accent', lumOf(col) > 0.38 ? '#14110a' : '#ffffff');
-    st.setProperty('--glow1', 'rgba(' + rgb.join(',') + ',' + (dark ? '.16' : '.10') + ')');
+    (function(){
+      var en = lookEntry(a), root = document.documentElement;
+      if(en && en[4]){
+        var f2 = en[4], f3 = en[5] || en[4];
+        if(dark){ if(lumOf(f2) < 0.2) f2 = mixHex(f2, 255, 0.55); if(lumOf(f3) < 0.2) f3 = mixHex(f3, 255, 0.55); }
+        st.setProperty('--s2', f2); st.setProperty('--s3', f3);
+        st.setProperty('--on-s2', lumOf(f2) > 0.38 ? '#14110a' : '#ffffff'); st.setProperty('--on-s3', lumOf(f3) > 0.38 ? '#14110a' : '#ffffff');
+        root.classList.add('has2');
+      }else root.classList.remove('has2');
+    })();
+    var ent3 = lookEntry(a), grgb = ent3 && ent3[5] ? hexRgb(ent3[5]) : rgb;
+    st.setProperty('--glow1', 'rgba(' + grgb.join(',') + ',' + (dark ? '.16' : '.10') + ')');
   }
+  function lookSwatchBg(c){ var m = lookSwatchColor(c); return c[4] ? 'linear-gradient(135deg,' + m + ' 0 55%,' + c[4] + ' 55% ' + (c[5] ? '80%,' + c[5] + ' 80%' : '100%') + ')' : m; }
   function lookSwatchColor(c){ return c[2] ? (darkTheme() ? c[3] : c[2]) : (darkTheme() ? '#ff4fd8' : '#c4189b'); }
   function cdPreview(k){
     var f = function(t){ return '<i class="pvf">' + t + '</i>'; };
@@ -5790,10 +5838,13 @@ body.menuopen{overflow:hidden}
     h += '</div><div class="lkleg" style="margin-top:6px">Automatisch folgt dem Hell- oder Dunkelmodus deines Geräts. Das Sonne- und Mond-Symbol oben wechselt ebenfalls. ★ Standard: Automatisch</div>';
     h += '<div class="lkhr"><h3 class="lkh">App-Farbe</h3>' + rs('accent') + '</div><div class="lkleg">★ = Standard</div><div class="lkcol">';
     LOOK_COLORS.forEach(function(c){
-      h += '<button type="button" class="lksw' + (cur === c[0] ? ' on' : '') + (c[0] === LOOK_DEF.accent ? ' lkdefsw' : '') + '" data-lkacc="' + c[0] + '" style="background:' + lookSwatchColor(c) + '" aria-label="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '" title="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '"></button>';
+      h += '<button type="button" class="lksw lkchip' + (cur === c[0] ? ' on' : '') + (c[0] === LOOK_DEF.accent ? ' lkdefsw' : '') + '" data-lkacc="' + c[0] + '" aria-label="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '" title="' + escA(c[1]) + (c[0] === LOOK_DEF.accent ? ' (Standard)' : '') + '"><i class="lkdot" style="background:' + lookSwatchBg(c) + '"></i><span>' + esc(c[1]) + '</span></button>';
     });
     var custom = /^#[0-9a-fA-F]{6}$/.test(cur);
-    h += '<label class="lksw lkcustom' + (custom ? ' on' : '') + '" title="Eigene Farbe"><input type="color" data-lkcustom="1" value="' + (custom ? cur : '#c4189b') + '" aria-label="Eigene Farbe wählen"><span>+</span></label></div>';
+    var curEnt = lookEntry(cur);
+    h += '<label class="lksw lkcustom' + (custom ? ' on' : '') + '" title="Eigene Farbe"><input type="color" data-lkcustom="1" value="' + (custom ? cur : '#c4189b') + '" aria-label="Eigene Farbe wählen"><span>+ Eigene Farbe</span></label></div>';
+    h += '<div class="lkleg lkcn" style="margin-top:6px">Gewählt: ' + esc(curEnt ? curEnt[1] : (custom ? 'Eigene Farbe ' + cur : 'Magenta')) + '</div>';
+
     h += '<div class="lkhr"><h3 class="lkh">Countdown-Anzeige</h3>' + rs('cd') + '</div><div class="lkcd">';
     CD_STYLES.forEach(function(c){
       h += '<button type="button" class="lkopt' + (L.cds.indexOf(c[0]) >= 0 ? ' on' : '') + '" data-lkcd="' + c[0] + '"><span class="lkpv">' + cdPreview(c[0]) + '</span><b>' + c[1] + '</b><span class="small">' + c[2] + '</span>' + (c[0] === LOOK_DEF.cd ? '<span class="lkdef">★ Standard</span>' : '') + '</button>';

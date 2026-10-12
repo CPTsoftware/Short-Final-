@@ -45,31 +45,33 @@ function requestText(it){
 }
 function fallbackText(kind, snap){
   if(kind === 'b'){
-    if(snap && snap.rest > 0) return 'Guten Morgen! Für heute stehen ' + fmt(snap.rest) + ' Fragen an. Starte mit einer kurzen Runde.';
-    return 'Guten Morgen! Plane heute eine feste Lernrunde ein.';
+    var vf = snap && snap.vorschlag_fach && snap.vorschlag_fach.name ? ' Tipp: ' + snap.vorschlag_fach.name + '.' : '';
+    if(snap && snap.rest > 0) return 'Guten Morgen! Für heute stehen ' + fmt(snap.rest) + ' Fragen an. Starte mit einer kurzen Runde.' + vf;
+    return 'Guten Morgen! Plane heute eine feste Lernrunde ein.' + vf;
   }
   if(snap && snap.heute > 0) return 'Feierabend: Heute waren es ' + fmt(snap.heute) + ' Fragen. Morgen geht es weiter.';
   return 'Zeit für den Rückblick: Was hast du heute geschafft?';
 }
-function aiPrompt(kind, snap){
+function aiPrompt(kind, snap, weekly){
   var daten = JSON.stringify(snap || {});
-  var task = kind === 'b'
-    ? 'Schreibe ein kurzes, konkretes Briefing für den heutigen Lerntag: Was steht an, worauf zuerst achten.'
+  var task = weekly ? 'Schreibe einen kurzen Wochenrückblick: Vergleiche "woche" (summe, aktive_tage, bester_tag) mit der Vorwoche (vorwoche_summe), nenne das stärkste und das am längsten nicht geübte Fach (Felder "schwaechstes_fach", "faecher") und gib einen konkreten Tipp für die kommende Woche.' : kind === 'b'
+    ? 'Schreibe ein kurzes, konkretes Briefing für den heutigen Lerntag: Was steht an, worauf zuerst achten. Schlage am Ende genau ein Fach aus dem Feld "vorschlag_fach" vor, das man jetzt klicken könnte (nenne den Fachnamen).'
     : 'Schreibe ein kurzes Debriefing zum heutigen Lerntag: Was lief gut, was nehmen wir für morgen mit.';
-  return task + ' Antworte auf Deutsch in der Du-Form, höchstens zwei Sätze und 300 Zeichen, ohne Markdown, ohne Anrede mit Namen. Bleibe bei den Daten und erfinde nichts. Die Daten stammen vom letzten Öffnen der App (Feld "stand_d"). Daten: ' + daten;
+  return task + ' Antworte auf Deutsch in der Du-Form, ' + (weekly ? 'höchstens vier kurze Sätze und 450 Zeichen' : 'höchstens drei kurze Sätze und 320 Zeichen') + ', ohne Markdown, ohne Anrede mit Namen. Bleibe bei den Daten und erfinde nichts. Die Daten stammen vom letzten Öffnen der App (Feld "stand_d"). Daten: ' + daten;
 }
 function aiText(kind, cfg, snap){
+  var weekly = kind === 'd' && new Date().getDay() === 0 && cfg && cfg.wk !== false;
   if(!cfg || !cfg.ai || !cfg.ai.key || typeof fetch !== 'function') return Promise.resolve(null);
   var ctl = typeof AbortController === 'function' ? new AbortController() : null;
   var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 8500) : null;
   return fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST', signal: ctl ? ctl.signal : undefined,
     headers: {'content-type': 'application/json', 'x-api-key': cfg.ai.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
-    body: JSON.stringify({model: cfg.ai.model || 'claude-haiku-5-5', max_tokens: 200, messages: [{role: 'user', content: aiPrompt(kind, snap)}]})
+    body: JSON.stringify({model: cfg.ai.model || 'claude-haiku-5-5', max_tokens: weekly ? 320 : 220, messages: [{role: 'user', content: aiPrompt(kind, snap, weekly)}]})
   }).then(function(r){ if(timer) clearTimeout(timer); return r.ok ? r.json() : null; }).then(function(j){
     var t = j && j.content && j.content[0] && j.content[0].text;
     t = typeof t === 'string' ? t.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim() : '';
-    return t.length > 8 ? t.slice(0, 320) : null;
+    return t.length > 8 ? t.slice(0, weekly ? 480 : 340) : null;
   }).catch(function(){ if(timer) clearTimeout(timer); return null; });
 }
 function getItems(cfg){

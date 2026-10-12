@@ -165,7 +165,7 @@ tr.nrow input{font-style:normal;font-size:14px;padding:8px 10px}
 .rwbt{display:flex;gap:8px;margin-top:10px}.rwbt button{flex:1}.rwbt .ghost{color:#c9d0ee;border-color:rgba(255,255,255,.25);padding:9px 12px}
 .rwrow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.rwrow:first-child{border-top:0}
 .cdrow{display:contents}.cdrow.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:stretch}.cdrow.two>.card{margin:0;min-width:0;overflow:hidden}
-.cdrow.two>.card{display:flex;flex-direction:column;justify-content:center}.cdc2 .bigd{font-size:34px}.cdc2{text-align:center;border-color:color-mix(in srgb,var(--acc2) 55%,var(--line))}.cdc2 .bigd{color:var(--acc2)}.cdc2 .cd2t{font-weight:700;color:var(--acc2)}.cdc2 .cd2h{font-size:15px;margin-top:2px;font-family:var(--mono)}
+.cdrow.two>.card{display:flex;flex-direction:column;justify-content:center}.cdc2 .bigd{font-size:34px}.cdc2{text-align:center}.cdc2 .bigd{color:var(--acc2)}.cdc2 .cd2t{font-weight:700;color:var(--acc2)}.cdc2 .cd2h{font-size:15px;margin-top:2px;font-family:var(--mono)}
 /* Menü: kompakte Liste mit Symbolen in der App-Farbe */
 .mgrp{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 4px 6px}.mgrp:first-child{margin-top:2px}
 .menu details.card.settings{padding:0;margin:0 0 6px;border-radius:14px}
@@ -8026,7 +8026,8 @@ body.menuopen{overflow:hidden}
     if(!key) throw aikErr('no_key', 'Es ist kein Schlüssel hinterlegt.');
     opts = opts || {};
     var stream = typeof opts.onText === 'function';
-    var body = {model: aikModel(), max_tokens: opts.maxTokens || 4096, stream: stream, messages: turns.map(function(t){ return {role: t.role, content: String(t.content)}; })};
+    var body = {model: aikModel(), max_tokens: opts.maxTokens || 4096, stream: stream, messages: turns.map(function(t){ return {role: t.role, content: Array.isArray(t.content) ? t.content : String(t.content)}; })};
+    if(opts.system) body.system = String(opts.system);
     var res;
     try{
       res = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST', signal: opts.signal, body: JSON.stringify(body),
@@ -8229,9 +8230,24 @@ body.menuopen{overflow:hidden}
     var o = {stand_d: iso(new Date()), stand: n.last.n, ziel: S.target, ziel_datum: S.deadline, diff_zum_plan: Math.round(n.diff), heute_geklickt: n.clicked, heute_noch_offen: Math.max(0, Math.round(n.needToday || 0)), tempo_pro_tag: Math.round(n.paceR)};
     o.heute = n.clicked; o.rest = o.heute_noch_offen;
     try{
+      var es = (S.entries || []).filter(function(e){ return e && typeof e.d === 'string' && typeof e.n === 'number'; }).slice().sort(function(x, y){ return x.d < y.d ? -1 : 1; });
+      var at = function(off){ var d = new Date(); d.setDate(d.getDate() - off); var k = iso(d), v = 0; es.forEach(function(e){ if(e.d <= k) v = e.n; }); return v; };
+      var days = [], tot = 0, act = 0, bestD = null;
+      for(var i = 0; i < 7; i++){ var dn = Math.max(0, at(i) - at(i + 1)); tot += dn; if(dn > 0) act++; if(!bestD || dn > bestD.n){ var dd = new Date(); dd.setDate(dd.getDate() - i); bestD = {tag: iso(dd), n: dn}; } }
+      o.woche = {summe: tot, aktive_tage: act, bester_tag: bestD, vorwoche_summe: Math.max(0, at(7) - at(14))};
+    }catch(e){}
+    try{
       var best = null;
       SUBJECTS.forEach(function(sj){ var a = analyze(sj.id); if(a.sc !== null && (!best || a.sc < best.score)) best = {name: sj.name, score: Math.round(a.sc * 10) / 10}; });
       if(best) o.schwaechstes_fach = best;
+      var td = new Date(iso(new Date()) + 'T00:00:00'), lst = [];
+      SUBJECTS.forEach(function(sj){
+        var an = analyze(sj.id), ev = events(getSub(sj.id)), ld = ev.length ? ev[ev.length - 1].d : null, age = ld ? Math.max(0, Math.round((td - new Date(ld + 'T00:00:00')) / 86400000)) : null;
+        var sc = an.sc === null ? null : Math.round(an.sc * 10) / 10;
+        lst.push({name: sj.name, score: sc, tage_seit_test: age, prio: (sc === null ? 20 : Math.max(0, 80 - sc)) + (age === null ? 15 : Math.min(age, 30) * 0.6)});
+      });
+      lst.sort(function(x, y){ return y.prio - x.prio; });
+      if(lst.length){ o.vorschlag_fach = {name: lst[0].name, score: lst[0].score, tage_seit_test: lst[0].tage_seit_test}; o.faecher = lst.slice(0, 4).map(function(x){ return {name: x.name, score: x.score, tage_seit_test: x.tage_seit_test}; }); }
     }catch(e){}
     try{
       o.freunde = (S.friends || []).filter(function(f){ return f.data && typeof f.data.stand === 'number'; }).slice(0, 5).map(function(f){ return {name: String(f.alias || f.data.name || 'Freund').slice(0, 24), ich_voraus_um: n.last.n - f.data.stand}; });
@@ -8320,7 +8336,7 @@ body.menuopen{overflow:hidden}
     var b = document.getElementById('bellIcon');
     if(b || !pushCfg) return b;
     var fi = document.getElementById('frIcon'); if(!fi || !fi.parentNode) return null;
-    b = document.createElement('button'); b.className = 'iconbtn'; b.id = 'bellIcon'; b.setAttribute('aria-label', 'Mitteilungen'); b.title = 'Mitteilungen'; b.innerHTML = BELL_SVG;
+    b = document.createElement('button'); b.className = 'iconbtn fi'; b.id = 'bellIcon'; b.setAttribute('aria-label', 'Mitteilungen'); b.title = 'Mitteilungen'; b.innerHTML = BELL_SVG;
     fi.parentNode.insertBefore(b, fi);
     b.addEventListener('click', bellOpen);
     var st = document.createElement('style'); st.textContent = 'body.instr #bellIcon{display:none!important}#bellIcon{position:relative}.bellh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}.bellh:first-of-type{border-top:0}.bellh b{font-weight:650}.bellh .d{color:var(--muted);font-size:12px;margin-left:auto}';
@@ -8556,7 +8572,7 @@ body.menuopen{overflow:hidden}
   function pushUI(){
     if(document.getElementById('pushCard')) return;
     var st = document.createElement('style');
-    st.textContent = '#pushCard label{display:block;margin-top:10px}#pushCard input[type=time]{width:100%;margin-top:4px}#pushCard .pnote{margin:8px 14px 4px}#pushCard .pchk{display:flex;align-items:center;gap:10px;margin:12px 14px 0;cursor:pointer}#pushCard .pchk input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--accent)}#pushCard .pchk span{flex:1;min-width:0}#pushCard .ptm{margin:4px 14px 0 44px}#pushCard .ptm input{width:100%;margin:0}#pushCard .ptm.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}#pushCard h3{margin:16px 14px 0;font-size:14px}#pushCard .prow{margin:10px 14px 0}';
+    st.textContent = '#pushCard{--ic:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z\'/%3E%3Cpath d=\'M10 20.5a2 2 0 0 0 4 0\'/%3E%3C/svg%3E")}#pushCard label{display:block;margin-top:10px}#pushCard input[type=time]{width:100%;margin-top:4px}#pushCard .pnote{margin:8px 14px 4px}#pushCard .pchk{display:flex;align-items:center;gap:10px;margin:12px 14px 0;cursor:pointer}#pushCard .pchk input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--accent)}#pushCard .pchk span{flex:1;min-width:0}#pushCard .ptm{margin:4px 14px 0 44px}#pushCard .ptm input{width:100%;margin:0}#pushCard .ptm.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}#pushCard h3{margin:16px 14px 0;font-size:14px}#pushCard .prow{margin:10px 14px 0}';
     document.head.appendChild(st);
     function chk(id, txt){ return '<label class="pchk"><input type="checkbox" id="' + id + '"><span>' + txt + '</span></label>'; }
     var el = document.createElement('details'); el.className = 'card settings'; el.id = 'pushCard';
@@ -8890,6 +8906,254 @@ body.menuopen{overflow:hidden}
     setTimeout(tokWarn, 700);
     insIdent();
   }
+
+  /* ---------- KI im Lernzentrum (nur mit eigenem API-Schlüssel sichtbar) ---------- */
+  var lzCtl = null;
+  function lzSubs(){ return SUBJECTS.map(function(s){ return s.id + ' = ' + s.name; }).join('; ') + '; none = Ohne Fach'; }
+  function lzPackOpts(){
+    var o = '<option value="">Neues Paket</option>';
+    try{ nbPackList().forEach(function(p){ if(NB.packs[p.id]) o += '<option value="' + escA(p.id) + '">Zu „' + esc(p.title) + '“ hinzufügen</option>'; }); }catch(e){}
+    return o;
+  }
+  function lzSubOpts(auto){
+    var o = auto ? '<option value="">Automatisch</option>' : '';
+    SUBJECTS.forEach(function(s){ o += '<option value="' + s.id + '">' + esc(s.name) + '</option>'; });
+    return o;
+  }
+  var LZ_SYS = 'Du bist ein erfahrener, genauer ATPL-Fluglehrer (EASA/ICAO) und hilfst einem MPL-Flugschüler beim Lernen mit der App „Short Final!“. Antworte immer auf Deutsch in der Du-Form, knapp und fachlich korrekt. Erfinde nichts. Wenn du dir bei einer Angabe nicht sicher bist, sag es offen.';
+  function lzImgScale(file){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onerror = function(){ rej(new Error('Bild nicht lesbar')); };
+      fr.onload = function(){
+        var im = new Image();
+        im.onerror = function(){ rej(new Error('Bild nicht lesbar')); };
+        im.onload = function(){
+          var m = 1600, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, k = Math.min(1, m / Math.max(w, h));
+          var cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(w * k)); cv.height = Math.max(1, Math.round(h * k));
+          cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+          var d = cv.toDataURL('image/jpeg', 0.75);
+          res(d.slice(d.indexOf(',') + 1));
+        };
+        im.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  function lzPackPrompt(o){
+    return 'Erstelle Lernkarten (Karteikarten) für die Prüfungsvorbereitung.\n' +
+      'Anzahl: etwa ' + o.count + ' Karten.\n' +
+      (o.title ? 'Titel des Pakets: ' + o.title + '\n' : 'Denke dir einen kurzen Titel aus.\n') +
+      (o.sub ? 'Fach für alle Karten: ' + o.sub + '\n' : 'Ordne jede Karte dem passenden Fach zu.\n') +
+      'Fächer-Kürzel: ' + lzSubs() + '.\n' +
+      (o.hasImg ? 'Grundlage sind die angehängten Fotos meiner Notizen. Übernimm sie inhaltlich genau und korrigiere nichts stillschweigend. Ist etwas unleserlich oder zweifelhaft, schreibe im Feld "note" „(unsicher)“.\n' : '') +
+      (o.text ? 'Grundlage (Thema oder Notizen):\n"""\n' + o.text.slice(0, 20000) + '\n"""\n' : '') +
+      (!o.hasImg && o.text && o.text.length < 200 ? 'Das ist nur ein Thema: nutze dein Fachwissen und konzentriere dich auf prüfungsrelevante Kerninhalte.\n' : '') +
+      (o.mc ? 'Gib zu jeder Karte 3 plausible, aber eindeutig falsche Antworten im Feld "wrong".\n' : 'Das Feld "wrong" bleibt leer.\n') +
+      'Jede Karte ist eine kleine, abfragbare Einheit: "q" eine klare Frage, "a" eine kurze eindeutige Antwort (Formeln in einer Zeile mit Einheiten), optional "note" mit Eselsbrücke oder Hinweis.\n' +
+      'type ist merk, formel, fakt oder definition.\n' +
+      'Antworte NUR mit JSON ohne Erklärtext: {"title":"…","items":[{"subject":"<Kürzel>","type":"fakt","title":"<Kurztitel>","q":"…","a":"…","note":"…","wrong":["…","…","…"]}]}';
+  }
+  async function lzSaveItems(raw, title, targetPid, defaultSub, fixedId){
+    var items = (raw || []).map(function(it, k){ var c = {}; for(var x in it) c[x] = it[x]; if(defaultSub && !c.subject) c.subject = defaultSub; return c; });
+    var r = nbClean({format: 'short-final-pack', items: items.map(function(it, k){ it.id = 'k' + nbRid() + k; return it; }), title: title, author: S.uname || '', created: iso(new Date()), id: fixedId || undefined});
+    if(r.err) throw new Error(r.err);
+    var pack = r.pack;
+    if(targetPid && NB.packs[targetPid]){
+      var base = NB.packs[targetPid], ids = {}; base.items.forEach(function(i){ ids[i.id] = 1; });
+      pack.items.forEach(function(i){ while(ids[i.id]) i.id += '_'; ids[i.id] = 1; });
+      base.items = base.items.concat(pack.items);
+      pack = base;
+    }
+    await nbAddPack(pack);
+    return pack;
+  }
+  function lzProg(el, txt){ if(el) el.textContent = txt; }
+  function lzRunJson(prompt, turnsContent, progEl, maxTok){
+    lzCtl = typeof AbortController === 'function' ? new AbortController() : null;
+    var n = 0;
+    return aikCall([{role: 'user', content: turnsContent || prompt}], {system: LZ_SYS, maxTokens: maxTok || 8000, signal: lzCtl ? lzCtl.signal : undefined, onText: function(t){ n = t.text.length; lzProg(progEl, 'KI schreibt … ' + n + ' Zeichen'); }}).then(function(r){ return aikJson(r.text); });
+  }
+  function lzHub(tab){
+    if(!aikOn()) return;
+    tab = tab || 'pack';
+    var res = null;
+    var sh = openSheet('<div class="shead"><h2>KI-Assistent</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="seg lzseg"><button type="button" data-lzt="pack">Paket</button><button type="button" data-lzt="expl">Erklären</button><button type="button" data-lzt="plan">Wochenplan</button></div><div id="lzBody"></div>');
+    var body = sh.ov.querySelector('#lzBody');
+    function seg(){ sh.ov.querySelectorAll('[data-lzt]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lzt') === tab); }); }
+    function fail(msg, e){ if(e && e.code === 'cancelled') { msg.textContent = 'Abgebrochen.'; return; } msg.textContent = (e && (e.userMsg || e.message)) || 'Das hat nicht geklappt.'; }
+    function drawPack(){
+      body.innerHTML = '<div class="small">Aus einem Thema, eingefügten Notizen oder Fotos deiner Notizen. Die KI schreibt die Karten, du prüfst sie vor dem Speichern.</div>' +
+        '<label class="lzl">Titel (optional)<input type="text" id="lzTitle" maxlength="100" placeholder="z. B. Wolkenarten"></label>' +
+        '<div class="row lzrow"><label class="lzl" style="flex:1">Fach<select id="lzSub">' + lzSubOpts(true) + '</select></label><label class="lzl" style="flex:1">Anzahl<select id="lzCount"><option>8</option><option selected>15</option><option>25</option></select></label></div>' +
+        '<label class="lzl">Thema oder Notizen<textarea id="lzText" class="nbta" rows="5" placeholder="Thema (z. B. Fronten) oder Text deiner Notizen einfügen"></textarea></label>' +
+        '<label class="lzl">Fotos der Notizen (optional, bis 6)<input type="file" id="lzImg" accept="image/*" multiple></label>' +
+        '<label class="pchk lzchk"><input type="checkbox" id="lzMc" checked> <span>Mit falschen Antworten für Multiple Choice</span></label>' +
+        '<label class="lzl">Speichern in<select id="lzTarget">' + lzPackOpts() + '</select></label>' +
+        '<div class="row" style="margin-top:12px"><button type="button" id="lzGo" style="flex:1">Mit KI erstellen</button><button type="button" class="ghost" id="lzStop" hidden>Abbrechen</button></div><div class="small" id="lzMsg" style="margin-top:8px"></div><div id="lzRes"></div>';
+      var msg = body.querySelector('#lzMsg'), go = body.querySelector('#lzGo'), stop = body.querySelector('#lzStop');
+      stop.addEventListener('click', function(){ if(lzCtl) lzCtl.abort(); });
+      go.addEventListener('click', async function(){
+        var text = body.querySelector('#lzText').value.trim(), files = Array.prototype.slice.call(body.querySelector('#lzImg').files || [], 0, 6);
+        if(!text && !files.length){ msg.textContent = 'Gib ein Thema, Notizen oder Fotos an.'; return; }
+        go.disabled = true; stop.hidden = false; body.querySelector('#lzRes').innerHTML = '';
+        var o = {title: body.querySelector('#lzTitle').value.trim(), sub: body.querySelector('#lzSub').value, count: body.querySelector('#lzCount').value, text: text, mc: body.querySelector('#lzMc').checked, hasImg: files.length > 0};
+        try{
+          var content = null;
+          if(files.length){
+            lzProg(msg, 'Fotos werden vorbereitet …');
+            var imgs = await Promise.all(files.map(lzImgScale));
+            content = imgs.map(function(d){ return {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: d}}; });
+            content.push({type: 'text', text: lzPackPrompt(o)});
+          }
+          lzProg(msg, 'KI schreibt …');
+          var j = await lzRunJson(lzPackPrompt(o), content, msg, 8000);
+          var arr = Array.isArray(j.items) ? j.items : [];
+          if(!arr.length) throw new Error('Die KI hat keine Karten geliefert. Bitte noch einmal versuchen.');
+          res = {title: o.title || String(j.title || 'KI-Paket').slice(0, 100), items: arr, target: body.querySelector('#lzTarget').value, sub: o.sub};
+          var rr = body.querySelector('#lzRes');
+          rr.innerHTML = '<h3 class="nbgh">' + arr.length + ' Karten für „' + esc(res.title) + '“</h3>' +
+            arr.slice(0, 5).map(function(it){ return '<div class="lzprev"><b>' + esc(String(it.q || it.title || '').slice(0, 160)) + '</b><div class="small">' + esc(String(it.a || '').slice(0, 160)) + '</div></div>'; }).join('') +
+            (arr.length > 5 ? '<div class="small">… und ' + (arr.length - 5) + ' weitere</div>' : '') +
+            '<div class="small" style="margin-top:6px">Die KI kann sich irren. Prüfe den Inhalt fachlich, bevor du darauf lernst.</div>' +
+            '<div class="row" style="margin-top:10px"><button type="button" id="lzSave" style="flex:1">Speichern</button></div>';
+          rr.querySelector('#lzSave').addEventListener('click', async function(){
+            try{ var p = await lzSaveItems(res.items, res.title, res.target, res.sub); sh.close(); toast('Gespeichert: ' + p.title + ' (' + p.items.length + ' Einträge)'); nbOpenPage('packs'); }
+            catch(e){ msg.textContent = e.message || 'Speichern nicht möglich.'; }
+          });
+          lzProg(msg, 'Fertig. Prüfe die Vorschau und speichere.');
+        }catch(e){ fail(msg, e); }
+        go.disabled = false; stop.hidden = true;
+      });
+    }
+    function drawExpl(){
+      body.innerHTML = '<div class="small">Tippe ein Thema ein. Die KI erklärt es kurz, gibt einen Merksatz und drei Testfragen. Auf Wunsch wird alles als Karten gespeichert.</div>' +
+        '<label class="lzl">Thema<input type="text" id="lzTopic" maxlength="160" placeholder="z. B. Warum gibt es Gradientenwind?"></label>' +
+        '<label class="lzl">Fach<select id="lzSub2">' + lzSubOpts(true) + '</select></label>' +
+        '<div class="row" style="margin-top:12px"><button type="button" id="lzGo2" style="flex:1">Erklären</button><button type="button" class="ghost" id="lzStop2" hidden>Abbrechen</button></div><div class="small" id="lzMsg2" style="margin-top:8px"></div><div id="lzRes2"></div>';
+      var msg = body.querySelector('#lzMsg2'), go = body.querySelector('#lzGo2'), stop = body.querySelector('#lzStop2');
+      stop.addEventListener('click', function(){ if(lzCtl) lzCtl.abort(); });
+      go.addEventListener('click', async function(){
+        var topic = body.querySelector('#lzTopic').value.trim(), sub = body.querySelector('#lzSub2').value;
+        if(!topic){ msg.textContent = 'Gib ein Thema ein.'; return; }
+        go.disabled = true; stop.hidden = false; body.querySelector('#lzRes2').innerHTML = '';
+        var pr = 'Erkläre dieses Thema für die ATPL-Prüfung: "' + topic + '".\n' + (sub ? 'Fach: ' + sub + '.\n' : 'Fächer-Kürzel: ' + lzSubs() + '.\n') +
+          'Antworte NUR mit JSON: {"subject":"<Kürzel>","erklaerung":"<verständlich, höchstens 120 Wörter, mit Zeilenumbrüchen>","merksatz":"<kurzer Merksatz oder Eselsbrücke>","fragen":[{"q":"…","a":"…","wrong":["…","…","…"]}]} mit genau 3 Fragen.';
+        try{
+          var j = await lzRunJson(pr, null, msg, 2000);
+          var rr = body.querySelector('#lzRes2');
+          rr.innerHTML = '<div class="card lzcard"><div class="nbql">' + nbT(String(j.erklaerung || '')) + '</div>' + (j.merksatz ? '<div class="nbnote" style="margin-top:10px">' + nbT(String(j.merksatz)) + '</div>' : '') + '</div>' +
+            (Array.isArray(j.fragen) ? j.fragen.slice(0, 3).map(function(f, i){ return '<div class="lzprev"><b>' + (i + 1) + '. ' + esc(String(f.q || '')) + '</b><div class="small">' + esc(String(f.a || '')) + '</div></div>'; }).join('') : '') +
+            '<div class="small" style="margin-top:6px">Die KI kann sich irren. Prüfe wichtige Angaben.</div><div class="row" style="margin-top:10px"><button type="button" id="lzSave2" style="flex:1">Als Karten speichern</button></div>';
+          rr.querySelector('#lzSave2').addEventListener('click', async function(){
+            try{
+              var sj = sub || (j.subject && SUBJECTS.some(function(s){ return s.id === j.subject; }) ? j.subject : 'none');
+              var its = [{subject: sj, type: 'definition', title: topic.slice(0, 80), q: 'Erkläre: ' + topic, a: String(j.erklaerung || ''), note: String(j.merksatz || '')}];
+              (Array.isArray(j.fragen) ? j.fragen : []).slice(0, 3).forEach(function(f){ its.push({subject: sj, type: 'fakt', title: String(f.q || '').slice(0, 80), q: String(f.q || ''), a: String(f.a || ''), wrong: Array.isArray(f.wrong) ? f.wrong : []}); });
+              var pk = await lzSaveItems(its, 'KI-Erklärungen', NB.packs['ki-erklaert'] ? 'ki-erklaert' : '', sj, 'ki-erklaert');
+              sh.close(); toast('Gespeichert in „' + pk.title + '“'); nbOpenPage('packs');
+            }catch(e){ msg.textContent = e.message || 'Speichern nicht möglich.'; }
+          });
+          msg.textContent = '';
+        }catch(e){ fail(msg, e); }
+        go.disabled = false; stop.hidden = true;
+      });
+    }
+    function drawPlan(){
+      body.innerHTML = '<div class="small">Die KI erstellt aus deinem Stand, Ziel, Prüfungstermin und deinen Fächern einen Plan für die nächsten sieben Tage.</div>' +
+        '<label class="lzl">Besonderheiten (optional)<input type="text" id="lzWish" maxlength="200" placeholder="z. B. Mittwoch keine Zeit, Fokus auf Meteorologie"></label>' +
+        '<div class="row" style="margin-top:12px"><button type="button" id="lzGo3" style="flex:1">Plan erstellen</button><button type="button" class="ghost" id="lzStop3" hidden>Abbrechen</button></div><div class="small" id="lzMsg3" style="margin-top:8px"></div><div id="lzRes3"></div>';
+      var msg = body.querySelector('#lzMsg3'), go = body.querySelector('#lzGo3'), stop = body.querySelector('#lzStop3');
+      stop.addEventListener('click', function(){ if(lzCtl) lzCtl.abort(); });
+      go.addEventListener('click', async function(){
+        go.disabled = true; stop.hidden = false; body.querySelector('#lzRes3').innerHTML = '';
+        var snap = {}; try{ snap = pushSnap(homeNums()); }catch(e){}
+        try{ var ex = examDate(); snap.pruefung_in_tagen = Math.max(0, Math.ceil((ex - new Date()) / 86400000)); }catch(e){}
+        var wish = body.querySelector('#lzWish').value.trim();
+        var pr = 'Erstelle einen konkreten Lernplan für die nächsten 7 Tage (beginne heute, nenne die Wochentage). Pro Tag: Zielzahl Fragen und 1 bis 2 Fächer mit kurzem Grund. Die Summe soll zum nötigen Tempo passen (Feld "tempo_pro_tag", "heute_noch_offen", "diff_zum_plan"). Schwache oder lange nicht geübte Fächer ("faecher", "tage_seit_test") bekommen Vorrang. ' + (wish ? 'Wunsch: ' + wish + '. ' : '') +
+          'Format: eine Zeile pro Tag, am Ende ein Satz Tipp. Kein Markdown. Nutze nur diese Daten: ' + JSON.stringify(snap);
+        lzCtl = typeof AbortController === 'function' ? new AbortController() : null;
+        try{
+          var r = await aikCall([{role: 'user', content: pr}], {system: LZ_SYS, maxTokens: 900, signal: lzCtl ? lzCtl.signal : undefined, onText: function(t){ body.querySelector('#lzRes3').innerHTML = '<div class="card lzcard lzplan">' + nbT(t.text.replace(/[*#_`]/g, '')) + '</div>'; }});
+          body.querySelector('#lzRes3').innerHTML = '<div class="card lzcard lzplan">' + nbT(r.text.replace(/[*#_`]/g, '')) + '</div><div class="row" style="margin-top:10px"><button type="button" class="ghost" id="lzCp">Kopieren</button></div>';
+          body.querySelector('#lzCp').addEventListener('click', function(){ nbCopy(r.text).then(function(ok){ toast(ok ? 'Plan kopiert' : 'Kopieren nicht möglich'); }); });
+          msg.textContent = '';
+        }catch(e){ fail(msg, e); }
+        go.disabled = false; stop.hidden = true;
+      });
+    }
+    function draw(){ seg(); (tab === 'expl' ? drawExpl : tab === 'plan' ? drawPlan : drawPack)(); }
+    sh.ov.addEventListener('click', function(ev){ var b = ev.target.closest && ev.target.closest('[data-lzt]'); if(b){ tab = b.getAttribute('data-lzt'); draw(); } });
+    draw();
+  }
+
+  /* KI fragen zu einer Karte */
+  function lzAsk(it, state){
+    if(!aikOn() || !it) return;
+    var turns = [];
+    var ctx = 'Karteikarte (Fach: ' + nbSubName(it.subject) + ', Art: ' + (NB_TYPES[it.type] || it.type) + ')\nFrage: ' + nbQuestion(it) + '\nAntwort laut Karte: ' + (it.a || '') + (it.note ? '\nHinweis auf der Karte: ' + it.note : '');
+    var sys = LZ_SYS + ' Du beantwortest Rückfragen zu genau dieser Karteikarte. Kurz halten (höchstens etwa 120 Wörter), konkret, gern mit einem Beispiel oder einer Eselsbrücke. Weicht die Karte erkennbar von der gängigen Fachlehre ab, sag das freundlich.' +
+      (state === 'ask' ? ' WICHTIG: Der Lernende hat die Karte noch nicht beantwortet. Gib nur Hinweise und verrate die Antwort nicht, außer er verlangt sie ausdrücklich.' : '') + '\n\n' + ctx;
+    var sh = openSheet('<div class="shead"><h2>KI fragen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div><div class="small lzctx"><b>' + esc(it.title) + '</b></div>' +
+      '<div class="lzchips">' + ['Erkläre es einfacher', 'Gib mir eine Eselsbrücke', 'Warum ist das so?', 'Gib ein Beispiel'].map(function(c){ return '<button type="button" class="catb" data-lzq="' + escA(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>' +
+      '<div id="lzLog" class="lzlog" aria-live="polite"></div>' +
+      '<div class="row" style="margin-top:10px"><input type="text" id="lzIn" maxlength="500" placeholder="Deine Frage zur Karte" style="flex:1" aria-label="Frage an die KI"><button type="button" id="lzSend">Senden</button></div><div class="small" id="lzErr" style="margin-top:6px"></div>');
+    var log = sh.ov.querySelector('#lzLog'), inp = sh.ov.querySelector('#lzIn'), err = sh.ov.querySelector('#lzErr'), busy = false;
+    async function send(q){
+      q = String(q || '').trim(); if(!q || busy) return;
+      busy = true; err.textContent = ''; inp.value = '';
+      turns.push({role: 'user', content: q});
+      var u = document.createElement('div'); u.className = 'lzb me'; u.innerHTML = nbT(q); log.appendChild(u);
+      var a = document.createElement('div'); a.className = 'lzb ai'; a.textContent = '…'; log.appendChild(a);
+      log.scrollTop = log.scrollHeight;
+      try{
+        var r = await aikCall(turns, {system: sys, maxTokens: 700, onText: function(t){ a.innerHTML = nbT(t.text.replace(/[*#`]/g, '')); log.scrollTop = log.scrollHeight; }});
+        var txt = r.text.replace(/[*#`]/g, '').trim(); a.innerHTML = nbT(txt); turns.push({role: 'assistant', content: txt});
+      }catch(e){ turns.pop(); a.remove(); err.textContent = (e && (e.userMsg || e.message)) || 'Das hat nicht geklappt.'; }
+      busy = false;
+    }
+    sh.ov.querySelector('#lzSend').addEventListener('click', function(){ send(inp.value); });
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); send(inp.value); } });
+    sh.ov.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-lzq]'); if(b) send(b.getAttribute('data-lzq')); });
+  }
+  function lzInject(){
+    var el = $('nb');
+    if(!el) return;
+    var on = aikOn();
+    if(!on){ el.querySelectorAll('.lzx').forEach(function(x){ x.remove(); }); return; }
+    if(el.hidden) return;
+    var tabs = el.querySelector('#nbTabs');
+    if(tabs && !el.querySelector('.lzhub')){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ghost lzx lzhub'; b.setAttribute('data-lz', 'hub');
+      b.textContent = 'KI-Assistent: Paket, Erklärung, Wochenplan'; tabs.parentNode.insertBefore(b, tabs.nextSibling);
+    }
+    var qz = nbv.quiz;
+    var q = el.querySelector('.nbq');
+    if(q && qz && !qz.done && !q.querySelector('.lzaskq')){
+      var b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'ghost lzx lzaskq'; b2.setAttribute('data-lz', 'quiz'); b2.textContent = 'KI fragen'; b2.style.cssText = 'width:100%;margin-top:10px';
+      q.appendChild(b2);
+    }
+    el.querySelectorAll('.nbc.open[data-g]').forEach(function(c){
+      var bd = c.querySelector('.nbbody');
+      if(bd && !bd.querySelector('.lzaskc')){ var b3 = document.createElement('button'); b3.type = 'button'; b3.className = 'ghost lzx lzaskc'; b3.setAttribute('data-lz', 'card'); b3.textContent = 'KI fragen'; b3.style.cssText = 'margin-top:8px;padding:7px 14px'; bd.appendChild(b3); }
+    });
+  }
+  (function lzInit(){
+    var st = document.createElement('style');
+    st.textContent = '.lzhub{width:100%;margin:2px 0 10px}.lzl{display:block;margin-top:10px;font-size:13px}.lzl input,.lzl select,.lzl textarea{width:100%;margin-top:4px}.lzrow{gap:10px}.lzchk{display:flex;align-items:center;gap:8px;margin-top:10px}.lzprev{border-top:1px solid var(--line);padding:8px 0}.lzcard{margin-top:10px}.lzplan{white-space:normal;font-size:14px;line-height:1.5}.lzseg{display:flex}.lzseg button{flex:1}.lzchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.lzlog{max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:8px}.lzb{padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.45;max-width:92%}.lzb.me{align-self:flex-end;background:var(--accent);color:#fff}.lzb.ai{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}';
+    document.head.appendChild(st);
+    var el = $('nb'); if(!el) return;
+    new MutationObserver(function(){ try{ lzInject(); }catch(e){} }).observe(el, {childList: true, subtree: true});
+    el.addEventListener('click', function(ev){
+      var b = ev.target.closest && ev.target.closest('[data-lz]'); if(!b) return;
+      ev.stopPropagation();
+      var k = b.getAttribute('data-lz');
+      if(k === 'hub') lzHub('pack');
+      else if(k === 'quiz'){ var qz = nbv.quiz; if(qz && !qz.done) lzAsk(qz.items[qz.k].e.it, qz.st); }
+      else if(k === 'card'){ var c = b.closest('.nbc'), g = c && c.getAttribute('data-g'), e2 = nbEntries().filter(function(x){ return x.gid === g; })[0]; if(e2) lzAsk(e2.it, 'rev'); }
+    }, true);
+  })();
   maybeChangelog();
   connect(0);
   if(S.fresh === true) obOpen();

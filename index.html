@@ -7093,7 +7093,7 @@ body.menuopen{overflow:hidden}
     var o = frMine(false), h = frHash(o);
     if(!force && h === c.h) return Promise.resolve(false);
     var files = {}; files[FR_FILE] = {content:JSON.stringify(o)};
-    return gh('/gists/' + c.gist, {method:'PATCH', body:{files:files}}).then(function(){ c.h = h; frStore(); return true; }, function(){ return false; });
+    return gh('/gists/' + c.gist, {method:'PATCH', body:{files:files}}).then(function(){ c.h = h; c.pt = Date.now(); frStore(); return true; }, function(){ return false; });
   }
   function frTouch(){
     var c = S && S.share;
@@ -7265,7 +7265,7 @@ body.menuopen{overflow:hidden}
     h += '<div class="row" style="margin-top:12px;align-items:center"><b style="flex:1">Deine Freunde</b><button type="button" class="ghost" data-fract="refresh" style="padding:7px 14px">' + (frBusy ? 'Lädt …' : 'Aktualisieren') + '</button></div>';
     if(!S.friends.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
     S.friends.forEach(function(fr, i){
-      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small">aktualisiert ' + esc(frWhen(fr.last)) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
+      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small" title="Abgerufen ' + escA(frWhen(fr.last)) + '">' + (fr.data && fr.data.t ? 'zuletzt online ' + esc(frWhen(fr.data.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
         '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
     });
     h += (typeof pushInsHtml === 'function' ? pushInsHtml() : '');
@@ -7375,7 +7375,11 @@ body.menuopen{overflow:hidden}
   var frI = $('frIcon'), acI = $('acIcon');
   if(frI) frI.addEventListener('click', frOpen);
   if(acI) acI.addEventListener('click', openAccount);
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden) frPull(false); });
+  function frSeen(){
+    try{ var c = frCfg(); if(S.role === 'instructor' || !c.gist || document.hidden) return; if(!c.pt || Date.now() - c.pt > 10 * 60000) frPush(true); }catch(e){}
+  }
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden){ frPull(false); frSeen(); } });
+  setTimeout(frSeen, 6000); setInterval(frSeen, 5 * 60000);
   setInterval(function(){ if(!document.hidden) frPull(false); }, 30000);
   frNewsDot();
   frShareRender();

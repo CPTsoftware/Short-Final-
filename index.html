@@ -149,8 +149,10 @@ tr.nrow input{font-style:normal;font-size:14px;padding:8px 10px}
 [hidden]{display:none!important}
 
 /* Menü oben */
-.tabs{position:fixed;left:50%;transform:translateX(-50%);top:0;width:min(100%,560px);display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);z-index:30}
-.tab{background:var(--card2);color:var(--muted);border:1px solid transparent;border-radius:999px;padding:10px 4px;font-size:13px;font-weight:600}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);top:0;width:min(100%,560px);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);z-index:30}
+.tab{background:var(--card2);color:var(--muted);border:1px solid transparent;border-radius:999px;padding:10px 2px;font-size:12.5px;font-weight:600;white-space:nowrap;min-width:0}
+.scrow input{font-size:15px}
+.smg .smr{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.smg .smr:first-of-type{border-top:0}.smg .smn{flex:1;min-width:0;overflow-wrap:anywhere}.smg .smn small{display:block;color:var(--muted);font-size:11.5px}.smg .smr button{padding:5px 9px;font-size:12.5px}.smg summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;font-weight:700}.smg summary small{font-weight:400;color:var(--muted)}
 .tab.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700}
 
 /* Fächer */
@@ -800,7 +802,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   <div class="subrow"><div class="sub" id="sub"></div><span class="clock" id="clock"></span></div>
   <div class="small statrow" style="margin:-8px 0 12px"><span id="status"></span> <a href="#" id="syncLink" hidden>Cloud-Synchronisierung einrichten</a></div>
 
-  <div class="tabs"><button class="tab on" id="tabBtnHome">Heute</button><button class="tab" id="tabBtnMain">Fragen-Ziel</button><button class="tab" id="tabBtnSubj">Fächer</button></div>
+  <div class="tabs"><button class="tab on" id="tabBtnHome">Heute</button><button class="tab" id="tabBtnMain">Fragen-Ziel</button><button class="tab" id="tabBtnSubj">Fächer</button><button class="tab" id="tabBtnSub">Subchapter</button></div>
 
   <div id="tabHome">
     <div class="greet" id="greet" hidden></div>
@@ -954,6 +956,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       </div>
     </details>
   </div>
+
+  <div id="tabSub" hidden><div id="subMgBox"></div></div>
 
   <div id="tabSubj" hidden>
     <div class="grid" id="subjSummary" style="margin-bottom:12px"></div>
@@ -1724,7 +1728,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   };
   var CATSHORT = {rep:'Falsche', gen:'Generell', sim:'Simulation'};
   function arrOf(s, k){ return k === 'rep' ? s.rep : (k === 'last' ? s.last : (k === 'gen' ? s.gen : s.sim)); }
-  /* ---------- Subchapter: Anteil und Ergebnis je Fach ---------- */
+  /* ---------- Subchapter: Anzahl und Ergebnis je Fach ---------- */
   function scKey(n){ return String(n || '').trim().toLowerCase(); }
   function scAgg(s){
     var m = {}, out = [];
@@ -1749,11 +1753,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     return out.sort(function(a, b){ return a.localeCompare(b, 'de'); });
   }
   function scRowHTML(){
-    return '<div class="scrow"><input type="text" class="scn" list="scdl" maxlength="40" placeholder="Subchapter" autocomplete="off"><input type="number" class="sca" inputmode="decimal" min="1" max="100" step="any" placeholder="Anteil der Fragen %"><input type="number" class="scp" inputmode="decimal" min="0" max="100" step="any" placeholder="Richtig %"><button type="button" class="ghost scx" aria-label="Entfernen">✕</button></div>';
+    return '<div class="scrow"><input type="text" class="scn" list="scdl" maxlength="40" placeholder="Subchapter" autocomplete="off"><input type="number" class="sca" inputmode="numeric" min="1" step="1" placeholder="Anzahl" aria-label="Anzahl der Fragen"><input type="number" class="scp" inputmode="decimal" min="0" max="100" step="any" placeholder="Richtig %"><button type="button" class="ghost scx" aria-label="Entfernen">✕</button></div>';
   }
   /* Eingabe-Bereich für Subchapter; getN liefert die Anzahl der Fragen des Eintrags */
   function scBoxHTML(){
-    return '<div class="scbox"><datalist id="scdl"></datalist><div class="small" style="margin-bottom:6px">Optional: Subchapter mit Anteil an den Fragen (links) und Ergebnis in Prozent (rechts).</div><div class="scrows"></div><button type="button" class="ghost scaddb">+ Subchapter hinzufügen</button><div class="small scinfo"></div></div>';
+    return '<div class="scbox"><datalist id="scdl"></datalist><div class="small" style="margin-bottom:6px">Optional: Subchapter mit Anzahl der Fragen (links) und Ergebnis in Prozent (rechts).</div><div class="scrows"></div><button type="button" class="ghost scaddb">+ Subchapter hinzufügen</button><div class="small scinfo"></div></div>';
   }
   function scAttach(root, sjId, getN){
     var rows = root.querySelector('.scrows'), info = root.querySelector('.scinfo'), dl = root.querySelector('#scdl');
@@ -1764,18 +1768,16 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         var c = r.querySelector('.scn').value.trim().slice(0, 40), a = r.querySelector('.sca').value, p = r.querySelector('.scp').value;
         if(!c && a === '' && p === '') return;
         var av = parseFloat(String(a).replace(',', '.')), pv = parseFloat(String(p).replace(',', '.'));
-        if(!c || !isFinite(av) || !isFinite(pv) || av <= 0 || av > 100 || pv < 0 || pv > 100){ err = 'Pro Subchapter: Name, Anteil (1 bis 100 %) und Ergebnis (0 bis 100 %) eintragen.'; return; }
-        tot += av;
-        var n = N ? Math.max(1, Math.round(N * av / 100)) : 0;
-        out.push({c:c, share:av, pct:pv, n:n, ok:Math.round(n * pv / 100)});
+        if(!c || !isFinite(av) || !isFinite(pv) || av < 1 || av > 100000 || pv < 0 || pv > 100){ err = 'Pro Subchapter: Name, Anzahl der Fragen und Ergebnis (0 bis 100 %) eintragen.'; return; }
+        var n = Math.round(av); tot += n;
+        out.push({c:c, share:N ? n / N * 100 : 0, pct:pv, n:n, ok:Math.round(n * pv / 100)});
       });
-      if(!err && out.length && !N) err = 'Trage zuerst die Anzahl der Fragen ein, dann kann ich die Anteile umrechnen.';
-      if(!err && tot > 100.5) err = 'Die Anteile ergeben ' + Math.round(tot) + ' %, mehr als 100 % geht nicht.';
-      return {rows:out, err:err, tot:tot};
+      if(!err && N && tot > N) err = 'Die Subchapter haben zusammen ' + fmt(tot) + ' Fragen, der Eintrag nur ' + fmt(N) + '.';
+      return {rows:out, err:err, tot:tot, N:N};
     }
     function upd(){
       var r = read();
-      info.textContent = r.err ? r.err : (r.rows.length ? r.rows.map(function(x){ return x.c + ': ' + fmt(x.n) + ' Fragen, ' + fmt(x.ok) + ' richtig'; }).join(' · ') + (r.tot < 100 ? ' · Rest ' + Math.round(100 - r.tot) + ' % ohne Subchapter' : '') : '');
+      info.textContent = r.err ? r.err : (r.rows.length ? r.rows.map(function(x){ return x.c + ': ' + fmt(x.n) + ' Fragen, ' + fmt(x.ok) + ' richtig'; }).join(' · ') + (r.N > r.tot ? ' · Rest ' + fmt(r.N - r.tot) + ' ohne Subchapter' : '') : '');
     }
     root.querySelector('.scaddb').addEventListener('click', function(){ rows.insertAdjacentHTML('beforeend', scRowHTML()); var l = rows.lastElementChild; if(l) l.querySelector('.scn').focus(); upd(); });
     rows.addEventListener('click', function(e){ var x = e.target.closest ? e.target.closest('.scx') : null; if(x){ x.parentNode.parentNode.removeChild(x.parentNode); upd(); } });
@@ -1795,7 +1797,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function subchapHTML(i, s){
     var agg = scAgg(s);
-    if(!agg.length) return '<div class="small">Noch keine Subchapter. Beim Fragen-Tracken oder bei einem Bericht (Knopf „＋Sub“) kannst du sie mit Anteil und Ergebnis eintragen. Dann siehst du hier die schwächsten.</div>';
+    if(!agg.length) return '<div class="small">Noch keine Subchapter. Beim Fragen-Tracken oder bei einem Bericht (Knopf „＋Sub“) kannst du sie mit Anzahl der Fragen und Ergebnis eintragen. Dann siehst du hier die schwächsten.</div>';
     var rk = scRank(agg), h = '<table class="sct"><tbody>';
     rk.ranked.forEach(function(x, ix){
       var c = cls(x.p);
@@ -1811,10 +1813,82 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     }).join('') + '</tbody></table></details>';
     return h;
   }
+  /* ---------- Reiter Subchapter: alle Subchapter nach Fach verwalten ---------- */
+  var smg = {edit:null, open:{}, arm:null};
+  function renderSubMg(){
+    var box = $('subMgBox'); if(!box) return;
+    var keep = null, ae = document.activeElement;
+    if(ae && ae.getAttribute && ae.getAttribute('data-smin') !== null && box.contains(ae)) keep = {k:ae.getAttribute('data-smin'), v:ae.value};
+    var tot = 0, h = '<div class="small" style="margin:2px 2px 12px">Alle Subchapter nach Fach, die schwächsten zuerst. Hier legst du Subchapter an, benennst sie um (gleiche Namen werden zusammengeführt) oder löschst sie. Die Ergebnisse trägst du weiterhin beim Fragen-Tracken oder bei einem Bericht mit „＋Sub“ ein.</div>';
+    SUBJECTS.forEach(function(sj, i){
+      var s = getSub(sj.id), agg = scAgg(s), rk = scRank(agg), seen = {};
+      var rows = rk.ranked.concat(rk.few);
+      rows.forEach(function(x){ seen[scKey(x.name)] = 1; });
+      scNames(s).forEach(function(nm){ if(!seen[scKey(nm)]){ seen[scKey(nm)] = 1; rows.push({name:nm, n:0, ok:0, p:null}); } });
+      tot += rows.length;
+      var open = smg.open[i] !== undefined ? smg.open[i] : rows.length > 0;
+      h += '<details class="card smg" data-smd="' + i + '"' + (open ? ' open' : '') + '><summary><span>' + esc(sj.name) + '</span><small>' + (rows.length ? rows.length + ' Subchapter' : 'keine') + '</small></summary><div style="margin-top:6px">';
+      rows.forEach(function(x){
+        var ed = smg.edit && smg.edit.i === i && smg.edit.k === scKey(x.name);
+        if(ed){
+          h += '<div class="smr"><input type="text" data-smin="' + i + '" data-smold="' + escA(x.name) + '" maxlength="40" value="' + escA(x.name) + '" style="flex:1;min-width:0"><button type="button" data-smok="' + i + '">OK</button><button type="button" class="ghost" data-smcx="1" aria-label="Abbrechen">✕</button></div>';
+          return;
+        }
+        var c = x.p === null ? '' : cls(x.p);
+        h += '<div class="smr"><div class="smn"><b>' + esc(x.name) + '</b><small>' + (x.n ? fmt(x.ok) + ' von ' + fmt(x.n) + ' richtig' + (x.n < SC_MIN ? ' · zu wenig (ab ' + SC_MIN + ')' : '') : 'noch keine Ergebnisse') + '</small>' + (x.p !== null && x.n >= SC_MIN ? '<div class="scbar"><i class="' + c + '" style="width:' + Math.max(2, Math.round(x.p)) + '%"></i></div>' : '') + '</div>' +
+          (x.p !== null ? '<span class="' + c + '" style="font-family:var(--mono);font-size:13px;white-space:nowrap">' + Math.round(x.p) + ' %</span>' : '') +
+          '<button type="button" class="ghost" data-smren="' + i + '" data-n="' + escA(x.name) + '" aria-label="Umbenennen">✎</button><button type="button" class="ghost" data-smdel="' + i + '" data-n="' + escA(x.name) + '" aria-label="Löschen">✕</button></div>';
+      });
+      h += '<div class="row" style="margin-top:8px"><input type="text" data-smadd="' + i + '" maxlength="40" placeholder="Neues Subchapter" autocomplete="off" style="flex:1;min-width:0"><button type="button" data-smaddb="' + i + '">Anlegen</button></div></div></details>';
+    });
+    box.innerHTML = h;
+    if(keep){ var ki = box.querySelector('[data-smin="' + keep.k + '"]'); if(ki) ki.focus(); }
+  }
+  function smgRename(i, oldName, nv){
+    nv = String(nv || '').trim().slice(0, 40);
+    if(!nv) return;
+    var s = getSub(SUBJECTS[i].id), ok = scKey(oldName), nk = scKey(nv), hit = false;
+    s.sc.forEach(function(e){ if(scKey(e.c) === ok){ e.c = nv; hit = true; } });
+    var ex = (s.sc || []).filter(function(e){ return scKey(e.c) === nk && e.c !== nv; });
+    ex.forEach(function(e){ e.c = nv; });
+    var out = [], seen = {};
+    (s.chap || []).forEach(function(c){ var k = scKey(c) === ok ? nk : scKey(c); if(!k || seen[k]) return; seen[k] = 1; out.push(k === nk ? nv : c); });
+    if(!seen[nk]) out.push(nv);
+    s.chap = out;
+    smg.edit = null; refreshAll(); toast(hit ? 'Umbenannt' : 'Gespeichert');
+  }
+  (function(){
+    var box = $('subMgBox');
+    box.addEventListener('toggle', function(e){ var d = e.target; if(d && d.getAttribute && d.getAttribute('data-smd') !== null) smg.open[d.getAttribute('data-smd')] = d.open; }, true);
+    box.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('button') : null; if(!b) return;
+      var i;
+      if(b.hasAttribute('data-smren')){ smg.edit = {i:+b.getAttribute('data-smren'), k:scKey(b.getAttribute('data-n'))}; renderSubMg(); var inp = box.querySelector('[data-smin]'); if(inp){ inp.focus(); inp.select(); } }
+      else if(b.hasAttribute('data-smcx')){ smg.edit = null; renderSubMg(); }
+      else if(b.hasAttribute('data-smok')){ i = +b.getAttribute('data-smok'); var inp2 = b.parentNode.querySelector('[data-smin]'); smgRename(i, inp2.getAttribute('data-smold'), inp2.value); }
+      else if(b.hasAttribute('data-smdel')){
+        if(b.getAttribute('data-arm') !== '1'){ b.setAttribute('data-arm', '1'); b.textContent = 'Löschen?'; setTimeout(function(){ if(b.parentNode){ b.removeAttribute('data-arm'); b.textContent = '✕'; } }, 3000); return; }
+        i = +b.getAttribute('data-smdel'); var k = scKey(b.getAttribute('data-n')), s = getSub(SUBJECTS[i].id);
+        s.sc = s.sc.filter(function(x){ return scKey(x.c) !== k; }); s.chap = (s.chap || []).filter(function(c){ return scKey(c) !== k; });
+        refreshAll(); toast('Subchapter gelöscht');
+      }else if(b.hasAttribute('data-smaddb')){
+        i = +b.getAttribute('data-smaddb'); var inp3 = box.querySelector('[data-smadd="' + i + '"]'), nv = (inp3.value || '').trim().slice(0, 40); if(!nv) return;
+        var s3 = getSub(SUBJECTS[i].id);
+        if(!(s3.chap || []).concat(s3.sc.map(function(x){ return x.c; })).some(function(c){ return scKey(c) === scKey(nv); })) s3.chap.push(nv);
+        smg.open[i] = true; refreshAll(); toast('Subchapter angelegt');
+      }
+    });
+    box.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      var t = e.target;
+      if(t.hasAttribute('data-smin')){ e.preventDefault(); smgRename(+t.getAttribute('data-smin'), t.getAttribute('data-smold'), t.value); }
+      else if(t.hasAttribute('data-smadd')){ e.preventDefault(); var b2 = box.querySelector('[data-smaddb="' + t.getAttribute('data-smadd') + '"]'); if(b2) b2.click(); }
+    });
+  })();
   function scAddSheet(i, kind, rec){
     var sj = SUBJECTS[i], N = kind === 'last' ? rec.x : rec.n;
     var sh = openSheet('<div class="shead"><h2>Subchapter ergänzen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
-      '<div class="small">' + esc(sj.name) + ', ' + fd(parse(rec.d)) + ': ' + fmt(rec.ok) + ' von ' + fmt(N) + ' richtig. Trage ein, welchen Anteil der ' + fmt(N) + ' Fragen ein Subchapter hatte und wie viel Prozent davon richtig waren.</div>' +
+      '<div class="small">' + esc(sj.name) + ', ' + fd(parse(rec.d)) + ': ' + fmt(rec.ok) + ' von ' + fmt(N) + ' richtig. Trage ein, wie viele der ' + fmt(N) + ' Fragen zu einem Subchapter gehörten und wie viel Prozent davon richtig waren.</div>' +
       scBoxHTML() + '<button id="scGo" style="width:100%;margin-top:6px">Speichern</button><div class="small msg" id="scM"></div>');
     var box = scAttach(sh.ov.querySelector('.scbox'), sj.id, function(){ return N; });
     box.querySelector('.scrows').insertAdjacentHTML('beforeend', scRowHTML());
@@ -3475,6 +3549,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     $('tabHome').hidden = (t !== 'home');
     $('tabMain').hidden = (t !== 'main');
     $('tabSubj').hidden = (t !== 'subj');
+    $('tabSub').hidden = (t !== 'sub');
+    $('tabBtnSub').classList.toggle('on', t === 'sub');
+    if(t === 'sub') renderSubMg();
     $('tabBtnHome').classList.toggle('on', t === 'home');
     $('tabBtnMain').classList.toggle('on', t === 'main');
     $('tabBtnSubj').classList.toggle('on', t === 'subj');
@@ -3485,6 +3562,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   $('tabBtnHome').addEventListener('click', function(){ showTab('home'); });
   $('tabBtnMain').addEventListener('click', function(){ showTab('main'); });
   $('tabBtnSubj').addEventListener('click', function(){ showTab('subj'); });
+  $('tabBtnSub').addEventListener('click', function(){ showTab('sub'); });
 
   /* ---------- Animationen ---------- */
   function reducedMotion(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
@@ -4700,6 +4778,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     ensureS();
     save();
     render(); renderSubjects(); renderHome();
+    if(!$('tabSub').hidden) renderSubMg();
   }
   function toast(msg){
     var t = document.createElement('div');
@@ -6803,6 +6882,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-41', items:[
+      {t:'Reiter Subchapter', x:'Neuer Reiter „Subchapter“: alle Subchapter nach Fach sortiert, die schwächsten zuerst. Dort legst du Subchapter an, benennst sie um (gleiche Namen werden zusammengeführt) oder löschst sie.', notour:true},
+      {t:'Anzahl statt Anteil', x:'Beim Subchapter trägst du jetzt die Anzahl der Fragen ein, nicht mehr den Anteil in Prozent.', notour:true}
+    ]},
     {v:'2026.10.13-40', items:[
       {t:'Partnerkurse', x:'Der Admin eines Kurses kann ihn mit anderen Kursen verbinden (Kurscode des anderen Kurses, der dortige Admin nimmt an). Dann seht ihr gegenseitig die Mitglieder, könnt einzelnen Leuten eine Freundschaftsanfrage schicken und die Kurse unter „Kurse vergleichen“ als Ganzes gegenüberstellen. Der Push-Dienst muss dafür in der neuesten Version laufen.', notour:true},
       {t:'Rivalen unter Freunden', x:'Sind zwei deiner Freunde untereinander Rivalen, tragen beide in der Rangliste dieselbe dezente Farbe und den Hinweis „Rivale von …“.', notour:true},
@@ -6812,7 +6895,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       {t:'Kurse', x:'Oben neben Freunde und Account gibt es den Button „Kurs“. Erstelle einen Kurs und gib den Kurscode weiter: Wer beitritt, ist automatisch mit dem ganzen Kurs befreundet (bis 50 Personen). In der Rangliste steht der Kurs klein unter dem Namen, ein Filter zeigt nur einen Kurs. Dazu gibt es einen Kurs-Chat und im Lernzentrum bei „Teilen“ die Möglichkeit, ein Paket mit dem ganzen Kurs zu teilen oder gemeinsam zu bearbeiten. Der Ersteller ist Admin und kann die Rolle weitergeben. Der Push-Dienst muss dafür in der neuesten Version laufen.', tab:'home', sel:'#kuIcon', notour:true}
     ]},
     {v:'2026.10.13-38', items:[
-      {t:'Subchapter', x:'Beim Fragen-Tracken gibt es ab Fach-Auswahl „+ Subchapter hinzufügen“: Name des Subchapters, Anteil der Fragen und Ergebnis in Prozent. Die Namen werden pro Fach gespeichert. Unter „Fächer“ siehst du pro Fach die schwächsten Subchapter und oben in der Übersicht die schwächsten insgesamt. Bei Berichten kannst du Subchapter mit „＋Sub“ nachträglich ergänzen.', web:true, tab:'subj', sel:'#sc-0 .blk', open:'#sc-0'}
+      {t:'Subchapter', x:'Beim Fragen-Tracken gibt es ab Fach-Auswahl „+ Subchapter hinzufügen“: Name des Subchapters, Anzahl der Fragen und Ergebnis in Prozent. Die Namen werden pro Fach gespeichert. Unter „Fächer“ siehst du pro Fach die schwächsten Subchapter und oben in der Übersicht die schwächsten insgesamt. Bei Berichten kannst du Subchapter mit „＋Sub“ nachträglich ergänzen.', web:true, tab:'subj', sel:'#sc-0 .blk', open:'#sc-0'}
     ]},
     {v:'2026.10.13-37', items:[
       {t:'Soll-Linie mit Anstieg', x:'Bei mehr als 2 Monaten bis zum Ziel startet das Tagesziel jetzt niedriger und steigt bis zur Prüfung an, statt linear zu laufen. Den Anstieg stellst du unter „Ziel und Hilfe“ mit einem Regler ein (0 = gleichmäßig). Unter 2 Monaten ändert sich nichts.', web:true, notour:true},

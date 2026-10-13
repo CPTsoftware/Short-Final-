@@ -1484,6 +1484,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     return JSON.parse(JSON.stringify({
       target:S.target, deadline:S.deadline, entries:S.entries,
       open:Array.isArray(S.open) ? S.open : [],
+      rival:(S.rival && typeof S.rival === 'object') ? S.rival : null,
+      chal:(S.chal && typeof S.chal === 'object') ? S.chal : null,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
       nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null, role:(S.role === 'instructor') ? 'instructor' : null,
       share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null, o:S.share.optout ? 1 : 0, v:S.share.sdv || 0} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
@@ -3666,22 +3668,24 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   bdDef('n123', 'u', 'Eins-Zwei-Drei', '12.345 Fragen überschritten', 'n123', 's', function(c){ return c.cross123; }, function(c){ return [c.total, 12345]; });
   bdDef('pi', 'u', 'Kreiszahl', '31.415 Fragen überschritten', 'pi', 's', function(c){ return c.crossPi; }, function(c){ return [c.total, 31415]; });
   bdDef('kl', 'u', 'Kleinkariert', 'An einem Tag nur 3 bis 10 Fragen getrackt', 'grid', 'b', function(c){ return c.small; });
-  bdDef('wcatch', 'w', 'Eingeholt', 'Einen Freund eingeholt', 'handshake', 's', function(c){ return !!c.fx.catch; }, null, true);
+  bdDef('wcatch', 'w', 'Eingeholt', 'Einen Rivalen eingeholt', 'handshake', 's', function(c){ return !!c.fx.catch; }, null, true);
   bdDef('wpass', 'w', 'Überholt', 'Einen Freund überholt', 'plane', 'g', function(c){ return !!c.fx.pass; }, null, true);
-  bdDef('whang', 'w', 'Abgehängt', 'Einen Freund um mindestens zwei Tagespensum abgehängt', 'target', 'b', function(c){ return !!c.fx.hang; }, null, true);
+  bdDef('whang', 'w', 'Abgehängt', 'Einen Rivalen im Duell abgehängt (10 % vom Ziel Vorsprung)', 'target', 'b', function(c){ return !!c.fx.hang; }, null, true);
   bdDef('wpack', 'w', 'Rudelflug', 'Drei Freunde hinzugefügt', 'people', 's', function(c){ return c.friends >= 3; }, function(c){ return [c.friends, 3]; }, true);
   bdDef('wcol', 'w', 'Teamarbeit', 'Ein Lernpaket gemeinsam bearbeitet', 'handshake', 's', function(c){ return c.collab; }, null, true);
   var BD_CATS = [['q', 'Fragen'], ['s', 'Serie und Tempo'], ['g', 'Gleitpfad'], ['f', 'Fächer'], ['r', 'Berichte'], ['n', 'Lernzentrum'], ['u', 'Spaß und Challenges'], ['w', 'Mit Freunden'], ['x', 'Sonstiges']];
   /* Einmaliger Neustart der Abzeichen (Serie und Tempo, Fächer, Spaß und Challenges, Abgehängt): nur Fortschritt nach diesem Tag zählt */
-  var BD_CUT = '2026-10-11';
-  function bdResetId(id){ if(id === 'whang') return true; for(var i = 0; i < BADGES.length; i++) if(BADGES[i].id === id) return BADGES[i].cat === 's' || BADGES[i].cat === 'f' || BADGES[i].cat === 'u'; return false; }
+  var BD_CUT = '2026-10-11', BD_CUT_W = '2026-10-12';
+  function bdCutFor(id){ return (id === 'whang' || id === 'wcatch') ? BD_CUT_W : BD_CUT; }
+  function bdResetId(id){ if(id === 'whang' || id === 'wcatch') return true; for(var i = 0; i < BADGES.length; i++) if(BADGES[i].id === id) return BADGES[i].cat === 's' || BADGES[i].cat === 'f' || BADGES[i].cat === 'u'; return false; }
   function bdCut(){ var f = S && S.bdFrom; return (typeof f === 'string' && f > BD_CUT) ? f : BD_CUT; }
   function bdPurge(){
     var ch = false;
     if(S && S.badges && typeof S.badges === 'object'){
-      Object.keys(S.badges).forEach(function(id){ if(bdResetId(id) && typeof S.badges[id] === 'string' && S.badges[id] <= BD_CUT){ delete S.badges[id]; ch = true; } });
+      Object.keys(S.badges).forEach(function(id){ if(bdResetId(id) && typeof S.badges[id] === 'string' && S.badges[id] <= bdCutFor(id)){ delete S.badges[id]; ch = true; } });
     }
-    if(S && S.bdx && typeof S.bdx.hang === 'string' && S.bdx.hang <= BD_CUT){ delete S.bdx.hang; ch = true; }
+    if(S && S.bdx && typeof S.bdx.hang === 'string' && S.bdx.hang <= BD_CUT_W){ delete S.bdx.hang; ch = true; }
+    if(S && S.bdx && typeof S.bdx.catch === 'string' && S.bdx.catch <= BD_CUT_W){ delete S.bdx.catch; ch = true; }
     if(ch){ var sn = bdSeen(); if(sn){ Object.keys(sn).forEach(function(id){ if(bdResetId(id)) delete sn[id]; }); bdSeenSet(sn); } }
     return ch;
   }
@@ -3693,7 +3697,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(!o || typeof o !== 'object') return;
       Object.keys(o).forEach(function(k){
         if(!/^[a-z0-9]{1,8}$/.test(k) || typeof o[k] !== 'string') return;
-        if(o[k] <= BD_CUT && bdResetId(k)) return;
+        if(o[k] <= bdCutFor(k) && bdResetId(k)) return;
         if(!out[k] || o[k] < out[k]) out[k] = o[k];
       });
     });
@@ -6524,6 +6528,13 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-36', autotour:true, ins:'Neu: Chat mit Schülern. Bei jedem verbundenen Schüler gibt es den Button „Chat“, über „An alle Schüler“ erreichst du die ganze Gruppe auf einmal. Bilder sind möglich. Dafür muss der Benachrichtigungsdienst in der neuesten Version laufen.', items:[
+      {t:'Angefangene Tests', x:'Beim Fragen-Tracken kannst du auf „Angefangen“ umschalten, zum Beispiel 300 von 500 bei einem Fach. Die Fragen zählen sofort, der Test wird bei „Fächer“ angepinnt, lässt sich aktualisieren und später mit dem Ergebnis abschließen.'},
+      {t:'Rivalen', x:'Liegst du mit einem Freund fast gleichauf, werdet ihr Rivalen: mit Kopf-an-Kopf-Animation und Push. Mindestens 3 Tage lang, dann gewinnt, wer 10 % vom Ziel Vorsprung hat. Die Abzeichen „Eingeholt“ und „Abgehängt“ gibt es nur noch im Rivalen-Duell und wurden für alle zurückgesetzt. Abschaltbar im Freunde-Fenster.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Challenges', x:'Fordere jeden verbundenen Freund heraus: wer mehr klickt oder wer ein Ziel zuerst erreicht, nach Menge oder mit Quote, optional mit Strafe für den Verlierer. Der Freund nimmt an oder lehnt ab. Der Stand läuft automatisch mit und ist auf der Startseite und im Freunde-Fenster zu sehen.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Chat', x:'Schreibe verbundenen Freunden und Instructors direkt in der App, auch mit Bildern. Neue Nachrichten melden sich per Push, ungelesene zeigt ein Zähler am Freunde-Symbol. Nachrichten liegen 14 Tage auf dem Server und sind nicht Ende-zu-Ende verschlüsselt.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'KI-Analyse bleibt aktuell', x:'Eine neue Analyse wird jetzt mit der Cloud-Synchronisierung abgeglichen und von einem älteren Stand nicht mehr überschrieben.', web:true, notour:true}
+    ]},
     {v:'2026.10.11-35', autotour:true, items:[
       {t:'Instructor-Modus', x:'Für Fluglehrer und Aufsichten: Beim ersten Start gibt es unten den grauen Link „Instructor“. Damit richtet man einen eigenen Zugang ein, schickt Anfragen an Schüler und sieht nach deren Zustimmung Statistiken, Verläufe und Meldungen. Ein Instructor trägt selbst keine Fragen ein.', web:true, tab:'home', sel:'#frIcon'},
       {t:'Anfragen von Instructors', x:'Fragt ein Instructor an, erscheint die Anfrage im Freunde-Fenster. Du entscheidest: Zulassen, Ablehnen oder Blockieren. Zugelassene Instructors sehen nur, was du unter „Freunde und Freigabe“ freigibst, und bekommen deine automatischen Meldungen. Den Zugriff entziehst du jederzeit.', web:true, tab:'home', sel:'#frIcon'}
@@ -6805,7 +6816,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false, syncReady = true;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.open, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
+  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.ai ? S.ai.ts : 0, S.open, S.rival, S.chal, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S || !syncReady) return;
     var h = dataHash();
@@ -6867,10 +6878,12 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       S.exam = d.exam || S.exam; S.examTime = d.examTime || S.examTime;
       S.log = Array.isArray(d.log) ? cp(d.log) : [];
       S.open = Array.isArray(d.open) ? cp(d.open) : (S.open || []);
+      if(d.chal && typeof d.chal === 'object' && (!S.chal || (d.chal.t || 0) >= (S.chal.t || 0))) S.chal = cp(d.chal);
+      if(d.rival && typeof d.rival === 'object' && (!S.rival || (d.rival.t || 0) >= (S.rival.t || 0))) S.rival = cp(d.rival);
       if(d.nb && typeof d.nb === 'object') S.nb = cp(d.nb);
       if(typeof d.uname === 'string') S.uname = d.uname;
       if(d.look && typeof d.look === 'object') S.look = cp(d.look);
-      if(d.ai) S.ai = cp(d.ai);
+      if(d.ai && typeof d.ai === 'object' && (!S.ai || (d.ai.ts || 0) >= (S.ai.ts || 0))) S.ai = cp(d.ai);
       S.badges = bdMerge(S.badges, d.badges);
       if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || '', optout:!!d.share.o, sdv:Math.max(d.share.v || 0, (S.share && S.share.sdv) || 0)}; }
       if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen}; }); }
@@ -7250,6 +7263,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(f.papi){ try{ o.papi = stIsStandby() ? null : papiW(n.rGlide); o.pst = lookSt(); o.sb = stIsStandby() ? 1 : 0; }catch(e){} }
     if(f.stats){ try{ o.stats = statCompute(); }catch(e){} }
     if(f.badges){ var bd0 = bdMerge(S.badges, null); o.badges = Object.keys(bd0).map(function(k){ return {id:k, d:bd0[k]}; }); }
+    try{ var rp = rvPub(); o.fl = rp.fl; o.rv = rp.rv; chUpdate(); o.ch = chPub(); }catch(e){}
     return o;
   }
   function frHash(o){ return JSON.stringify(o, function(k, v){ return k === 't' ? undefined : v; }); }
@@ -7296,7 +7310,23 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(o.stats && typeof o.stats === 'object') r.stats = frStatsClean(o.stats);
     if(Array.isArray(o.badges)){
       var known = {}; bdList().forEach(function(b){ known[b.id] = 1; });
-      r.badges = o.badges.slice(0, 60).filter(function(x){ return x && known[x.id] && frDate(x.d); }).map(function(x){ return {id:x.id, d:x.d}; });
+      r.badges = o.badges.slice(0, 60).filter(function(x){ return x && known[x.id] && frDate(x.d) && !(bdResetId(x.id) && x.d <= bdCutFor(x.id)); }).map(function(x){ return {id:x.id, d:x.d}; });
+    }
+    if(Array.isArray(o.ch)) r.ch = o.ch.slice(0, 8).map(function(x){
+      if(!x || typeof x !== 'object' || !/^[0-9a-f]{12}$/.test(String(x.id)) || !/^[0-9a-f]{16}$/.test(String(x.to))) return null;
+      var y = {id: x.id, to: x.to, ts: frN(x.ts) || 0};
+      if(x.a === 0 || x.a === 1) y.a = x.a;
+      if(frN(x.t0)) y.t0 = frN(x.t0);
+      if(['w', 'l', 'd', 'x'].indexOf(x.r) >= 0) y.r = x.r;
+      if(frN(x.p) !== null) y.p = Math.max(0, Math.min(1e7, frN(x.p)));
+      if(x.cfg){ var cc = chCfgClean(x.cfg); if(cc) y.cfg = cc; }
+      if(x.fin && typeof x.fin === 'object' && frN(x.fin.t)) y.fin = {v: Math.max(0, frN(x.fin.v) || 0), t: frN(x.fin.t), g: x.fin.g ? 1 : 0};
+      return y;
+    }).filter(Boolean);
+    if(Array.isArray(o.fl)) r.fl = o.fl.slice(0, 80).filter(function(x){ return typeof x === 'string' && /^[0-9a-f]{16}$/.test(x); });
+    if(o.rv && typeof o.rv === 'object'){
+      r.rv = {g: (typeof o.rv.g === 'string' && /^[0-9a-f]{16}$/.test(o.rv.g)) ? o.rv.g : null, s: frDate(o.rv.s), id: (typeof o.rv.id === 'string' && /^[0-9a-f]{32}$/.test(o.rv.id)) ? o.rv.id : null};
+      if(o.rv.e && typeof o.rv.e === 'object' && /^[0-9a-f]{32}$/.test(String(o.rv.e.id)) && ['w', 'l', 'x'].indexOf(o.rv.e.r) >= 0) r.rv.e = {id: o.rv.e.id, r: o.rv.e.r, d: frDate(o.rv.e.d)};
     }
     if(Array.isArray(o.verlauf)) r.verlauf = o.verlauf.slice(-120).filter(function(x){ return x && frDate(x.d) && frN(x.n) !== null; }).map(function(x){ return {d:x.d, n:Number(x.n)}; });
     return r;
@@ -7321,6 +7351,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     return gh('/gists/' + c.gist, {method:'PATCH', body:{files:files}}).then(function(){ c.h = h; c.pt = Date.now(); frStore(); return true; }, function(){ return false; });
   }
   function frTouch(){
+    try{ chUpdate(); }catch(e){}
     var c = S && S.share;
     if(!c || !c.gist) return;
     clearTimeout(frTimer);
@@ -7338,8 +7369,6 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(typeof f !== 'number') return;
       var rel = me > f ? 'a' : (me === f ? 'e' : 'b');
       if(fr.rel === 'b' && rel === 'a' && !fx.pass){ fx.pass = today; chg = true; }
-      if(fr.rel === 'b' && (rel === 'a' || rel === 'e') && !fx.catch){ fx.catch = today; chg = true; }
-      if(rel === 'a' && gl > 0 && (me - f) >= 2 * gl && !fx.hang){ fx.hang = today; chg = true; }
       fr.rel = rel;
     });
     if(chg) save();
@@ -7374,7 +7403,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         }, function(e){ fr.err = (e && e.message) || 'http'; });
       });
     });
-    return chain.then(function(){ frBusy = false; try{ frRelEval(); }catch(e){} frStore(); frRender(); frNewsFlush(); bdSoon(); if(typeof frHomeRender === 'function') frHomeRender(); if(typeof insRender === 'function') insRender(); });
+    return chain.then(function(){ frBusy = false; try{ frRelEval(); }catch(e){} try{ rvEval(); }catch(e){} try{ chEval(); }catch(e){} frStore(); frRender(); frNewsFlush(); bdSoon(); if(typeof frHomeRender === 'function') frHomeRender(); if(typeof insRender === 'function') insRender(); });
   }
   /* Hinweise auf neue Abzeichen von Freunden (nur beim Öffnen oder Aktualisieren der App, kein Push) */
   var FR_NEWS = KEY + '-frnews', frFresh = [];
@@ -7404,7 +7433,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     return el;
   }
   function frNewsDot(){
-    var b = $('frIcon'), n = frNewsLoad().length + (typeof pushInboxN === 'function' ? pushInboxN() : 0);
+    var b = $('frIcon'), n = frNewsLoad().length + (typeof pushInboxN === 'function' ? pushInboxN() : 0) + (typeof chtUnread === 'function' ? chtUnread() : 0);
     if(!b) return;
     var dot = b.querySelector('.dotb');
     if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
@@ -7487,6 +7516,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!frView || !frView.ov.parentNode) return;
     var b = frView.ov.querySelector('#frBody'), h = '';
     frShareRender();
+    h += chCardHtml(false);
+    h += rvCardHtml(false);
     h += (typeof pushReqHtml === 'function' ? pushReqHtml() : '');
     var news = frNewsLoad();
     if(news.length){
@@ -7504,7 +7535,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!S.friends.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
     S.friends.forEach(function(fr, i){
       h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small" title="Abgerufen ' + escA(frWhen(fr.last)) + '">' + (fr.data && fr.data.t ? 'zuletzt online ' + esc(frWhen(fr.data.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
-        '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
+        '<div class="row" style="margin-top:8px">' + ((typeof chtBtn === 'function' && typeof pushLk !== 'undefined' && pushLk[fr.gist]) ? chtBtn(fr.gist) : '') + ((fr.data && Array.isArray(fr.data.fl) && S.share && S.share.gist && fr.data.fl.indexOf(rvH(S.share.gist)) >= 0 && S.role !== 'instructor') ? '<button type="button" data-chact="new" data-fri="' + i + '" style="padding:6px 12px">Herausfordern</button>' : '') + '<button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
     });
     h += (typeof pushInsHtml === 'function' ? pushInsHtml() : '');
     h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
@@ -8131,6 +8162,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var cfg = fhCfg(), es = fhEntries(), h = '<div class="fhh"><b>Freunde</b>' +
       '<div class="seg" style="margin:0;flex:none" role="group" aria-label="Ansicht"><button type="button" data-fhmode="list" class="' + (cfg.mode === 'list' ? 'on' : '') + '">Liste</button><button type="button" data-fhmode="board" class="' + (cfg.mode === 'board' ? 'on' : '') + '">Rangliste</button></div>' +
       '<button type="button" class="ghost" data-fhset="1" aria-label="Einstellungen der Freunde-Karte">⚙</button></div>';
+    h += rvCardHtml(true);
     if(cfg.mode === 'board'){
       h += '<div class="seg" style="margin:8px 0 2px" role="group" aria-label="Sortierung">' + [['heute', 'Heute'], ['woche', 'Woche'], ['monat', 'Monat'], ['stand', 'Gesamt'], ['tempo', 'Tempo']].map(function(m){ return '<button type="button" data-fhmet="' + m[0] + '" class="' + (cfg.metric === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
       var rows = es.filter(function(e){ return fhVal(e, cfg.metric) !== null; }).sort(function(a, b){ return fhVal(b, cfg.metric) - fhVal(a, cfg.metric); }), mx = Math.max.apply(null, rows.map(function(e){ return fhVal(e, cfg.metric); }).concat([1]));
@@ -8170,6 +8202,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function frHomeRender(){
     var home = document.getElementById('tabHome');
     if(!home || !S || !FH_COL) return;
+    try{ chHomeRender(); }catch(e){}
     if(!fhEl){
       fhEl = document.createElement('div'); fhEl.id = 'frHome'; fhEl.className = 'card'; fhEl.hidden = true;
       var hs = document.getElementById('homeStats');
@@ -8247,6 +8280,733 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     })();
   }
   setTimeout(function(){ frHomeRender(); sdMaybe(); }, 3200);
+  /* ---------- Rivalen: Duelle mit genau einem gegenseitig hinzugefügten Freund (nur GitHub-Version) ---------- */
+  var RV_TOL = 0.08, RV_WIN = 0.10, RV_MIN = 3, RV_CLAIM = 3 * 86400000, RV_COOL = 7 * 86400000, RV_END_SHOW = 14 * 86400000, rvOv = null;
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '.rvc{margin:0 0 12px;border:1px solid var(--accent);border-radius:16px;padding:12px 14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--card)),var(--card))}' +
+      '.rvh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rvh b{flex:1;font-size:16px}.rvtag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);padding:2px 8px;border-radius:999px}' +
+      '.rvt{position:relative;height:14px;border-radius:99px;background:var(--track);margin:14px 0 6px;overflow:visible}.rvt i{position:absolute;top:0;bottom:0;border-radius:99px}.rvt u{position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.5}' +
+      '.rvt s{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;border:3px solid var(--text);box-shadow:0 2px 6px rgba(0,0,0,.4);transition:left .8s cubic-bezier(.2,.9,.3,1.2)}' +
+      '.rvn{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.rvn span{display:flex;align-items:center;gap:6px}.rvn i{width:10px;height:10px;border-radius:50%;display:inline-block}' +
+      '.rvov{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 20px;background:radial-gradient(circle at 50% 38%,#1b2347 0%,#070b18 70%);color:#fff;overflow:hidden;animation:rvIn .35s ease-out}' +
+      '@keyframes rvIn{from{opacity:0}to{opacity:1}}.rvov h1{margin:0;font-size:clamp(34px,11vw,64px);letter-spacing:.02em;text-align:center;text-transform:uppercase;animation:rvSlam .7s cubic-bezier(.2,1.6,.4,1) both;animation-delay:.9s}' +
+      '@keyframes rvSlam{from{transform:scale(3);opacity:0}to{transform:scale(1);opacity:1}}.rvov .rvs{font-size:16px;opacity:.85;text-align:center;max-width:340px;animation:rvIn .6s ease-out both;animation-delay:1.5s}' +
+      '.rvlane{position:relative;width:min(92vw,460px);height:76px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}.rvlane+.rvlane{margin-top:-6px}.rvlane::after{content:"";position:absolute;right:14px;top:8px;bottom:8px;width:10px;background:repeating-linear-gradient(45deg,#fff 0 5px,#222 5px 10px);border-radius:3px;opacity:.7}' +
+      '.rvp{position:absolute;left:10px;top:50%;margin-top:-26px;height:52px;display:flex;align-items:center;gap:10px;padding:0 16px 0 10px;border-radius:99px;font-weight:800;font-size:15px;color:#fff;white-space:nowrap;transition:left 2.2s cubic-bezier(.15,.8,.2,1);box-shadow:0 0 22px var(--c),0 0 4px var(--c) inset;background:var(--c)}' +
+      '.rvp svg{width:26px;height:26px;fill:currentColor}.rvp b{font-variant-numeric:tabular-nums;font-size:13px;opacity:.95}' +
+      '.rvvs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(60px,22vw,120px);font-weight:900;font-style:italic;color:#fff;text-shadow:0 0 30px #fff8;animation:rvVs 1.1s ease-out both;pointer-events:none;z-index:2}' +
+      '@keyframes rvVs{0%{transform:translate(-50%,-50%) scale(5);opacity:0}25%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}' +
+      '.rvov button{padding:12px 28px;font-size:16px;font-weight:800;border-radius:999px;animation:rvIn .6s ease-out both;animation-delay:2.2s}.rvov canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
+      '@media (prefers-reduced-motion:reduce){.rvov *,.rvov{animation-duration:.01s!important;animation-delay:0s!important}.rvp{transition-duration:.01s}}';
+    document.head.appendChild(st);
+  })();
+  function rvH(g){
+    var s = 'sf|' + String(g), h1 = 0xdeadbeef, h2 = 0x41c6ce57, i, ch;
+    for(i = 0; i < s.length; i++){ ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+  }
+  function rvGet(){
+    if(!S.rival || typeof S.rival !== 'object') S.rival = {};
+    var R = S.rival;
+    if(!Array.isArray(R.hist)) R.hist = [];
+    if(!Array.isArray(R.q)) R.q = [];
+    if(!R.cool || typeof R.cool !== 'object') R.cool = {};
+    if(R.cur === undefined) R.cur = null;
+    return R;
+  }
+  function rvPair(a, b){ var x = rvH(a), y = rvH(b); return x < y ? x + y : y + x; }
+  function rvFriend(g){ return (S.friends || []).filter(function(f){ return f.gist === g; })[0] || null; }
+  function rvName(F){ return (F && (F.alias || (F.data && F.data.name))) || 'Freund'; }
+  /* Was von mir veröffentlicht wird: Hashes meiner Freunde (Gegenseitigkeit prüfen) und mein Duell-Stand */
+  function rvPub(){
+    var R = rvGet(), cur = R.cur, o = {fl: (S.friends || []).slice(0, 80).map(function(f){ return rvH(f.gist); })};
+    var rv = {g: cur ? rvH(cur.g) : null, s: cur ? cur.s : null};
+    if(cur) rv.id = cur.id;
+    if(R.last && Date.now() - R.last.ts < RV_END_SHOW) rv.e = {id: R.last.id, r: R.last.r, d: R.last.d};
+    o.rv = rv;
+    return o;
+  }
+  function rvStand(){ try{ return homeNums().last.n; }catch(e){ return null; } }
+  function rvQ(ev){ var R = rvGet(); R.q.push(ev); if(R.q.length > 6) R.q = R.q.slice(-6); }
+  function rvNotify(g, code){
+    try{ if(typeof pushSend === 'function' && typeof pushLk !== 'undefined' && pushLk[g]) pushSend('v', code, {to: [g]}); }catch(e){}
+  }
+  function rvEnd(res, F, d){
+    var R = rvGet(), cur = R.cur; if(!cur) return;
+    var today = iso(new Date()), me = rvStand(), their = d && typeof d.stand === 'number' ? d.stand : null;
+    R.hist.push({g: cur.g, n: rvName(F).slice(0, 24), s: cur.s, e: today, r: res, my: me, th: their});
+    if(R.hist.length > 30) R.hist = R.hist.slice(-30);
+    R.last = {id: cur.id, r: res, d: today, ts: Date.now()};
+    R.cool[cur.g] = Date.now() + RV_COOL;
+    R.cur = null; R.t = Date.now();
+    if(res === 'w'){ if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {}; S.bdx.hang = today; }
+    rvQ({k: res === 'w' ? 'win' : (res === 'l' ? 'lose' : 'void'), g: cur.g, n: rvName(F), ac: d && d.ac, my: me, th: their, d: today, s: cur.s});
+    if(res !== 'x' && !(d && d.rv && d.rv.e && d.rv.e.id === cur.id)) rvNotify(cur.g, res === 'w' ? 'w' : 'l');
+  }
+  function rvEval(){
+    try{
+      if(S.role === 'instructor') return;
+      var R = rvGet(), c = frCfg(), me = rvStand();
+      if(!c.gist || me === null) return;
+      var meH = rvH(c.gist), now = Date.now(), today = iso(new Date()), tgt = S.target || 35000, ch = false, cur = R.cur;
+      if(R.off){ if(cur){ rvEnd('x', rvFriend(cur.g), (rvFriend(cur.g) || {}).data); ch = true; } if(ch){ save(); frTouch(); } return; }
+      if(cur){
+        var F = rvFriend(cur.g);
+        if(!F){ rvEnd('x', null, null); ch = true; }
+        else if(F.data && typeof F.data.stand === 'number'){
+          var d = F.data, prv = d.rv || {}, atMe = prv.g === meH, pend = prv.e && prv.e.id === cur.id;
+          if(!cur.ok){
+            if(atMe){ cur.ok = true; cur.okT = now; if(prv.s && prv.s < cur.s) cur.s = prv.s; cur.rel = me > d.stand ? 'a' : (me === d.stand ? 'e' : 'b'); R.t = now; rvQ({k: 'start', g: cur.g, n: rvName(F), ac: d.ac, my: me, th: d.stand, s: cur.s}); ch = true; }
+            else if((prv.g && prv.g !== meH) || pend || now - cur.since > RV_CLAIM){ R.cool[cur.g] = now + (pend ? RV_COOL : 2 * 86400000); R.cur = null; R.t = now; ch = true; }
+          }else if(pend){
+            rvEnd(prv.e.r === 'w' ? 'l' : (prv.e.r === 'l' ? 'w' : 'x'), F, d); ch = true;
+          }else if(!atMe && d.t && d.t > (cur.okT || 0) + 3600000){
+            rvEnd('x', F, d); ch = true;
+          }else{
+            var diff = me - d.stand, rel = diff > 0 ? 'a' : (diff === 0 ? 'e' : 'b');
+            if(cur.rel === 'b' && rel !== 'b'){
+              if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {};
+              if(!S.bdx.catch) S.bdx.catch = today;
+              rvQ({k: 'catch', g: cur.g, n: rvName(F), ac: d.ac, my: me, th: d.stand, s: cur.s}); rvNotify(cur.g, 'c'); ch = true;
+            }
+            if(cur.rel !== rel){ cur.rel = rel; ch = true; }
+            var dIn = days(parse(cur.s), parse(today));
+            if(dIn >= RV_MIN && Math.abs(diff) >= RV_WIN * tgt){ rvEnd(diff > 0 ? 'w' : 'l', F, d); ch = true; }
+          }
+        }
+      }else{
+        var best = null, bestD = 1e12;
+        (S.friends || []).forEach(function(F2){
+          var d2 = F2.data; if(!d2 || typeof d2.stand !== 'number' || d2.role === 'instructor') return;
+          if(!d2.t || now - d2.t > 3 * 86400000) return;
+          if(!Array.isArray(d2.fl) || d2.fl.indexOf(meH) < 0) return;
+          var p2 = d2.rv || {}, claimed = p2.g === meH;
+          if(p2.g && !claimed) return;
+          if(R.cool[F2.gist] && R.cool[F2.gist] > now && !claimed) return;
+          var df = Math.abs(me - d2.stand);
+          if(df > RV_TOL * tgt) return;
+          var score = claimed ? -1 : df;
+          if(score < bestD){ bestD = score; best = {F: F2, d: d2, claimed: claimed, p: p2}; }
+        });
+        if(best){
+          var cl = best.claimed;
+          R.cur = {g: best.F.gist, s: cl && best.p.s ? best.p.s : today, id: rvPair(c.gist, best.F.gist), since: now, ok: cl, okT: cl ? now : 0, rel: me > best.d.stand ? 'a' : (me === best.d.stand ? 'e' : 'b')};
+          R.t = now; ch = true;
+          if(cl){ rvQ({k: 'start', g: best.F.gist, n: rvName(best.F), ac: best.d.ac, my: me, th: best.d.stand, s: R.cur.s}); rvNotify(best.F.gist, 's'); }
+        }
+      }
+      if(ch){ save(); frTouch(); rvRefresh(); }
+    }catch(e){}
+  }
+  function rvRefresh(){
+    try{ if(typeof frRender === 'function') frRender(); if(typeof frHomeRender === 'function') frHomeRender(); }catch(e){}
+    setTimeout(rvShow, 400);
+  }
+  function rvCols(d){
+    try{ var cs = fhCols([{ac: (S.look && S.look.accent) || 'magenta'}, {ac: d && d.ac}]); return cs; }catch(e){ return ['#ff4fd8', '#5fd7ff']; }
+  }
+  /* Kleine Karte mit Zugseil-Balken: links der Rivale, rechts du */
+  function rvCardHtml(compact){
+    if(S.role === 'instructor') return '';
+    var R = rvGet(), cur = R.cur, c = frCfg();
+    if(!cur){
+      if(compact) return '';
+      var h = '<div class="card frc" style="margin-top:0"><div class="frh"><b>Rivale</b><label class="small" style="display:flex;align-items:center;gap:6px">Duelle<input type="checkbox" class="sw" data-rvact="toggle"' + (R.off ? '' : ' checked') + '></label></div>' +
+        '<div class="small" style="margin-top:6px">' + (R.off ? 'Rivalen sind aus.' : 'Sobald du und ein Freund euch gegenseitig hinzugefügt habt und im Gesamtstand nah beieinander liegt, werdet ihr automatisch Rivalen. Ein Rivale bleibt mindestens ' + RV_MIN + ' Tage. Wer ' + Math.round(RV_WIN * 100) + ' % vom Ziel Vorsprung hat, hängt den anderen ab.') + '</div>' +
+        (R.hist.length ? '<div class="small" style="margin-top:6px">Bisher: ' + R.hist.filter(function(x){ return x.r === 'w'; }).length + ' abgehängt, ' + R.hist.filter(function(x){ return x.r === 'l'; }).length + ' verloren.</div>' : '') + '</div>';
+      return h;
+    }
+    var F = rvFriend(cur.g), d = F && F.data, nm = rvName(F);
+    if(!cur.ok) return compact ? '' : '<div class="rvc"><div class="rvh"><span class="rvtag">Anfrage</span><b>' + esc(nm) + '</b></div><div class="small" style="margin-top:6px">Warte auf ' + esc(nm) + ': Das Duell startet, sobald die App dort geöffnet wird.</div></div>';
+    var me = rvStand(), th = d && typeof d.stand === 'number' ? d.stand : me, tgt = S.target || 35000, thr = Math.round(RV_WIN * tgt), diff = me - th;
+    var cols = rvCols(d), pos = Math.max(2, Math.min(98, 50 + diff / thr * 50)), dIn = Math.max(0, days(parse(cur.s), parse(iso(new Date()))));
+    var fillL = diff < 0 ? 'left:' + pos + '%;right:50%;background:' + cols[1] : 'left:50%;right:' + (100 - pos) + '%;background:' + cols[0];
+    return '<div class="rvc" data-rvact="replay"><div class="rvh"><span class="rvtag">Rivale</span><b>' + esc(nm) + '</b><small class="small">Tag ' + (dIn + 1) + ', mind. ' + RV_MIN + '</small></div>' +
+      '<div class="rvt"><i style="' + fillL + '"></i><u></u><s style="left:' + pos + '%"></s></div>' +
+      '<div class="rvn"><span><i style="background:' + cols[1] + '"></i>' + esc(nm) + ' ' + fmt(th) + '</span><span>' + (diff === 0 ? 'Gleichstand' : (diff > 0 ? '+' + fmt(diff) + ' für dich' : fmt(diff) + ' zurück')) + '</span><span>Du ' + fmt(me) + '<i style="background:' + cols[0] + '"></i></span></div>' +
+      (compact ? '' : '<div class="small" style="margin-top:6px">Abgehängt ab ' + fmt(thr) + ' Fragen Vorsprung, frühestens nach ' + RV_MIN + ' Tagen. Tippe für die Duell-Animation.</div>') + '</div>';
+  }
+  /* Animation: Kopf an Kopf, Abgehängt, Eingeholt */
+  var RV_PLANE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>';
+  function rvConfetti(cv, col){
+    var ctx = cv.getContext('2d'); if(!ctx) return;
+    var W = cv.width = cv.offsetWidth || 360, H = cv.height = cv.offsetHeight || 640, ps = [], i, t0 = Date.now();
+    for(i = 0; i < 110; i++) ps.push({x: W / 2 + (Math.random() - .5) * 60, y: H * .45, vx: (Math.random() - .5) * 11, vy: -Math.random() * 13 - 3, s: 4 + Math.random() * 6, c: [col, '#ffffff', '#f2b705', col][i % 4], r: Math.random() * 6});
+    (function f(){
+      if(!cv.isConnected || Date.now() - t0 > 4200) return;
+      ctx.clearRect(0, 0, W, H);
+      ps.forEach(function(p){ p.vy += .28; p.x += p.vx; p.y += p.vy; p.r += .2; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); });
+      requestAnimationFrame(f);
+    })();
+  }
+  function rvStage(ev, done){
+    if(rvOv) return;
+    var cols = rvCols({ac: ev.ac}), my = ev.my || 0, th = ev.th || 0, lo = Math.min(my, th) - 1, hi = Math.max(my, th), span = Math.max(1, hi - lo);
+    var pm = 8 + (my - lo) / span * 70, pt = 8 + (th - lo) / span * 70;
+    var k = ev.k, title = {start: 'Kopf an Kopf', win: 'Abgehängt!', lose: 'Abgehängt', catch: 'Eingeholt!', void: 'Duell beendet'}[k] || 'Duell';
+    var sub = {
+      start: 'Du und ' + esc(ev.n) + ' seid jetzt Rivalen. Mindestens ' + RV_MIN + ' Tage, wer ' + Math.round(RV_WIN * 100) + ' % vom Ziel vorne liegt, gewinnt.',
+      win: 'Du hast ' + esc(ev.n) + ' abgehängt. Sieg!',
+      lose: esc(ev.n) + ' hat dich abgehängt. Hol es dir zurück.',
+      catch: 'Du hast ' + esc(ev.n) + ' wieder eingeholt.',
+      void: 'Das Duell mit ' + esc(ev.n) + ' wurde aufgelöst.'
+    }[k];
+    var el = document.createElement('div'); el.className = 'rvov'; rvOv = el;
+    function lane(nm, col, p, v){ return '<div class="rvlane"><div class="rvp" data-p="' + p + '" style="--c:' + col + ';left:10px">' + RV_PLANE + esc(nm) + ' <b>' + fmt(v) + '</b></div></div>'; }
+    el.innerHTML = '<canvas></canvas>' + (k === 'start' || k === 'catch' ? '<div class="rvvs">VS</div>' : '') +
+      lane(ev.n, cols[1], pt, th) + lane('Du', cols[0], pm, my) + '<h1 style="color:' + (k === 'lose' ? '#c4c9d8' : (k === 'win' ? cols[0] : '#fff')) + ';text-shadow:0 0 28px ' + (k === 'lose' ? 'transparent' : cols[0]) + '">' + title + '</h1><div class="rvs">' + sub + '</div><button type="button" style="background:' + cols[0] + ';color:#fff;border:0">Weiter</button>';
+    document.body.appendChild(el);
+    var ps = el.querySelectorAll('.rvp');
+    setTimeout(function(){ Array.prototype.forEach.call(ps, function(p){ var w = el.querySelector('.rvlane').offsetWidth - p.offsetWidth - 20; p.style.left = Math.max(10, w * 0.84 * (parseFloat(p.getAttribute('data-p')) - 8) / 70 + 10) + 'px'; }); }, 120);
+    if(k === 'win') setTimeout(function(){ rvConfetti(el.querySelector('canvas'), cols[0]); }, 1000);
+    try{ if(navigator.vibrate) navigator.vibrate(k === 'win' ? [40, 40, 80] : 30); }catch(e){}
+    el.querySelector('button').addEventListener('click', function(){ el.remove(); rvOv = null; if(done) done(); });
+  }
+  function rvShow(){
+    if(rvOv || document.hidden) return;
+    var R = rvGet(); if(!R.q.length) return;
+    var ev = R.q.shift(); save();
+    rvStage(ev, function(){ setTimeout(function(){ rvShow(); if(typeof chShow === 'function') chShow(); }, 300); });
+  }
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(rvShow, 800); });
+  setTimeout(function(){ try{ rvEval(); rvShow(); }catch(e){} }, 9000);
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-rvact]') : null; if(!b) return;
+    var a = b.getAttribute('data-rvact'), R = rvGet();
+    if(a === 'toggle'){ R.off = !b.checked; R.t = Date.now(); save(); rvEval(); rvRefresh(); }
+    else if(a === 'replay' && R.cur && R.cur.ok){
+      var F = rvFriend(R.cur.g), d = F && F.data; if(!d) return;
+      rvStage({k: 'start', n: rvName(F), ac: d.ac, my: rvStand(), th: d.stand}, null);
+    }
+  });
+  /* ---------- Challenges: Freunde herausfordern (nur GitHub-Version) ---------- */
+  var CH_MAX = 3, CH_TTL = 3 * 86400000, CH_PEND = 86400000, CH_WAIT = 3 * 86400000, CH_KEEP = 7 * 86400000;
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '.chc{margin:0 0 10px;border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--card)}.chc.run{border-color:var(--accent)}' +
+      '.chb{height:10px;border-radius:99px;background:var(--track);overflow:hidden;margin:3px 0 8px}.chb i{display:block;height:100%;border-radius:99px;transition:width .6s}' +
+      '.chl{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.chl span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.chpun{margin-top:8px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--warn,#f2b705) 16%,transparent);font-size:13px}' +
+      '.chbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.chbtns button{flex:1;min-width:110px}' +
+      '#chHome{margin-top:0}#tabHome>#chHome{grid-column:1 / -1}.rvov .chbs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:rvIn .6s ease-out both;animation-delay:2.2s}.rvov .chbs button{animation:none}';
+    document.head.appendChild(st);
+  })();
+  function chGet(){
+    if(!S.chal || typeof S.chal !== 'object') S.chal = {};
+    var C = S.chal;
+    if(!Array.isArray(C.list)) C.list = [];
+    if(!Array.isArray(C.q)) C.q = [];
+    return C;
+  }
+  function chId(){ var s = '', i; for(i = 0; i < 12; i++) s += Math.floor(Math.random() * 16).toString(16); return s; }
+  function chCfgClean(o){
+    if(!o || typeof o !== 'object') return null;
+    var k = o.k === 'first' ? 'first' : (o.k === 'more' ? 'more' : null); if(!k) return null;
+    var subj = 'all';
+    if(typeof o.subj === 'string' && o.subj !== 'all'){ if(!SUBJECTS.some(function(s){ return s.id === o.subj; })) return null; subj = o.subj; }
+    var days = Math.max(1, Math.min(60, Math.round(Number(o.days) || 0))), goal = Math.max(1, Math.min(100000, Math.round(Number(o.goal) || 0)));
+    if(!days) return null;
+    return {k: k, subj: subj, q: o.q ? 1 : 0, days: days, goal: k === 'first' ? goal : 0, pun: frTxt(o.pun, 60)};
+  }
+  function chDesc(cfg){
+    var subj = cfg.subj === 'all' ? 'in allen Fächern' : 'in ' + ((SUBJECTS.filter(function(s){ return s.id === cfg.subj; })[0] || {name: 'einem Fach'}).name);
+    var what = cfg.q ? 'richtig beantwortete Fragen' : 'Fragen';
+    return cfg.k === 'first' ? 'Wer zuerst ' + fmt(cfg.goal) + ' ' + what + ' ' + subj + ' schafft (höchstens ' + cfg.days + ' Tage)' : 'Wer in ' + cfg.days + (cfg.days === 1 ? ' Tag' : ' Tagen') + ' mehr ' + what + ' ' + subj + ' schafft';
+  }
+  function chBase(){
+    var b = {n: rvStand() || 0, s: {}};
+    SUBJECTS.forEach(function(sj){ var s = getSub(sj.id); b.s[sj.id] = [nn(s.clicked) || 0, nn(s.wrong) || 0]; });
+    return b;
+  }
+  function chVal(c){
+    var b = c.base; if(!b) return 0;
+    var sub = c.cfg.subj, dW = 0, dC = 0;
+    SUBJECTS.forEach(function(sj){
+      if(sub !== 'all' && sub !== sj.id) return;
+      var s = getSub(sj.id), bb = b.s[sj.id] || [0, 0];
+      dC += Math.max(0, (nn(s.clicked) || 0) - bb[0]); dW += Math.max(0, (nn(s.wrong) || 0) - bb[1]);
+    });
+    var q = sub === 'all' ? Math.max(0, (rvStand() || 0) - b.n) : dC;
+    return c.cfg.q ? Math.max(0, q - dW) : q;
+  }
+  function chEnd(c){ return (c.t0 || 0) + c.cfg.days * 86400000; }
+  function chUpdate(){
+    try{
+      var C = chGet(), now = Date.now(), ch = false;
+      C.list.forEach(function(c){
+        if(c.st !== 'run' || c.fin) return;
+        if(now >= chEnd(c)){ c.fin = {v: c.p || 0, t: chEnd(c)}; ch = true; return; }
+        var v = chVal(c);
+        if(v !== c.p){ c.p = v; ch = true; }
+        if(c.cfg.k === 'first' && v >= c.cfg.goal){ c.fin = {v: v, t: now, g: 1}; ch = true; }
+      });
+      return ch;
+    }catch(e){ return false; }
+  }
+  /* Was ich veröffentliche: Angebote, Antworten und mein Stand */
+  function chPub(){
+    var C = chGet(), now = Date.now(), out = [];
+    C.list.forEach(function(c){
+      if(c.st === 'in' || c.st === 'exp') return;
+      if((c.st === 'done' || c.st === 'dec') && now - (c.dt || c.ts || 0) > CH_KEEP) return;
+      var o = {id: c.id, to: rvH(c.g), ts: c.ts || 0};
+      if(c.role === 'a') o.cfg = c.cfg;
+      if(c.role === 'b') o.a = c.st === 'dec' ? 0 : 1;
+      if(c.role === 'a' && c.st !== 'offer' && c.st !== 'dec') o.a = 1;
+      if(c.t0) o.t0 = c.t0;
+      if(c.res) o.r = c.res;
+      if(c.st === 'run' || c.st === 'done'){ o.p = c.p || 0; if(c.fin) o.fin = c.fin; }
+      out.push(o);
+    });
+    return out.slice(0, 8);
+  }
+  function chQ(ev){ var C = chGet(); C.q.push(ev); if(C.q.length > 8) C.q = C.q.slice(-8); }
+  function chNotify(g, code){
+    try{ if(typeof pushSend === 'function' && typeof pushLk !== 'undefined' && pushLk[g]) pushSend('h', code, {to: [g]}); }catch(e){}
+  }
+  function chFriend(g){ return rvFriend(g); }
+  function chPartnerEntry(c){
+    var F = chFriend(c.g), d = F && F.data, me = frCfg().gist; if(!d || !Array.isArray(d.ch) || !me) return null;
+    var meH = rvH(me);
+    return d.ch.filter(function(x){ return x.id === c.id && x.to === meH; })[0] || null;
+  }
+  function chFinish(c, res, F, d){
+    c.st = 'done'; c.res = res; c.dt = Date.now();
+    var pe = chPartnerEntry(c);
+    chQ({k: res === 'w' ? 'cwin' : (res === 'l' ? 'close' : (res === 'd' ? 'cdraw' : 'cvoid')), id: c.id, g: c.g, n: rvName(F), ac: d && d.ac, my: c.p || 0, th: pe && typeof pe.p === 'number' ? pe.p : 0, pun: c.cfg.pun, desc: chDesc(c.cfg)});
+    if(res !== 'x') chNotify(c.g, res === 'w' ? 'w' : (res === 'l' ? 'l' : 'x'));
+  }
+  function chResolve(c, pe, F, d){
+    var now = Date.now(), mf = c.fin, pf = pe && pe.fin, res = null;
+    if(pe && pe.r){ res = pe.r === 'l' ? 'w' : (pe.r === 'w' ? 'l' : (pe.r === 'd' ? 'd' : 'x')); chFinish(c, res, F, d); return true; }
+    if(c.cfg.k === 'first'){
+      if(mf && mf.g && pf && pf.g) res = mf.t < pf.t ? 'w' : 'l';
+      else if(pf && pf.g && !(mf && mf.g)) res = 'l';
+      else if(mf && mf.g && !(pf && pf.g) && (d.t > mf.t + 60000 || now - mf.t > CH_PEND)) res = 'w';
+    }
+    if(!res && mf && !mf.g){
+      if(pf && !pf.g) res = mf.v > pf.v ? 'w' : (mf.v < pf.v ? 'l' : 'd');
+      else if(pf && pf.g) res = 'l';
+      else if(now > chEnd(c) + CH_WAIT){ var pv = pe && typeof pe.p === 'number' ? pe.p : null; res = pv === null ? 'x' : (mf.v > pv ? 'w' : (mf.v < pv ? 'l' : 'd')); }
+    }
+    if(res) chFinish(c, res, F, d);
+    return !!res;
+  }
+  function chEval(){
+    try{
+      if(S.role === 'instructor') return;
+      var C = chGet(), cf = frCfg(), now = Date.now(), ch = chUpdate();
+      if(!cf.gist) return;
+      var meH = rvH(cf.gist);
+      (S.friends || []).forEach(function(F){
+        var d = F.data; if(!d || !Array.isArray(d.ch)) return;
+        d.ch.forEach(function(pe){
+          if(pe.to !== meH) return;
+          var c = C.list.filter(function(x){ return x.id === pe.id; })[0];
+          if(!c){
+            if(pe.cfg && pe.a === undefined && now - (pe.ts || 0) < CH_TTL && Array.isArray(d.fl) && d.fl.indexOf(meH) >= 0 && S.chalOff !== true){
+              var cfg = chCfgClean(pe.cfg); if(!cfg) return;
+              if(C.list.filter(function(x){ return x.st === 'in' || x.st === 'run'; }).length >= CH_MAX + 2) return;
+              c = {id: pe.id, role: 'b', g: F.gist, n: rvName(F), cfg: cfg, st: 'in', ts: pe.ts};
+              C.list.push(c); ch = true;
+              chQ({k: 'cinv', id: c.id, g: c.g, n: rvName(F), ac: d.ac, pun: cfg.pun, desc: chDesc(cfg)});
+            }
+            return;
+          }
+          if(c.role === 'a' && c.st === 'offer'){
+            if(pe.a === 1 && pe.t0 && pe.t0 <= now + 600000){
+              c.st = 'run'; c.t0 = Math.min(pe.t0, now); c.base = chBase(); c.p = 0; ch = true;
+              chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
+            }else if(pe.a === 0){ c.st = 'dec'; c.dt = now; ch = true; chQ({k: 'cdec', id: c.id, g: c.g, n: rvName(F), ac: d.ac}); }
+          }else if(c.st === 'run'){
+            if(chResolve(c, pe, F, d)) ch = true;
+          }
+        });
+      });
+      C.list.forEach(function(c){
+        if((c.st === 'offer' || c.st === 'in') && now - (c.ts || 0) > CH_TTL){ c.st = 'exp'; c.dt = now; ch = true; }
+        else if(c.st === 'run' && !chPartnerEntry(c) && now > chEnd(c) + CH_WAIT + CH_TTL){ chFinish(c, 'x', chFriend(c.g), null); ch = true; }
+      });
+      var n0 = C.list.length;
+      C.list = C.list.filter(function(c){ return !((c.st === 'done' || c.st === 'dec' || c.st === 'exp') && now - (c.dt || c.ts || 0) > 14 * 86400000); });
+      if(C.list.length !== n0) ch = true;
+      if(ch){ save(); frTouch(); chRefresh(); }
+    }catch(e){}
+  }
+  function chAnswer(id, yes){
+    var C = chGet(), c = C.list.filter(function(x){ return x.id === id && x.st === 'in'; })[0]; if(!c) return;
+    var F = chFriend(c.g), d = F && F.data;
+    if(yes){
+      c.st = 'run'; c.t0 = Date.now(); c.base = chBase(); c.p = 0; chNotify(c.g, 'a');
+      chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d && d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
+    }else{ c.st = 'dec'; c.dt = Date.now(); chNotify(c.g, 'd'); }
+    save(); frTouch(); chRefresh();
+  }
+  function chCreate(F, cfg){
+    var C = chGet(), c = {id: chId(), role: 'a', g: F.gist, n: rvName(F), cfg: cfg, st: 'offer', ts: Date.now()};
+    C.list.push(c); save(); frTouch(); chNotify(F.gist, 'o'); chRefresh();
+  }
+  function chRefresh(){
+    try{ if(typeof frRender === 'function') frRender(); if(typeof frHomeRender === 'function') frHomeRender(); }catch(e){}
+    setTimeout(chShow, 400);
+  }
+  /* Karten */
+  function chCardHtml(compact){
+    if(S.role === 'instructor') return '';
+    var C = chGet(), now = Date.now(), h = '';
+    C.list.slice().sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); }).forEach(function(c){
+      var F = chFriend(c.g), d = F && F.data, nm = esc(rvName(F)), cols = rvCols(d), pe = chPartnerEntry(c);
+      if(c.st === 'exp' || c.st === 'dec' && compact) return;
+      if(c.st === 'done' && now - (c.dt || 0) > 3 * 86400000 && compact) return;
+      var head = '<div class="rvh"><span class="rvtag">Challenge</span><b>' + nm + '</b></div><div class="small" style="margin-top:4px">' + esc(chDesc(c.cfg)) + '</div>';
+      if(c.st === 'in'){
+        h += '<div class="chc run">' + head + (c.cfg.pun ? '<div class="chpun">Strafe für den Verlierer: ' + esc(c.cfg.pun) + '</div>' : '') + '<div class="chbtns"><button type="button" data-chact="yes" data-chid="' + c.id + '">Annehmen</button><button type="button" class="ghost" data-chact="no" data-chid="' + c.id + '">Ablehnen</button></div></div>';
+      }else if(c.st === 'offer'){
+        h += '<div class="chc">' + head + '<div class="small" style="margin-top:6px">Warte auf die Antwort von ' + nm + '.</div>' + (compact ? '' : '<div class="chbtns"><button type="button" class="ghost" data-chact="clear" data-chid="' + c.id + '">Zurückziehen</button></div>') + '</div>';
+      }else if(c.st === 'dec'){
+        h += '<div class="chc">' + head + '<div class="small" style="margin-top:6px">' + (c.role === 'a' ? nm + ' hat abgelehnt.' : 'Abgelehnt.') + '</div><div class="chbtns"><button type="button" class="ghost" data-chact="clear" data-chid="' + c.id + '">Ausblenden</button></div></div>';
+      }else{
+        var my = c.p || 0, th = pe && typeof pe.p === 'number' ? pe.p : 0, first = c.cfg.k === 'first', mx = first ? c.cfg.goal : Math.max(my, th, 1);
+        var left = Math.max(0, Math.ceil((chEnd(c) - now) / 86400000));
+        h += '<div class="chc' + (c.st === 'run' ? ' run' : '') + '">' + head +
+          '<div style="margin-top:10px" class="chl"><span>Du</span><span>' + fmt(my) + (first ? ' / ' + fmt(c.cfg.goal) : '') + '</span></div><div class="chb"><i style="width:' + Math.min(100, my / mx * 100) + '%;background:' + cols[0] + '"></i></div>' +
+          '<div class="chl"><span>' + nm + '</span><span>' + fmt(th) + (first ? ' / ' + fmt(c.cfg.goal) : '') + '</span></div><div class="chb"><i style="width:' + Math.min(100, th / mx * 100) + '%;background:' + cols[1] + '"></i></div>';
+        if(c.st === 'run') h += '<div class="small">' + (left > 1 ? 'Noch ' + left + ' Tage' : (left === 1 ? 'Noch bis morgen' : 'Endet heute')) + (c.fin && c.fin.g && !c.res ? '. Ziel erreicht, warte auf Bestätigung.' : '') + '</div>';
+        else if(c.st === 'done'){
+          h += '<div class="small" style="margin-top:2px"><b>' + (c.res === 'w' ? 'Gewonnen' : (c.res === 'l' ? 'Verloren' : (c.res === 'd' ? 'Unentschieden' : 'Beendet'))) + '</b></div>' +
+            (c.cfg.pun && c.res === 'l' ? '<div class="chpun">Deine Strafe: ' + esc(c.cfg.pun) + '</div>' : (c.cfg.pun && c.res === 'w' ? '<div class="chpun">' + nm + ' muss: ' + esc(c.cfg.pun) + '</div>' : '')) +
+            '<div class="chbtns"><button type="button" class="ghost" data-chact="clear" data-chid="' + c.id + '">Ausblenden</button></div>';
+        }
+        h += '</div>';
+      }
+    });
+    return h;
+  }
+  var chEl;
+  function chHomeRender(){
+    var home = document.getElementById('tabHome'); if(!home || !S) return;
+    if(!chEl){
+      chEl = document.createElement('div'); chEl.id = 'chHome'; chEl.className = 'card'; chEl.hidden = true;
+      var fh = document.getElementById('frHome');
+      if(fh && fh.parentNode === home) home.insertBefore(chEl, fh); else { var hs = document.getElementById('homeStats'); if(hs && hs.parentNode === home) home.insertBefore(chEl, hs); else home.appendChild(chEl); }
+    }
+    var html = chCardHtml(true);
+    chEl.hidden = !html;
+    if(html){ html = '<div class="fhh" style="display:flex;align-items:center"><b style="flex:1;font-size:16px">Challenges</b></div><div style="margin-top:8px">' + html + '</div>'; if(chEl._h !== html){ chEl._h = html; chEl.innerHTML = html; } }
+  }
+  /* Neue Herausforderung */
+  function chNew(fi){
+    var F = (S.friends || [])[fi]; if(!F) return;
+    var st = {k: 'more', subj: 'all', q: 0, days: 7, goal: 500};
+    var opts = '<option value="all">Alle Fächer</option>' + SUBJECTS.map(function(s){ return '<option value="' + escA(s.id) + '">' + esc(s.name) + '</option>'; }).join('');
+    var sh = openSheet('<div class="shead"><h2>Herausfordern: ' + esc(rvName(F)) + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<label>Art</label><div class="seg" id="chK"><button type="button" class="on" data-chk="more">Wer klickt mehr</button><button type="button" data-chk="first">Wer ist zuerst am Ziel</button></div>' +
+      '<label>Fach<select id="chS">' + opts + '</select></label>' +
+      '<label id="chDl">Dauer</label><div class="seg" id="chD">' + [3, 7, 14, 30].map(function(x){ return '<button type="button" data-chd="' + x + '"' + (x === 7 ? ' class="on"' : '') + '>' + x + ' Tage</button>'; }).join('') + '</div>' +
+      '<div id="chGw" hidden><label>Ziel<input type="number" id="chG" inputmode="numeric" min="1" value="500"></label></div>' +
+      '<label>Wertung</label><div class="seg" id="chQ"><button type="button" class="on" data-chq="0">Nur Menge</button><button type="button" data-chq="1">Menge mit Quote</button></div>' +
+      '<div class="small" id="chQh">Gezählt werden alle neu getrackten Fragen.</div>' +
+      '<label>Strafe für den Verlierer (optional)<input type="text" id="chP" maxlength="60" placeholder="zum Beispiel: gibt eine Runde aus" autocomplete="off"></label>' +
+      '<div class="small" id="chH" style="margin-top:8px"></div><button id="chGo" style="width:100%;margin-top:12px">Herausfordern</button><div class="small msg" id="chM"></div>');
+    var o = sh.ov, g = function(id){ return o.querySelector('#' + id); };
+    function cfg(){ return chCfgClean({k: st.k, subj: st.subj, q: st.q, days: st.days, goal: readInt(g('chG').value) || 0, pun: g('chP').value}); }
+    function upd(){
+      st.subj = g('chS').value;
+      g('chGw').hidden = st.k !== 'first';
+      g('chDl').textContent = st.k === 'first' ? 'Höchstdauer' : 'Dauer';
+      g('chQh').textContent = st.q ? 'Gezählt werden richtig beantwortete Fragen (Fragen minus falsche). Dafür müssen die Ergebnisse beim Tracken eingetragen werden.' : 'Gezählt werden alle neu getrackten Fragen.';
+      var c = cfg(); g('chH').textContent = c ? chDesc(c) + '.' : '';
+    }
+    function seg(id, attr, fn){ g(id).addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('[' + attr + ']') : null; if(!b) return; Array.prototype.forEach.call(g(id).children, function(x){ x.classList.toggle('on', x === b); }); fn(b.getAttribute(attr)); upd(); }); }
+    seg('chK', 'data-chk', function(v){ st.k = v; }); seg('chD', 'data-chd', function(v){ st.days = +v; }); seg('chQ', 'data-chq', function(v){ st.q = +v; });
+    g('chS').addEventListener('change', upd); g('chG').addEventListener('input', upd);
+    g('chGo').addEventListener('click', function(){
+      var c = cfg(); if(!c){ g('chM').textContent = 'Bitte Ziel und Dauer prüfen.'; return; }
+      if(c.k === 'first' && !c.goal){ g('chM').textContent = 'Wie viele Fragen sind das Ziel?'; return; }
+      var C = chGet();
+      if(C.list.some(function(x){ return x.g === F.gist && (x.st === 'offer' || x.st === 'run' || x.st === 'in'); })){ g('chM').textContent = 'Mit diesem Freund läuft schon eine Challenge.'; return; }
+      if(C.list.filter(function(x){ return x.st === 'run' || x.st === 'offer'; }).length >= CH_MAX){ g('chM').textContent = 'Es können höchstens ' + CH_MAX + ' Challenges gleichzeitig laufen.'; return; }
+      sh.close(); chCreate(F, c); try{ toast('Herausforderung gesendet'); }catch(e){}
+    });
+    upd();
+  }
+  /* Animationen */
+  function chStage(ev, done){
+    if(rvOv) return;
+    var cols = rvCols({ac: ev.ac}), k = ev.k, my = ev.my || 0, th = ev.th || 0, mx = Math.max(my, th, 1);
+    var T = {cinv: 'Herausforderung!', cacc: 'Angenommen!', cdec: 'Abgelehnt', cwin: 'Gewonnen!', close: 'Verloren', cdraw: 'Unentschieden', cvoid: 'Beendet'}[k] || 'Challenge';
+    var sub = {
+      cinv: esc(ev.n) + ' fordert dich heraus: ' + esc(ev.desc || '') + '.' + (ev.pun ? ' Strafe für den Verlierer: ' + esc(ev.pun) + '.' : ''),
+      cacc: 'Du und ' + esc(ev.n) + ' kämpft los: ' + esc(ev.desc || '') + '.',
+      cdec: esc(ev.n) + ' hat deine Herausforderung abgelehnt.',
+      cwin: 'Du hast die Challenge gegen ' + esc(ev.n) + ' gewonnen.' + (ev.pun ? ' ' + esc(ev.n) + ' muss: ' + esc(ev.pun) + '.' : ''),
+      close: esc(ev.n) + ' war besser.' + (ev.pun ? ' Deine Strafe: ' + esc(ev.pun) + '.' : ''),
+      cdraw: 'Gleichstand gegen ' + esc(ev.n) + '.',
+      cvoid: 'Die Challenge mit ' + esc(ev.n) + ' wurde beendet.'
+    }[k];
+    var el = document.createElement('div'); el.className = 'rvov'; rvOv = el;
+    function lane(nm, col, p, v){ return '<div class="rvlane"><div class="rvp" data-p="' + p + '" style="--c:' + col + ';left:10px">' + RV_PLANE + esc(nm) + ' <b>' + fmt(v) + '</b></div></div>'; }
+    var showLanes = (k === 'cwin' || k === 'close' || k === 'cdraw'), btns = k === 'cinv' ?
+      '<div class="chbs"><button type="button" data-o="yes" style="background:' + cols[0] + ';color:#fff;border:0">Annehmen</button><button type="button" data-o="no" class="ghost">Ablehnen</button><button type="button" data-o="later" class="ghost">Später</button></div>' :
+      '<button type="button" data-o="ok" style="background:' + cols[0] + ';color:#fff;border:0">Weiter</button>';
+    el.innerHTML = '<canvas></canvas>' + (k === 'cinv' || k === 'cacc' ? '<div class="rvvs">VS</div>' : '') +
+      (showLanes ? lane(ev.n, cols[1], 8 + th / mx * 70, th) + lane('Du', cols[0], 8 + my / mx * 70, my) : '') +
+      '<h1 style="' + (T.length > 11 ? 'font-size:clamp(26px,8.4vw,48px);' : '') + 'max-width:100%;color:' + (k === 'close' ? '#c4c9d8' : (k === 'cwin' ? cols[0] : '#fff')) + ';text-shadow:0 0 28px ' + (k === 'close' ? 'transparent' : cols[0]) + '">' + T + '</h1><div class="rvs">' + sub + '</div>' + btns;
+    document.body.appendChild(el);
+    var ps = el.querySelectorAll('.rvp');
+    setTimeout(function(){ Array.prototype.forEach.call(ps, function(p){ var w = el.querySelector('.rvlane').offsetWidth - p.offsetWidth - 20; p.style.left = Math.max(10, w * 0.84 * (parseFloat(p.getAttribute('data-p')) - 8) / 70 + 10) + 'px'; }); }, 120);
+    if(k === 'cwin') setTimeout(function(){ rvConfetti(el.querySelector('canvas'), cols[0]); }, 1000);
+    try{ if(navigator.vibrate) navigator.vibrate(k === 'cwin' ? [40, 40, 80] : 30); }catch(e){}
+    el.addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('[data-o]') : null; if(!b) return;
+      var a = b.getAttribute('data-o'); el.remove(); rvOv = null;
+      if(a === 'yes') chAnswer(ev.id, true); else if(a === 'no') chAnswer(ev.id, false);
+      if(done) done();
+    });
+  }
+  function chShow(){
+    if(rvOv || document.hidden) return;
+    var C = chGet(); if(!C.q.length) return;
+    var ev = C.q.shift(); save();
+    chStage(ev, function(){ setTimeout(function(){ rvShow(); chShow(); }, 300); });
+  }
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(chShow, 1200); });
+  setTimeout(function(){ try{ chEval(); chShow(); }catch(e){} }, 9500);
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-chact]') : null; if(!b) return;
+    var a = b.getAttribute('data-chact'), id = b.getAttribute('data-chid'), C = chGet();
+    if(a === 'yes') chAnswer(id, true);
+    else if(a === 'no') chAnswer(id, false);
+    else if(a === 'clear'){ C.list = C.list.filter(function(x){ return x.id !== id; }); save(); frTouch(); chRefresh(); }
+    else if(a === 'new') chNew(+b.getAttribute('data-fri'));
+  });
+  /* ---------- Chat (Freunde, Instructor und Schüler; nur GitHub-Version) ---------- */
+  var CHT_KEY = KEY + '-chat', chtD = null, chtBusy = false, chtView = null, chtImgs = {}, chtImgBusy = {}, chtNameTried = {}, chtSending = false;
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '.chtov .sheet{display:flex;flex-direction:column;height:min(88vh,740px);max-height:88vh;overflow:hidden}' +
+      '.chtl{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px 10px;overscroll-behavior:contain}' +
+      '.cmsg{flex:none;max-width:84%;padding:8px 12px;border-radius:18px;font-size:14.5px;line-height:1.38;white-space:pre-wrap;overflow-wrap:anywhere}' +
+      '.cmsg.me{align-self:flex-end;background:var(--accent);color:#0b0d14;border-bottom-right-radius:6px}' +
+      '.cmsg.th{align-self:flex-start;background:var(--card2,rgba(255,255,255,.07));border:1px solid var(--line);border-bottom-left-radius:6px}' +
+      '.cmsg .cm{display:block;font-size:11px;opacity:.7;margin-top:3px}.cmsg .ca{font-size:11px;font-weight:700;opacity:.8;display:block;margin-bottom:2px}' +
+      '.cmsg img{display:block;max-width:100%;max-height:300px;border-radius:12px;margin-bottom:4px;cursor:zoom-in;background:rgba(0,0,0,.2)}' +
+      '.cmsg .cimg{display:block;font-size:12px;opacity:.7;padding:18px 8px}' +
+      '.chtin{display:flex;gap:8px;align-items:flex-end;padding-top:8px;border-top:1px solid var(--line)}' +
+      '.chtin textarea{flex:1;min-width:0;resize:none;max-height:120px;border-radius:18px;padding:9px 13px;font:inherit;line-height:1.3}' +
+      '.chtin button{padding:9px 14px;border-radius:18px;flex:none}.chpv{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0 0}' +
+      '.chpv img{height:44px;border-radius:8px}.chpv button{padding:2px 9px}' +
+      '.chdot{display:inline-block;min-width:18px;height:18px;line-height:18px;border-radius:9px;background:var(--accent);color:#0b0d14;font-size:11px;font-weight:800;text-align:center;margin-left:6px;padding:0 5px;vertical-align:middle}' +
+      '.chzoom{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:12px;cursor:zoom-out}.chzoom img{max-width:100%;max-height:100%;border-radius:10px}';
+    document.head.appendChild(st);
+  })();
+  function chtMe(){ var m = typeof pushMe === 'function' ? pushMe() : null; return m ? m.me : ''; }
+  function chtLoad(){
+    var me = chtMe();
+    if(chtD && chtD.me === me) return chtD;
+    var o = null; try{ o = JSON.parse(localStorage.getItem(CHT_KEY) || 'null'); }catch(e){}
+    if(!o || typeof o !== 'object' || o.me !== me) o = {me: me, cur: 0, m: {}, rd: {}};
+    if(!o.m || typeof o.m !== 'object') o.m = {};
+    if(!o.rd || typeof o.rd !== 'object') o.rd = {};
+    o.cur = +o.cur || 0; chtD = o; return o;
+  }
+  function chtSave(){
+    var D = chtD; if(!D) return;
+    Object.keys(D.m).forEach(function(k){ if(D.m[k].length > 200) D.m[k] = D.m[k].slice(-200); });
+    try{ localStorage.setItem(CHT_KEY, JSON.stringify(D)); }catch(e){}
+  }
+  function chtOk(){ return !!(typeof pushMe === 'function' && pushMe()); }
+  function chtName(g){
+    if(g === 'all') return 'Alle Schüler';
+    var f = (S.friends || []).filter(function(x){ return x.gist === g; })[0];
+    var n = f ? (f.alias || (f.data && f.data.name) || f.nm || '') : '';
+    if(!n && typeof insNames === 'function') n = insNames()[g] || '';
+    if(!n && !chtNameTried[g]){
+      chtNameTried[g] = 1;
+      try{ frFetchShare(g).then(function(d){ if(d && d.name && typeof insName === 'function'){ insName(g, d.name); chtRefreshUi(); } }, function(){}); }catch(e){}
+    }
+    if(n) return n;
+    return (typeof pushSt !== 'undefined' && pushSt && (pushSt.ins || []).indexOf(g) >= 0) ? 'Instructor' : (isIns() ? 'Schüler' : 'Freund');
+  }
+  function chtPeerOf(m, me){ return m.f === me ? (m.to === 'all' ? 'all' : m.to) : m.f; }
+  function chtIngest(items){
+    var D = chtLoad(), me = D.me, fresh = [];
+    (items || []).forEach(function(m){
+      if(!m || typeof m.i !== 'string' || !/^[0-9a-f]{6,16}$/.test(m.i) || typeof m.f !== 'string' || typeof m.ts !== 'number') return;
+      var peer = chtPeerOf(m, me); if(typeof peer !== 'string' || !/^([0-9a-f]{20,40}|all)$/.test(peer)) return;
+      var th = D.m[peer] || (D.m[peer] = []);
+      D.cur = Math.max(D.cur, m.ts);
+      if(th.some(function(x){ return x.i === m.i; })) return;
+      var e = {i: m.i, f: m.f === me ? 1 : 0, t: String(m.t || '').slice(0, 600), im: /^[0-9a-f]{16}$/.test(m.im || '') ? m.im : '', ts: m.ts, b: m.to === 'all' ? 1 : 0};
+      th.push(e); th.sort(function(a, b){ return a.ts - b.ts; });
+      if(!e.f) fresh.push({peer: peer, e: e});
+    });
+    return fresh;
+  }
+  function chtUnreadOf(peer){
+    var D = chtLoad(), rd = D.rd[peer] || 0;
+    return (D.m[peer] || []).filter(function(x){ return !x.f && x.ts > rd; }).length;
+  }
+  function chtUnread(){ var D = chtLoad(), n = 0; Object.keys(D.m).forEach(function(k){ n += chtUnreadOf(k); }); return n; }
+  function chtMarkRead(peer){
+    var D = chtLoad(), th = D.m[peer] || [], last = th.length ? th[th.length - 1].ts : 0;
+    if(last > (D.rd[peer] || 0)){ D.rd[peer] = last; chtSave(); chtRefreshUi(); }
+  }
+  function chtDot(peer){ var n = chtUnreadOf(peer); return n ? '<span class="chdot">' + n + '</span>' : ''; }
+  function chtBtn(g, label){
+    return '<button type="button" data-chtg="' + escA(g) + '" style="padding:6px 12px">' + esc(label || 'Chat') + chtDot(g) + '</button>';
+  }
+  function chtRefreshUi(){
+    try{ if(typeof frNewsDot === 'function') frNewsDot(); }catch(e){}
+    try{ if(frView && frView.ov.parentNode && typeof frRender === 'function') frRender(); }catch(e){}
+    try{ if(isIns()) insRender(); }catch(e){}
+  }
+  async function chtPull(){
+    if(chtBusy || !chtOk()) return;
+    var m = pushMe(), D = chtLoad(), first = D.cur === 0; chtBusy = true;
+    try{
+      var r = await pushApi('/cp', {me: m.me, tok: m.tok, since: D.cur});
+      var fresh = chtIngest(r && r.items); chtSave();
+      if(fresh.length){
+        if(chtView && chtView.peer && fresh.some(function(x){ return x.peer === chtView.peer; })) chtDraw(true);
+        var other = fresh.filter(function(x){ return !(chtView && chtView.peer === x.peer && !document.hidden); });
+        if(!first && other.length && !document.hidden){
+          var nm = chtName(other[0].peer); try{ toast('Neue Nachricht von ' + nm); }catch(e){}
+        }
+        if(chtView && chtView.peer && !document.hidden) chtMarkRead(chtView.peer); else chtRefreshUi();
+      }
+    }catch(e){}
+    chtBusy = false;
+  }
+  function chtTime(ts){
+    var d = new Date(ts), n = new Date(), p = function(x){ return (x < 10 ? '0' : '') + x; }, hm = p(d.getHours()) + ':' + p(d.getMinutes());
+    return d.toDateString() === n.toDateString() ? hm : d.getDate() + '.' + (d.getMonth() + 1) + '. ' + hm;
+  }
+  function chtImg(id){
+    if(chtImgs[id]) return Promise.resolve(chtImgs[id]);
+    if(chtImgBusy[id]) return chtImgBusy[id];
+    var m = pushMe(); if(!m) return Promise.reject(new Error('nofreigabe'));
+    chtImgBusy[id] = pushApi('/ci', {me: m.me, tok: m.tok, id: id}).then(function(r){
+      delete chtImgBusy[id];
+      if(!r || typeof r.d !== 'string' || !/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(r.d)) throw new Error('bad');
+      chtImgs[id] = r.d; return r.d;
+    }, function(e){ delete chtImgBusy[id]; throw e; });
+    return chtImgBusy[id];
+  }
+  function chtBubble(x, peer){
+    var h = '<div class="cmsg ' + (x.f ? 'me' : 'th') + '">';
+    if(!x.f && x.b) h += '<span class="ca">An alle</span>';
+    if(x.f && x.b && peer === 'all') h += '';
+    if(x.im) h += chtImgs[x.im] ? '<img src="' + chtImgs[x.im] + '" data-chz="1" alt="Bild">' : '<span class="cimg" data-chim="' + x.im + '">Bild lädt …</span>';
+    if(x.t) h += esc(x.t);
+    return h + '<span class="cm">' + chtTime(x.ts) + '</span></div>';
+  }
+  function chtDraw(keepScroll){
+    var v = chtView; if(!v || !v.ov.parentNode) return;
+    var L = v.ov.querySelector('.chtl'), D = chtLoad(), th = D.m[v.peer] || [];
+    var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80;
+    L.innerHTML = th.length ? th.map(function(x){ return chtBubble(x, v.peer); }).join('') :
+      '<div class="small" style="margin:auto;text-align:center;max-width:260px">' + (v.peer === 'all' ? 'Schreibe allen deinen Schülern gleichzeitig. Antworten kommen bei dir als Einzelchat an.' : 'Noch keine Nachrichten. Schreib die erste.') + '</div>';
+    Array.prototype.forEach.call(L.querySelectorAll('[data-chim]'), function(el){
+      var id = el.getAttribute('data-chim');
+      chtImg(id).then(function(d){ if(!v.ov.parentNode) return; var im = document.createElement('img'); im.src = d; im.alt = 'Bild'; im.setAttribute('data-chz', '1'); if(el.parentNode){ el.parentNode.replaceChild(im, el); if(near || !keepScroll) L.scrollTop = L.scrollHeight; } },
+        function(){ el.textContent = 'Bild nicht mehr verfügbar'; });
+    });
+    if(!keepScroll || near) L.scrollTop = L.scrollHeight;
+  }
+  function chtShrink(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function(){
+        var k = Math.min(1, 1000 / Math.max(im.width, im.height, 1)), d = '', tries = 0;
+        do{
+          var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+          var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+          d = c.toDataURL('image/jpeg', 0.74); k *= 0.8; tries++;
+        }while(d.length > 180000 && tries < 6);
+        URL.revokeObjectURL(url);
+        if(d.length > 180000) rej(new Error('big')); else res(d);
+      };
+      im.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('img')); };
+      im.src = url;
+    });
+  }
+  async function chtSend(peer, text, img){
+    var m = pushMe(); if(!m) throw new Error('Der Chat braucht die Freigabe und die Verbindung zum Push-Dienst (Account).');
+    var r = await pushApi('/cs', {me: m.me, tok: m.tok, to: peer, t: text, img: img || '', n: pushName()});
+    var D = chtLoad(); if(r && r.im && img) chtImgs[r.im] = img;
+    var e = {i: r.i, f: 1, t: String(text || '').slice(0, 600), im: r.im || '', ts: r.ts, b: peer === 'all' ? 1 : 0};
+    var th = D.m[peer] || (D.m[peer] = []);
+    if(!th.some(function(x){ return x.i === e.i; })){ th.push(e); th.sort(function(a, b){ return a.ts - b.ts; }); }
+    chtSave(); return r;
+  }
+  function chtOpen(peer){
+    if(!/^([0-9a-f]{20,40}|all)$/.test(peer || '')) return;
+    if(chtView && chtView.ov.parentNode) chtView.close();
+    var sh = openSheet('<div class="shead"><h2>' + esc(chtName(peer)) + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="chtl" role="log" aria-live="polite"></div><div class="chpv" id="chPv" hidden></div><div class="small msg" id="chE" style="min-height:0"></div>' +
+      '<div class="chtin"><button type="button" class="ghost" id="chImgB" aria-label="Bild anhängen">Bild</button><input type="file" id="chFile" accept="image/*" hidden>' +
+      '<textarea id="chT" rows="1" maxlength="600" placeholder="Nachricht" aria-label="Nachricht"></textarea><button type="button" id="chSend">Senden</button></div>');
+    sh.ov.classList.add('chtov'); sh.peer = peer; chtView = sh;
+    var o = sh.ov, g = function(id){ return o.querySelector('#' + id); }, pend = '';
+    function err(t){ g('chE').textContent = t || ''; }
+    function pv(){
+      var b = g('chPv');
+      if(!pend){ b.hidden = true; b.innerHTML = ''; return; }
+      b.hidden = false; b.innerHTML = '<img src="' + pend + '" alt="Vorschau"><button type="button" class="ghost" id="chPx">Entfernen</button>';
+      g('chPx').addEventListener('click', function(){ pend = ''; pv(); });
+    }
+    g('chImgB').addEventListener('click', function(){ g('chFile').click(); });
+    g('chFile').addEventListener('change', function(){
+      var f = g('chFile').files && g('chFile').files[0]; g('chFile').value = ''; if(!f) return;
+      err('Bild wird vorbereitet …');
+      chtShrink(f).then(function(d){ pend = d; err(''); pv(); }, function(){ err('Das Bild konnte nicht verarbeitet werden.'); });
+    });
+    function autoH(){ var t = g('chT'); t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; }
+    g('chT').addEventListener('input', autoH);
+    async function go(){
+      if(chtSending) return;
+      var t = g('chT').value.trim();
+      if(!t && !pend) return;
+      chtSending = true; g('chSend').disabled = true; err('');
+      try{
+        await chtSend(peer, t, pend);
+        g('chT').value = ''; pend = ''; pv(); autoH(); chtDraw(false); chtMarkRead(peer);
+      }catch(e){ err((e && e.message) || 'Das hat nicht geklappt. Bist du online?'); }
+      chtSending = false; g('chSend').disabled = false;
+    }
+    g('chSend').addEventListener('click', go);
+    g('chT').addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey && window.matchMedia && window.matchMedia('(pointer:fine)').matches){ e.preventDefault(); go(); }
+    });
+    o.addEventListener('click', function(e){
+      var z = e.target && e.target.closest ? e.target.closest('[data-chz]') : null;
+      if(z){ var zo = document.createElement('div'); zo.className = 'chzoom'; zo.innerHTML = '<img src="' + z.getAttribute('src') + '" alt="Bild">'; zo.addEventListener('click', function(){ zo.remove(); }); document.body.appendChild(zo); }
+      if(e.target === o || (e.target.closest && e.target.closest('[data-sx]'))){ chtView = null; chtRefreshUi(); }
+    });
+    if(!chtOk()) err('Der Chat braucht die Freigabe und die Verbindung zum Push-Dienst (Account).');
+    chtDraw(false); chtMarkRead(peer); chtPull();
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-chtg]') : null;
+    if(b){ e.preventDefault(); chtOpen(b.getAttribute('data-chtg')); }
+  });
+  /* Abholen: alle 20 s im Vordergrund, 4 s solange ein Chat offen ist, sofort beim Wechsel in den Vordergrund und bei Push */
+  (function(){
+    var last = 0;
+    function tick(){
+      if(document.hidden || !chtOk()) return;
+      var gap = chtView && chtView.ov.parentNode ? 4000 : 20000;
+      if(Date.now() - last >= gap - 300){ last = Date.now(); chtPull(); }
+    }
+    setInterval(tick, 2000);
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden){ last = Date.now(); chtPull(); } });
+    try{ if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){ if(e && e.data && e.data.sf === 'refresh'){ last = Date.now(); chtPull(); } }); }catch(e){}
+    setTimeout(function(){ last = Date.now(); chtPull(); }, 3500);
+  })();
   /* ---------- Eigener Claude-API-Schlüssel (nur GitHub-Version) ---------- */
   var AIK_KEY = KEY + '-aik', AIK_MODEL = KEY + '-aimodel';
   var AIK_MODELS = [['claude-sonnet-5-5', 'Sonnet 5.5 (Standard)'], ['claude-haiku-5-5', 'Haiku 5.5 (günstiger, schneller)'], ['claude-opus-5-5', 'Opus 5.5 (stärker, teurer)']];
@@ -8365,9 +9125,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   })();
   /* ---------- Erinnerungen per Push (nur GitHub-Version, standardmäßig aus) ---------- */
   var PUSH_KEY = KEY + '-push', pushCfg = null, pushLast = '';
-  var PK = ['q', 'o', 'g', 'b', 's', 'p'];
-  var INS_PK = {q: 'Ein Schüler hat Fragen geklickt', o: 'Ein Schüler hat jemanden überholt', g: 'Ein Schüler hat das Tagespensum erreicht', b: 'Ein Schüler hat ein Abzeichen geholt', s: 'Ein Schüler ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
-  var PK_LAB = {q: 'Ein Freund hat Fragen geklickt', o: 'Ein Freund hat mich überholt', g: 'Ein Freund hat das Tagespensum erreicht', b: 'Ein Freund hat ein Abzeichen geholt', s: 'Ein Freund ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
+  var PK = ['q', 'o', 'g', 'b', 's', 'p', 'v', 'h', 'c'];
+  var INS_PK = {c: 'Chat: neue Nachricht', q: 'Ein Schüler hat Fragen geklickt', o: 'Ein Schüler hat jemanden überholt', g: 'Ein Schüler hat das Tagespensum erreicht', b: 'Ein Schüler hat ein Abzeichen geholt', s: 'Ein Schüler ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert'};
+  var PK_LAB = {q: 'Ein Freund hat Fragen geklickt', o: 'Ein Freund hat mich überholt', g: 'Ein Freund hat das Tagespensum erreicht', b: 'Ein Freund hat ein Abzeichen geholt', s: 'Ein Freund ist wieder im Soll', p: 'Ein gemeinsames Paket wurde aktualisiert', c: 'Chat: neue Nachricht', v: 'Rivalität: Start, Eingeholt, Abgehängt', h: 'Challenge: Anfrage, Antwort, Ergebnis'};
   function pushGet(){
     var raw = null, c = null; try{ raw = localStorage.getItem(PUSH_KEY); c = JSON.parse(raw || 'null'); }catch(e){}
     if(!c || typeof c !== 'object') c = {};
@@ -8676,7 +9436,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!ib.length) return '';
     var nm = typeof insNames === 'function' ? insNames() : {};
     return '<div class="card frc"><b>Instructor</b><div class="small" style="margin-top:4px">Diese Instructors sehen deine freigegebenen Daten und bekommen deine Meldungen. Den Datenzugriff beendest du ganz mit „Code erneuern“ (Account › Freunde und Freigabe).</div>' + ib.map(function(g){
-      return '<div class="pdr" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:0">' + esc(nm[g] || 'Instructor') + '</span><button type="button" class="ghost" data-pact="iun" data-pg="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-pact="rblk" data-pg="' + escA(g) + '" data-pn="' + escA(nm[g] || '') + '" style="padding:6px 12px">Blockieren</button></div>';
+      return '<div class="pdr" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:0">' + esc(nm[g] || 'Instructor') + '</span>' + (typeof chtBtn === 'function' ? chtBtn(g) : '') + '<button type="button" class="ghost" data-pact="iun" data-pg="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-pact="rblk" data-pg="' + escA(g) + '" data-pn="' + escA(nm[g] || '') + '" style="padding:6px 12px">Blockieren</button></div>';
     }).join('') + '</div>';
   }
   function pushBlkBtn(fr){ return pushCfg && pushMe() ? '<button type="button" class="ghost" data-pact="blk" data-pg="' + escA(fr.gist) + '" style="padding:6px 12px">Blockieren</button>' : ''; }
@@ -9015,7 +9775,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Meldungen von diesem Schüler</summary>' + Object.keys(INS_LAB).map(function(k){
       return '<label class="tg"><span>' + INS_LAB[k] + '</span><input type="checkbox" class="sw" data-pmute="' + k + '" data-pg="' + escA(g) + '"' + (mu.indexOf(k) < 0 ? ' checked' : '') + '></label>';
     }).join('') + '</details>';
-    h += '<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-iact="rm" data-ig="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-iact="blk" data-ig="' + escA(g) + '" style="padding:6px 12px">Blockieren</button></div></div>';
+    h += '<div class="row" style="margin-top:8px">' + (typeof chtBtn === 'function' ? chtBtn(g) : '') + '<button type="button" class="ghost" data-iact="rm" data-ig="' + escA(g) + '" style="padding:6px 12px">Entziehen</button><button type="button" class="ghost" data-iact="blk" data-ig="' + escA(g) + '" style="padding:6px 12px">Blockieren</button></div></div>';
     return h;
   }
   /* Liniendiagramm: pro Schüler eine Linie in seiner Akzentfarbe, Werte als Prozent vom Ziel (pct) oder absolut */
@@ -9041,6 +9801,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     h += '<div class="small" style="margin-top:4px">' + (lkd.length ? lkd.length + (lkd.length === 1 ? ' Schüler verbunden.' : ' Schüler verbunden.') : 'Noch kein Schüler verbunden.') + ' Du siehst, was jeder Schüler in „Freunde und Freigabe“ freigibt, und bekommst seine Meldungen.</div>';
     if(!(S.share && S.share.gist)) h += '<div class="small" style="margin-top:8px;color:var(--bad,#d12f3f)">Dein Instructor-Zugang ist noch nicht beim Server angemeldet.</div><button type="button" data-iact="ident" style="width:100%;margin-top:6px">Verbindung herstellen</button>';
     h += '</div>';
+    if(lkd.length && typeof chtBtn === 'function'){
+      h += '<div class="card"><h2>Nachrichten</h2><div class="small" style="margin-bottom:8px">Schreibe einem Schüler direkt oder allen auf einmal. Bilder sind möglich.</div><div class="row">' + chtBtn('all', 'An alle Schüler') + '</div></div>';
+    }
     if(lkd.length){
       var sorted = lkd.slice().sort(function(a, b){ return (insPct(b.data) || 0) - (insPct(a.data) || 0); });
       h += '<div class="card"><h2>Klasse im Überblick</h2>' + sorted.map(function(f){
@@ -9061,6 +9824,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     fr.forEach(function(f, i){ h += insCard(f, i); });
     h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
     h += '<div class="card frc"><b>Instructor zurücksetzen</b><div class="small" style="margin:6px 0">Trennt alle Schüler, meldet dieses Gerät beim Push-Dienst ab, löscht den Instructor-Zugang samt Freigabe in der Cloud und beginnt die Einrichtung neu. Lernkonten von Schülern sind nicht betroffen.</div><button type="button" class="ghost" data-iact="reset">Instructor zurücksetzen</button></div>';
+    var rel0 = RELEASES[0], seenI = ''; try{ seenI = localStorage.getItem(KEY + '-insv') || ''; }catch(e){}
+    if(rel0 && rel0.ins && seenI !== rel0.v) h = '<div class="card frc" style="border-color:var(--accent)"><b>Neu in Update ' + relNo(rel0) + '</b><div class="small" style="margin:6px 0 10px">' + esc(rel0.ins) + '</div><button type="button" data-iact="insok" style="width:100%">Verstanden</button></div>' + h;
     v.innerHTML = h;
     if(v.querySelector('#insCode')) v.querySelector('#insCode').value = cv;
     if(v.querySelector('#insAlias')) v.querySelector('#insAlias').value = av;
@@ -9109,7 +9874,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       Promise.all(jobs).then(go, go); setTimeout(go, 6000);
       return;
     }
-    if(a === 'add') insAdd();
+    if(a === 'insok'){ try{ localStorage.setItem(KEY + '-insv', RELEASES[0].v); }catch(e){} insRender(); }
+    else if(a === 'add') insAdd();
     else if(a === 'ident') insIdent();
     else if(a === 'refresh'){ frLast = 0; if(typeof pushStatus === 'function') pushStatus(true); frPull(true); }
     else if(a === 'ask'){ insMsg('Sende Anfrage …'); pushReq(g).then(function(r){ insMsg(r ? (r.linked ? 'Verbunden.' : 'Anfrage gesendet.') : 'Anfrage nicht gesendet. ' + (pushErr || 'Bist du online?')); insRender(); }); }

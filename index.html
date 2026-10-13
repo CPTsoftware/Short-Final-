@@ -288,6 +288,8 @@ textarea{font-family:var(--mono);font-size:16px;color:var(--text);background:var
 .bhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .bhead h3{margin:0}
 .rbtn{padding:7px 14px;font-size:13px}
+.scbox{margin:10px 0}.scrows{display:flex;flex-direction:column;gap:8px}.scrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--card2)}.scrow .scn{grid-column:1 / -1}.scrow input{min-width:0;width:100%}.scrow .scx{padding:6px 10px}.scinfo{margin-top:6px}.scaddb{width:100%;margin-top:8px}
+.sct{width:100%;border-collapse:collapse;font-size:13px}.sct td{padding:5px 4px;border-top:1px solid var(--line);vertical-align:middle}.sct tr:first-child td{border-top:0}.sct .scbar{height:5px;border-radius:3px;background:var(--track);overflow:hidden;margin-top:3px}.sct .scbar i{display:block;height:100%;background:var(--accent)}.sct .scbar i.bad{background:var(--bad,#ff3d4f)}.sct .scbar i.warn{background:var(--warn,#f2b705)}.sct .scbar i.good{background:var(--good,#3ee08f)}.scchip{display:inline-block;margin:2px 4px 2px 0;padding:1px 8px;border-radius:999px;background:var(--track);font-style:normal;font-size:11px}
 .rform{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card2);margin-bottom:10px}
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .catb{background:var(--card);color:var(--text);border:1px solid var(--line);padding:6px 12px;font-weight:600;font-size:13px}
@@ -1562,6 +1564,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       s.last = la;
     }
     if(!Array.isArray(s.gen)) s.gen = [];
+    if(!Array.isArray(s.sc)) s.sc = [];
+    if(!Array.isArray(s.chap)) s.chap = [];
     if(!Array.isArray(s.sim)){
       var so = s.sim, sa = [];
       if(so && typeof so === 'object' && nn(so.n) !== null && so.n > 0 && nn(so.ok) !== null) sa.push({d:today, t:newT(), n:so.n, ok:so.ok});
@@ -1713,6 +1717,109 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   };
   var CATSHORT = {rep:'Falsche', gen:'Generell', sim:'Simulation'};
   function arrOf(s, k){ return k === 'rep' ? s.rep : (k === 'last' ? s.last : (k === 'gen' ? s.gen : s.sim)); }
+  /* ---------- Subchapter: Anteil und Ergebnis je Fach ---------- */
+  function scKey(n){ return String(n || '').trim().toLowerCase(); }
+  function scAgg(s){
+    var m = {}, out = [];
+    (s.sc || []).forEach(function(e){
+      var k = scKey(e.c); if(!k) return;
+      if(!m[k]){ m[k] = {name:e.c, n:0, ok:0, d:e.d}; out.push(m[k]); }
+      m[k].n += e.n; m[k].ok += e.ok; if(e.d > m[k].d) m[k].d = e.d;
+    });
+    out.forEach(function(x){ x.p = x.n > 0 ? x.ok / x.n * 100 : null; });
+    return out;
+  }
+  /* schwächste zuerst; erst ab SC_MIN Fragen aussagekräftig */
+  var SC_MIN = 5;
+  function scRank(list){
+    var a = list.filter(function(x){ return x.n >= SC_MIN; }).sort(function(x, y){ return x.p - y.p; });
+    var b = list.filter(function(x){ return x.n < SC_MIN; }).sort(function(x, y){ return y.n - x.n; });
+    return {ranked:a, few:b};
+  }
+  function scNames(s){
+    var seen = {}, out = [];
+    (s.chap || []).concat((s.sc || []).map(function(e){ return e.c; })).forEach(function(c){ var k = scKey(c); if(k && !seen[k]){ seen[k] = 1; out.push(c); } });
+    return out.sort(function(a, b){ return a.localeCompare(b, 'de'); });
+  }
+  function scRowHTML(){
+    return '<div class="scrow"><input type="text" class="scn" list="scdl" maxlength="40" placeholder="Subchapter" autocomplete="off"><input type="number" class="sca" inputmode="decimal" min="1" max="100" step="any" placeholder="Anteil der Fragen %"><input type="number" class="scp" inputmode="decimal" min="0" max="100" step="any" placeholder="Richtig %"><button type="button" class="ghost scx" aria-label="Entfernen">✕</button></div>';
+  }
+  /* Eingabe-Bereich für Subchapter; getN liefert die Anzahl der Fragen des Eintrags */
+  function scBoxHTML(){
+    return '<div class="scbox"><datalist id="scdl"></datalist><div class="small" style="margin-bottom:6px">Optional: Subchapter mit Anteil an den Fragen (links) und Ergebnis in Prozent (rechts).</div><div class="scrows"></div><button type="button" class="ghost scaddb">+ Subchapter hinzufügen</button><div class="small scinfo"></div></div>';
+  }
+  function scAttach(root, sjId, getN){
+    var rows = root.querySelector('.scrows'), info = root.querySelector('.scinfo'), dl = root.querySelector('#scdl');
+    if(dl){ dl.innerHTML = scNames(getSub(sjId)).map(function(c){ return '<option value="' + escA(c) + '"></option>'; }).join(''); }
+    function read(){
+      var out = [], err = '', tot = 0, N = getN();
+      Array.prototype.forEach.call(rows.children, function(r){
+        var c = r.querySelector('.scn').value.trim().slice(0, 40), a = r.querySelector('.sca').value, p = r.querySelector('.scp').value;
+        if(!c && a === '' && p === '') return;
+        var av = parseFloat(String(a).replace(',', '.')), pv = parseFloat(String(p).replace(',', '.'));
+        if(!c || !isFinite(av) || !isFinite(pv) || av <= 0 || av > 100 || pv < 0 || pv > 100){ err = 'Pro Subchapter: Name, Anteil (1 bis 100 %) und Ergebnis (0 bis 100 %) eintragen.'; return; }
+        tot += av;
+        var n = N ? Math.max(1, Math.round(N * av / 100)) : 0;
+        out.push({c:c, share:av, pct:pv, n:n, ok:Math.round(n * pv / 100)});
+      });
+      if(!err && out.length && !N) err = 'Trage zuerst die Anzahl der Fragen ein, dann kann ich die Anteile umrechnen.';
+      if(!err && tot > 100.5) err = 'Die Anteile ergeben ' + Math.round(tot) + ' %, mehr als 100 % geht nicht.';
+      return {rows:out, err:err, tot:tot};
+    }
+    function upd(){
+      var r = read();
+      info.textContent = r.err ? r.err : (r.rows.length ? r.rows.map(function(x){ return x.c + ': ' + fmt(x.n) + ' Fragen, ' + fmt(x.ok) + ' richtig'; }).join(' · ') + (r.tot < 100 ? ' · Rest ' + Math.round(100 - r.tot) + ' % ohne Subchapter' : '') : '');
+    }
+    root.querySelector('.scaddb').addEventListener('click', function(){ rows.insertAdjacentHTML('beforeend', scRowHTML()); var l = rows.lastElementChild; if(l) l.querySelector('.scn').focus(); upd(); });
+    rows.addEventListener('click', function(e){ var x = e.target.closest ? e.target.closest('.scx') : null; if(x){ x.parentNode.parentNode.removeChild(x.parentNode); upd(); } });
+    rows.addEventListener('input', upd);
+    root._scRead = read; root._scUpd = upd;
+    return root;
+  }
+  /* Ergebnisse speichern, gibt die Undo-Operation zurück */
+  function scStore(sj, list, d, r){
+    var s = getSub(sj.id), ts = [];
+    list.forEach(function(x){
+      var rec = {d:d, t:newT(), c:x.c, n:x.n, ok:x.ok}; if(r) rec.r = r;
+      s.sc.push(rec); ts.push(rec.t);
+      if(!s.chap.some(function(c){ return scKey(c) === scKey(x.c); })) s.chap.push(x.c);
+    });
+    return ts.length ? {k:'sc', id:sj.id, ts:ts} : null;
+  }
+  function subchapHTML(i, s){
+    var agg = scAgg(s);
+    if(!agg.length) return '<div class="small">Noch keine Subchapter. Beim Fragen-Tracken oder bei einem Bericht (Knopf „＋Sub“) kannst du sie mit Anteil und Ergebnis eintragen. Dann siehst du hier die schwächsten.</div>';
+    var rk = scRank(agg), h = '<table class="sct"><tbody>';
+    rk.ranked.forEach(function(x, ix){
+      var c = cls(x.p);
+      h += '<tr><td style="width:100%"><b>' + esc(x.name) + '</b>' + (ix === 0 && rk.ranked.length > 1 ? ' <span class="small">schwächstes</span>' : '') + '<div class="scbar"><i class="' + c + '" style="width:' + Math.max(2, Math.round(x.p)) + '%"></i></div></td><td class="r small" style="white-space:nowrap">' + fmt(x.ok) + '/' + fmt(x.n) + '</td><td class="r ' + c + '" style="white-space:nowrap">' + Math.round(x.p) + ' %</td></tr>';
+    });
+    rk.few.forEach(function(x){
+      h += '<tr><td style="width:100%"><b>' + esc(x.name) + '</b></td><td class="r small" style="white-space:nowrap">' + fmt(x.ok) + '/' + fmt(x.n) + '</td><td class="r small" style="white-space:nowrap">zu wenig (ab ' + SC_MIN + ')</td></tr>';
+    });
+    h += '</tbody></table>';
+    var es = (s.sc || []).slice().sort(function(a, b){ return cmpE(b, a); });
+    h += '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Einzelne Einträge (' + es.length + ')</summary><table><tbody>' + es.map(function(e){
+      return '<tr><td>' + fd(parse(e.d)) + '</td><td>' + esc(e.c) + '</td><td class="r small">' + fmt(e.ok) + '/' + fmt(e.n) + '</td><td class="r"><button class="ghost" data-scdel="' + e.t + '" data-s="' + i + '" aria-label="Löschen">✕</button></td></tr>';
+    }).join('') + '</tbody></table></details>';
+    return h;
+  }
+  function scAddSheet(i, kind, rec){
+    var sj = SUBJECTS[i], N = kind === 'last' ? rec.x : rec.n;
+    var sh = openSheet('<div class="shead"><h2>Subchapter ergänzen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
+      '<div class="small">' + esc(sj.name) + ', ' + fd(parse(rec.d)) + ': ' + fmt(rec.ok) + ' von ' + fmt(N) + ' richtig. Trage ein, welchen Anteil der ' + fmt(N) + ' Fragen ein Subchapter hatte und wie viel Prozent davon richtig waren.</div>' +
+      scBoxHTML() + '<button id="scGo" style="width:100%;margin-top:6px">Speichern</button><div class="small msg" id="scM"></div>');
+    var box = scAttach(sh.ov.querySelector('.scbox'), sj.id, function(){ return N; });
+    box.querySelector('.scrows').insertAdjacentHTML('beforeend', scRowHTML());
+    sh.ov.querySelector('#scGo').addEventListener('click', function(){
+      var r = box._scRead();
+      if(r.err){ sh.ov.querySelector('#scM').textContent = r.err; return; }
+      if(!r.rows.length){ sh.ov.querySelector('#scM').textContent = 'Trage mindestens ein Subchapter ein.'; return; }
+      var op = scStore(sj, r.rows, rec.d, rec.t);
+      logAdd('Subchapter ergänzt: ' + sj.name + ' ' + r.rows.map(function(x){ return x.c; }).join(', '), op ? [op] : []);
+      sh.close(); save(); updateCard(i); updateSummary(); haptic('ok'); toast('Subchapter gespeichert');
+    });
+  }
   function reportsHTML(i, s){
     var all = [];
     ['rep', 'last', 'sim', 'gen'].forEach(function(kind){ arrOf(s, kind).forEach(function(e){ all.push({kind:kind, e:e}); }); });
@@ -1738,8 +1845,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
            '<td class="r ' + cls(r.p) + '">' + Math.round(r.p) + ' %' + (r.kind === 'rep' ? '<div class="small" style="font-family:var(--sans)">(' + Math.round(r.raw) + ' %)</div>' : '') + '</td>' +
            '<td class="r ' + (r.delta === null ? '' : (r.delta >= 0 ? 'good' : 'bad')) + '" style="font-size:12px">' +
            (r.delta === null ? '' : (r.delta >= 0 ? '▲ +' : '▼ −') + Math.abs(r.delta).toFixed(0)) + '</td>' +
-           '<td class="r" style="white-space:nowrap"><button class="ghost" data-edit="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Notiz">✎</button> ' +
+           '<td class="r" style="white-space:nowrap"><button class="ghost" style="padding:5px 7px;font-size:12px" data-scadd="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Subchapter ergänzen" title="Subchapter ergänzen">＋Sub</button> <button class="ghost" data-edit="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Notiz">✎</button> ' +
            '<button class="ghost" data-del="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Löschen">✕</button></td></tr>';
+      var lnk = (s.sc || []).filter(function(x){ return x.r === r.e.t; });
+      if(lnk.length) h += '<tr class="nrow"><td colspan="6">' + lnk.map(function(x){ return '<span class="scchip">' + esc(x.c) + ' ' + (x.n ? Math.round(x.ok / x.n * 100) : 0) + ' % (' + fmt(x.ok) + '/' + fmt(x.n) + ')</span>'; }).join('') + '</td></tr>';
       if(ed){
         h += '<tr class="nrow"><td colspan="6"><div class="row" style="flex-wrap:nowrap"><input type="text" data-noteinput maxlength="300" placeholder="Notiz" value="' + escA(r.e.c || '') + '">' +
              '<button class="ghost" data-savenote="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '">OK</button>' +
@@ -1815,6 +1924,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     $('sd-' + i).innerHTML = derivedTop(id);
     $('cd-' + i).innerHTML = derivedClicked(id);
     $('rl-' + i).innerHTML = reportsHTML(i, s);
+    if($('scb-' + i)) $('scb-' + i).innerHTML = subchapHTML(i, s);
   }
 
   function updateSummary(){
@@ -1857,6 +1967,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       return '<div class="stat"><div class="v">' + x[1] + '</div><div class="k">' + x[0] + '</div></div>';
     }).join('');
     h += '<div class="stat" style="grid-column:1 / -1"><div class="k">Schwächste Fächer</div><div style="font-size:14px;margin-top:2px">' + weak + '</div></div>';
+    var scw = [];
+    SUBJECTS.forEach(function(sj){ scRank(scAgg(getSub(sj.id))).ranked.forEach(function(x){ scw.push({f:sj.name, c:x.name, p:x.p}); }); });
+    scw.sort(function(a, b){ return a.p - b.p; });
+    if(scw.length) h += '<div class="stat" style="grid-column:1 / -1"><div class="k">Schwächste Subchapter</div><div style="font-size:14px;margin-top:2px">' + scw.slice(0, 3).map(function(x){ return esc(x.f) + ' › ' + esc(x.c) + ' (' + Math.round(x.p) + ' %)'; }).join(', ') + '</div></div>';
     $('subjSummary').innerHTML = h;
   }
 
@@ -1874,6 +1988,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     h += '<div class="blk"><h3>Durchgeklickt</h3><div class="f3"><label>Geklickt' + num('clicked', s.clicked, 'Anzahl') +
          '</label><label>Davon falsch' + num('wrong', s.wrong, 'Anzahl') + '</label><label>Noch offen' + num('todo', s.todo, 'Anzahl') + '</label></div><div id="cd-' + i + '"></div></div>';
     h += '<div class="blk"><div class="bhead"><h3>Berichte</h3><button class="rbtn" data-rfopen="1" data-s="' + i + '">Bericht erstellen</button></div><div id="rf-' + i + '"></div><div id="rl-' + i + '"></div></div>';
+    h += '<div class="blk"><h3>Subchapter</h3><div id="scb-' + i + '"></div></div>';
     h += '</details>';
     return h;
   }
@@ -1974,6 +2089,13 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(addTot){ queueGlideScene(); render(); renderHome(); }
       haptic('ok');
       toast('Bericht gespeichert');
+    }else if(b.hasAttribute('data-scadd')){
+      var ka = b.getAttribute('data-k'), ta = Number(b.getAttribute('data-scadd')), ra = arrOf(s, ka).filter(function(e){ return e.t === ta; })[0];
+      if(ra) scAddSheet(i, ka, ra);
+    }else if(b.hasAttribute('data-scdel')){
+      var tsd = Number(b.getAttribute('data-scdel'));
+      s.sc = s.sc.filter(function(e){ return e.t !== tsd; });
+      save(); updateCard(i); updateSummary();
     }else if(b.hasAttribute('data-edit')){
       editNote = {i:i, k:b.getAttribute('data-k'), t:Number(b.getAttribute('data-edit'))};
       updateCard(i);
@@ -1993,6 +2115,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     }else if(b.hasAttribute('data-del')){
       var kd = b.getAttribute('data-k'), tt = Number(b.getAttribute('data-del'));
       var keep = function(e){ return e.t !== tt; };
+      s.sc = (s.sc || []).filter(function(e){ return e.r !== tt; });
       if(kd === 'rep') s.rep = s.rep.filter(keep);
       else if(kd === 'last') s.last = s.last.filter(keep);
       else if(kd === 'sim') s.sim = s.sim.filter(keep);
@@ -4557,6 +4680,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       }else if(op.k === 'openrm'){
         if(!Array.isArray(S.open)) S.open = [];
         if(!S.open.some(function(x){ return x.t === op.item.t; })) S.open.push(op.item);
+      }else if(op.k === 'sc'){
+        var qs = getSub(op.id); qs.sc = qs.sc.filter(function(x){ return op.ts.indexOf(x.t) < 0; });
       }else if(op.k === 'sub'){
         var q = getSub(op.id);
         if(nn(q.clicked) !== null){ q.clicked = Math.max(0, q.clicked - op.dc); if(op.nullC && q.clicked <= 0) q.clicked = null; }
@@ -4603,12 +4728,25 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       '<div id="aqSw"><label>Test angefangen am<input type="date" id="aqS" value="' + iso(new Date()) + '"></label><div class="small" id="aqSh" style="margin:-4px 0 6px">Hattest du den Test mehrere Tage offen? Dann wähle den Beginn: Die Fragen werden gleichmäßig auf diese Tage verteilt.</div></div>' +
       '<div id="aqQ" hidden><label id="aqQl">Wie viele davon richtig? (optional)</label><div class="seg" id="aqSeg">' + segHTML('ok', 'data-aqmode', 0) + '</div>' +
       '<input type="number" step="any" id="aqV" inputmode="numeric" min="0" placeholder="Optional" style="width:100%"></div>' +
+      '<div id="aqScW" hidden>' + scBoxHTML() + '</div>' +
       '<label class="tg"><span>Zur Gesamtzahl addieren</span><input type="checkbox" class="sw" id="aqT" checked></label>' +
       '<div class="small" id="aqHint" style="margin-top:8px"></div>' +
       '<button id="aqSave" style="width:100%;margin-top:12px">Hinzufügen</button><div class="small msg" id="aqMsg"></div>');
-    var o = sh.ov;
+    var o = sh.ov, scRoot = null;
     function g(id){ return o.querySelector('#' + id); }
+    function scRefresh(){
+      var has = (g('aqSub').value !== '') && st !== 'open';
+      g('aqScW').hidden = !has;
+      if(has){
+        var box = g('aqScW').querySelector('.scbox'), sid = SUBJECTS[+g('aqSub').value].id;
+        if(!scRoot || scRoot.sid !== sid){
+          g('aqScW').innerHTML = scBoxHTML(); box = g('aqScW').querySelector('.scbox');
+          scAttach(box, sid, function(){ return readInt(g('aqN').value); }); scRoot = {sid:sid, box:box};
+        }
+      }
+    }
     function preview(){
+      if(scRoot && scRoot.box && scRoot.box._scUpd) scRoot.box._scUpd();
       var n = readInt(g('aqN').value), si = g('aqSub').value, h = '';
       if(n === null || n < 1){ g('aqHint').textContent = ''; return; }
       if(st === 'open'){
@@ -4656,6 +4794,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       g('aqSw').hidden = op;
       g('aqQ').hidden = op || !has;
       g('aqSave').textContent = op ? 'Anpinnen und hinzufügen' : 'Hinzufügen';
+      scRefresh();
       if(op && !isL && cat === 'click' && false) g('aqY').value = '';
     }
     g('aqSt').addEventListener('click', function(e){
@@ -4709,13 +4848,15 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         return;
       }
       if(si === '' && !tot){ msg.textContent = 'Wähle ein Fach oder schalte „Zur Gesamtzahl addieren“ ein.'; return; }
+      var scR = (si !== '' && scRoot && scRoot.box && !g('aqScW').hidden) ? scRoot.box._scRead() : {rows:[], err:''}, scRecT = null;
+      if(scR.err){ msg.textContent = scR.err; return; }
       var ops = [], title = 'Fragen hinzufügen: ';
       if(si !== '' && cat !== 'click'){
         var isL = /^l\d+$/.test(cat), rs2 = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
         if(!rs2){ msg.textContent = 'Für einen Bericht brauche ich das Ergebnis (Richtig, Falsch oder Prozent).'; return; }
         var sj2 = SUBJECTS[+si], s2 = getSub(sj2.id);
         var rec = isL ? {d:d, t:newT(), x:n, ok:rs2.ok} : {d:d, t:newT(), n:n, ok:rs2.ok};
-        arrOf(s2, isL ? 'last' : cat).push(rec);
+        arrOf(s2, isL ? 'last' : cat).push(rec); scRecT = rec.t;
         ops.push({k:'rep', id:sj2.id, kind:isL ? 'last' : cat, t:rec.t});
         title = 'Bericht ' + catLabel(cat) + ': ' + sj2.name + ' ' + rs2.ok + '/' + n + ' (' + Math.round(rs2.ok / n * 100) + ' %)';
       }else if(si !== ''){
@@ -4731,6 +4872,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       }else{
         title += 'ohne Fach +' + fmt(n);
       }
+      if(scR.rows.length){ var scOp = scStore(SUBJECTS[+si], scR.rows, d, scRecT); if(scOp){ ops.push(scOp); title += ' · ' + scR.rows.length + ' Subchapter'; } }
       var st0 = g('aqS').value; if(st0 && st0 > d) st0 = d;
       if(tot){ var top = addToTotal(d, n, st0); if(top){ ops.push(top); if(top.sp) title += ' · verteilt ab ' + fd(parse(top.sp.s)); } title += ' · Gesamt +' + fmt(n); }
       logAdd(title, ops);
@@ -6655,6 +6797,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-38', items:[
+      {t:'Subchapter', x:'Beim Fragen-Tracken gibt es ab Fach-Auswahl „+ Subchapter hinzufügen“: Name des Subchapters, Anteil der Fragen und Ergebnis in Prozent. Die Namen werden pro Fach gespeichert. Unter „Fächer“ siehst du pro Fach die schwächsten Subchapter und oben in der Übersicht die schwächsten insgesamt. Bei Berichten kannst du Subchapter mit „＋Sub“ nachträglich ergänzen.', web:true, tab:'subj', sel:'#sc-0 .blk', open:'#sc-0'}
+    ]},
     {v:'2026.10.13-37', items:[
       {t:'Soll-Linie mit Anstieg', x:'Bei mehr als 2 Monaten bis zum Ziel startet das Tagesziel jetzt niedriger und steigt bis zur Prüfung an, statt linear zu laufen. Den Anstieg stellst du unter „Ziel und Hilfe“ mit einem Regler ein (0 = gleichmäßig). Unter 2 Monaten ändert sich nichts.', web:true, notour:true},
       {t:'Ungefährer Prüfungsmonat', x:'Ohne festen Termin reicht der Monat. Countdown und Fragen-Ziel laufen dann bis zum Monatsende („ca.“). Zu finden bei „Prüfungstermin“.', web:true, notour:true},

@@ -6532,7 +6532,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       {t:'Angefangene Tests', x:'Beim Fragen-Tracken kannst du auf „Angefangen“ umschalten, zum Beispiel 300 von 500 bei einem Fach. Die Fragen zählen sofort, der Test wird bei „Fächer“ angepinnt, lässt sich aktualisieren und später mit dem Ergebnis abschließen.'},
       {t:'Rivalen', x:'Liegst du mit einem Freund fast gleichauf, werdet ihr Rivalen: mit Kopf-an-Kopf-Animation und Push. Mindestens 3 Tage lang, dann gewinnt, wer 10 % vom Ziel Vorsprung hat. Die Abzeichen „Eingeholt“ und „Abgehängt“ gibt es nur noch im Rivalen-Duell und wurden für alle zurückgesetzt. Abschaltbar im Freunde-Fenster.', web:true, tab:'home', sel:'#frIcon'},
       {t:'Challenges', x:'Fordere jeden verbundenen Freund heraus: wer mehr klickt oder wer ein Ziel zuerst erreicht, nach Menge oder mit Quote, optional mit Strafe für den Verlierer. Der Freund nimmt an oder lehnt ab. Der Stand läuft automatisch mit und ist auf der Startseite und im Freunde-Fenster zu sehen.', web:true, tab:'home', sel:'#frIcon'},
-      {t:'Chat', x:'Schreibe verbundenen Freunden und Instructors direkt in der App, auch mit Bildern. Neue Nachrichten melden sich per Push, ungelesene zeigt ein Zähler am Freunde-Symbol. Nachrichten liegen 14 Tage auf dem Server und sind nicht Ende-zu-Ende verschlüsselt.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Chat', x:'Schreibe verbundenen Freunden und Instructors direkt in der App, auch mit Bildern. Über die Chat-Bubble unten rechts erreichst du alle Chats sofort, sie lässt sich dort abschalten. Neue Nachrichten melden sich per Push, ungelesene zeigt ein Zähler. Nachrichten liegen 14 Tage auf dem Server und sind nicht Ende-zu-Ende verschlüsselt.', web:true, tab:'home', sel:'#frIcon'},
       {t:'KI-Analyse bleibt aktuell', x:'Eine neue Analyse wird jetzt mit der Cloud-Synchronisierung abgeglichen und von einem älteren Stand nicht mehr überschrieben.', web:true, notour:true}
     ]},
     {v:'2026.10.11-35', autotour:true, items:[
@@ -7516,6 +7516,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!frView || !frView.ov.parentNode) return;
     var b = frView.ov.querySelector('#frBody'), h = '';
     frShareRender();
+    h += (typeof chtFrHtml === 'function' ? chtFrHtml() : '');
     h += chCardHtml(false);
     h += rvCardHtml(false);
     h += (typeof pushReqHtml === 'function' ? pushReqHtml() : '');
@@ -8784,7 +8785,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     else if(a === 'new') chNew(+b.getAttribute('data-fri'));
   });
   /* ---------- Chat (Freunde, Instructor und Schüler; nur GitHub-Version) ---------- */
-  var CHT_KEY = KEY + '-chat', chtD = null, chtBusy = false, chtView = null, chtImgs = {}, chtImgBusy = {}, chtNameTried = {}, chtSending = false;
+  var CHT_KEY = KEY + '-chat', chtD = null, chtBusy = false, chtView = null, chtImgs = {}, chtImgBusy = {}, chtNameTried = {}, chtSending = false, chtListV = null;
   (function(){
     var st = document.createElement('style');
     st.textContent = '.chtov .sheet{display:flex;flex-direction:column;height:min(88vh,740px);max-height:88vh;overflow:hidden}' +
@@ -8861,6 +8862,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function chtRefreshUi(){
     try{ if(typeof frNewsDot === 'function') frNewsDot(); }catch(e){}
+    try{ chtBubUpdate(); chtListDraw(); }catch(e){}
     try{ if(frView && frView.ov.parentNode && typeof frRender === 'function') frRender(); }catch(e){}
     try{ if(isIns()) insRender(); }catch(e){}
   }
@@ -8946,6 +8948,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function chtOpen(peer){
     if(!/^([0-9a-f]{20,40}|all)$/.test(peer || '')) return;
     if(chtView && chtView.ov.parentNode) chtView.close();
+    if(chtListV && chtListV.ov.parentNode) chtListV.close();
     var sh = openSheet('<div class="shead"><h2>' + esc(chtName(peer)) + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
       '<div class="chtl" role="log" aria-live="polite"></div><div class="chpv" id="chPv" hidden></div><div class="small msg" id="chE" style="min-height:0"></div>' +
       '<div class="chtin"><button type="button" class="ghost" id="chImgB" aria-label="Bild anhängen">Bild</button><input type="file" id="chFile" accept="image/*" hidden>' +
@@ -8991,6 +8994,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     chtDraw(false); chtMarkRead(peer); chtPull();
   }
   document.addEventListener('click', function(e){
+    var l = e.target && e.target.closest ? e.target.closest('[data-chtlist]') : null;
+    if(l){ e.preventDefault(); chtListOpen(); return; }
     var b = e.target && e.target.closest ? e.target.closest('[data-chtg]') : null;
     if(b){ e.preventDefault(); chtOpen(b.getAttribute('data-chtg')); }
   });
@@ -9007,6 +9012,79 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     try{ if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){ if(e && e.data && e.data.sf === 'refresh'){ last = Date.now(); chtPull(); } }); }catch(e){}
     setTimeout(function(){ last = Date.now(); chtPull(); }, 3500);
   })();
+
+  /* ---------- Chat-Bubble unten rechts und Chat-Liste ---------- */
+  var CHT_BUB = KEY + '-chbub';
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = '.chbub{position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:95;width:54px;height:54px;border-radius:50%;border:0;padding:0;background:var(--accent);color:#0b0d14;box-shadow:0 6px 18px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer}' +
+      '.chbub svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}' +
+      '.chbub .chdot{position:absolute;top:-4px;right:-4px;margin:0;box-shadow:0 0 0 2px var(--bg)}' +
+      '.chrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card2,rgba(255,255,255,.05));border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-top:8px;color:inherit;font:inherit;cursor:pointer}' +
+      '.chrow .t{flex:1;min-width:0}.chrow b{display:block;font-size:15px}.chrow .p{display:block;font-size:12.5px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
+    document.head.appendChild(st);
+  })();
+  function chtBubOn(){ try{ return localStorage.getItem(CHT_BUB) !== '0'; }catch(e){ return true; } }
+  function chtBubSet(on){ try{ localStorage.setItem(CHT_BUB, on ? '1' : '0'); }catch(e){} chtBubUpdate(); }
+  function chtPartners(){
+    var D = chtLoad(), out = [], seen = {};
+    function add(g, nm){ if(seen[g]) return; seen[g] = 1; var th = D.m[g] || [], l = th.length ? th[th.length - 1] : null; out.push({g: g, n: nm || chtName(g), l: l, u: chtUnreadOf(g)}); }
+    var lk = (typeof pushLk !== 'undefined' && pushLk) || {};
+    if(isIns()){
+      if(Object.keys(lk).length) add('all', 'Alle Schüler');
+      (S.friends || []).forEach(function(f){ if(lk[f.gist]) add(f.gist); });
+    }else{
+      ((typeof pushSt !== 'undefined' && pushSt && pushSt.ins) || []).forEach(function(g){ add(g); });
+      (S.friends || []).forEach(function(f){ if(lk[f.gist]) add(f.gist); });
+    }
+    Object.keys(D.m).forEach(function(g){ if(D.m[g].length) add(g); });
+    out.sort(function(a, b){ return (b.l ? b.l.ts : 0) - (a.l ? a.l.ts : 0); });
+    return out;
+  }
+  function chtBubUpdate(){
+    var el = document.getElementById('chtBub');
+    var show = chtBubOn() && chtOk() && !document.body.classList.contains('obopen');
+    if(!show){ if(el) el.remove(); return; }
+    if(!el){
+      el = document.createElement('button'); el.type = 'button'; el.id = 'chtBub'; el.className = 'chbub'; el.setAttribute('aria-label', 'Chats');
+      el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg><span class="chdot" hidden></span>';
+      el.addEventListener('click', chtListOpen);
+      document.body.appendChild(el);
+    }
+    var n = chtUnread(), d = el.querySelector('.chdot');
+    d.hidden = !n; d.textContent = n > 99 ? '99+' : String(n);
+  }
+  function chtListHtml(){
+    var ps = chtPartners();
+    var h = '<div class="shead"><h2>Chats</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>';
+    if(!ps.length) h += '<div class="small" style="margin:6px 0 10px">' + (isIns() ? 'Noch kein Schüler verbunden. Sobald ein Schüler zugestimmt hat, erscheint er hier.' : 'Noch niemand zum Schreiben. Verbundene Freunde und Instructors erscheinen hier.') + '</div>';
+    ps.forEach(function(p){
+      var pv = p.l ? (p.l.f ? 'Du: ' : '') + (p.l.t || (p.l.im ? 'Bild' : '')) : 'Noch keine Nachricht';
+      h += '<button type="button" class="chrow" data-chtg="' + escA(p.g) + '"><span class="t"><b>' + esc(p.n) + '</b><span class="p">' + esc(pv) + '</span></span>' + (p.u ? '<span class="chdot">' + p.u + '</span>' : '') + '</button>';
+    });
+    h += '<label class="tg" style="margin-top:14px"><span>Chat-Bubble unten rechts anzeigen</span><input type="checkbox" class="sw" id="chtBubSw"' + (chtBubOn() ? ' checked' : '') + '></label>' +
+      '<div class="small" id="chtBubH" style="margin-top:4px">' + (chtBubOn() ? '' : 'Ohne Bubble erreichst du die Chats über Freunde.') + '</div>';
+    return h;
+  }
+  function chtListDraw(){
+    var v = chtListV; if(!v || !v.ov.parentNode) return;
+    var sh = v.ov.querySelector('.sheet'); if(sh) sh.innerHTML = chtListHtml();
+  }
+  function chtListOpen(){
+    if(chtListV && chtListV.ov.parentNode) return;
+    chtListV = openSheet(chtListHtml());
+    chtListV.ov.addEventListener('change', function(e){
+      if(e.target && e.target.id === 'chtBubSw'){ var on = !!e.target.checked; chtBubSet(on); var h = chtListV.ov.querySelector('#chtBubH'); if(h) h.textContent = on ? '' : 'Ohne Bubble erreichst du die Chats über Freunde. Wieder einschalten kannst du sie dort unter „Chats“.'; }
+    });
+    chtPull();
+  }
+  setInterval(function(){ try{ chtBubUpdate(); }catch(e){} }, 3000);
+  setTimeout(function(){ try{ chtBubUpdate(); }catch(e){} }, 1500);
+  function chtFrHtml(){
+    if(!chtOk()) return '';
+    var n = chtUnread();
+    return '<div class="card frc" style="margin-top:0"><div class="row" style="align-items:center"><b style="flex:1">Chats</b><button type="button" data-chtlist="1" style="padding:6px 12px">Alle Chats' + (n ? '<span class="chdot">' + n + '</span>' : '') + '</button></div></div>';
+  }
   /* ---------- Eigener Claude-API-Schlüssel (nur GitHub-Version) ---------- */
   var AIK_KEY = KEY + '-aik', AIK_MODEL = KEY + '-aimodel';
   var AIK_MODELS = [['claude-sonnet-5-5', 'Sonnet 5.5 (Standard)'], ['claude-haiku-5-5', 'Haiku 5.5 (günstiger, schneller)'], ['claude-opus-5-5', 'Opus 5.5 (stärker, teurer)']];
@@ -9802,7 +9880,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!(S.share && S.share.gist)) h += '<div class="small" style="margin-top:8px;color:var(--bad,#d12f3f)">Dein Instructor-Zugang ist noch nicht beim Server angemeldet.</div><button type="button" data-iact="ident" style="width:100%;margin-top:6px">Verbindung herstellen</button>';
     h += '</div>';
     if(lkd.length && typeof chtBtn === 'function'){
-      h += '<div class="card"><h2>Nachrichten</h2><div class="small" style="margin-bottom:8px">Schreibe einem Schüler direkt oder allen auf einmal. Bilder sind möglich.</div><div class="row">' + chtBtn('all', 'An alle Schüler') + '</div></div>';
+      h += '<div class="card"><h2>Nachrichten</h2><div class="small" style="margin-bottom:8px">Schreibe einem Schüler direkt oder allen auf einmal. Bilder sind möglich.</div><div class="row">' + chtBtn('all', 'An alle Schüler') + '<button type="button" class="ghost" data-chtlist="1" style="padding:6px 12px">Alle Chats</button></div></div>';
     }
     if(lkd.length){
       var sorted = lkd.slice().sort(function(a, b){ return (insPct(b.data) || 0) - (insPct(a.data) || 0); });

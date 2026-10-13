@@ -1531,7 +1531,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       chal:(S.chal && typeof S.chal === 'object') ? S.chal : null,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
       nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, examApprox:S.examApprox || null, curve:(typeof S.curve === 'number') ? S.curve : null, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, bdx:(S.bdx && typeof S.bdx === 'object') ? S.bdx : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null, role:(S.role === 'instructor') ? 'instructor' : null,
-      share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null, o:S.share.optout ? 1 : 0, v:S.share.sdv || 0} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
+      share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null, o:S.share.optout ? 1 : 0, v:S.share.sdv || 0} : null, friends:Array.isArray(S.friends) ? S.friends.filter(function(x){ return !x.auto; }).map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
     }));
   }
   function nn(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
@@ -6797,6 +6797,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-39', items:[
+      {t:'Kurse', x:'Oben neben Freunde und Account gibt es den Button „Kurs“. Erstelle einen Kurs und gib den Kurscode weiter: Wer beitritt, ist automatisch mit dem ganzen Kurs befreundet (bis 50 Personen). In der Rangliste steht der Kurs klein unter dem Namen, ein Filter zeigt nur einen Kurs. Dazu gibt es einen Kurs-Chat und im Lernzentrum bei „Teilen“ die Möglichkeit, ein Paket mit dem ganzen Kurs zu teilen oder gemeinsam zu bearbeiten. Der Ersteller ist Admin und kann die Rolle weitergeben. Der Push-Dienst muss dafür in der neuesten Version laufen.', tab:'home', sel:'#kuIcon', notour:true}
+    ]},
     {v:'2026.10.13-38', items:[
       {t:'Subchapter', x:'Beim Fragen-Tracken gibt es ab Fach-Auswahl „+ Subchapter hinzufügen“: Name des Subchapters, Anteil der Fragen und Ergebnis in Prozent. Die Namen werden pro Fach gespeichert. Unter „Fächer“ siehst du pro Fach die schwächsten Subchapter und oben in der Übersicht die schwächsten insgesamt. Bei Berichten kannst du Subchapter mit „＋Sub“ nachträglich ergänzen.', web:true, tab:'subj', sel:'#sc-0 .blk', open:'#sc-0'}
     ]},
@@ -7094,7 +7097,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false, syncReady = true;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.examApprox, S.curve, S.log, S.nb, S.uname, S.look, S.badges, S.bdx, S.ai ? S.ai.ts : 0, S.open, S.rival, S.chal, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
+  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.examApprox, S.curve, S.log, S.nb, S.uname, S.look, S.badges, S.bdx, S.ai ? S.ai.ts : 0, S.open, S.rival, S.chal, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).filter(function(x){ return !x.auto; }).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S || !syncReady) return;
     var h = dataHash();
@@ -7165,7 +7168,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       S.badges = bdMerge(S.badges, d.badges);
       S.bdx = bdxMerge(S.bdx, d.bdx);
       if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || '', optout:!!d.share.o, sdv:Math.max(d.share.v || 0, (S.share && S.share.sdv) || 0)}; }
-      if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen}; }); }
+      if(Array.isArray(d.friends)){ var oldF = {}, oldAuto = (S.friends || []).filter(function(x){ return x.auto; }); (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen, cs:o0.cs}; }).concat(oldAuto.filter(function(a){ return !d.friends.some(function(x){ return x && x.gist === a.gist; }); })); }
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
       if(d.role === 'instructor') S.role = 'instructor';
       S.updatedAt = d.updatedAt || Date.now();
@@ -7547,16 +7550,20 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function frHash(o){ return JSON.stringify(o, function(k, v){ return k === 't' ? undefined : v; }); }
   function frStore(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  var frEt = {};
   function frGet(gid){
     function go(auth){
-      var hd = {'Accept':'application/vnd.github+json'};
+      var hd = {'Accept':'application/vnd.github+json'}, ce = frEt[gid];
       if(auth && syncCfg && syncCfg.token) hd.Authorization = 'Bearer ' + syncCfg.token;
+      if(ce && ce.et) hd['If-None-Match'] = ce.et;
       return fetch('https://api.github.com/gists/' + gid, {headers:hd, cache:'no-store'}).then(function(r){
+        if(r.status === 304 && ce) return ce.j;
         if(r.status === 401 && auth) return go(false);
         if(r.status === 404) throw new Error('gone');
         if(r.status === 403 || r.status === 429) throw new Error('limit');
         if(!r.ok) throw new Error('http');
-        return r.json();
+        var et = ''; try{ et = (r.headers && r.headers.get && r.headers.get('ETag')) || ''; }catch(e){}
+        return r.json().then(function(j){ if(et){ if(Object.keys(frEt).length > 120) frEt = {}; frEt[gid] = {et: et, j: j}; } return j; });
       });
     }
     return go(true);
@@ -7661,9 +7668,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var chain = Promise.resolve();
     S.friends.forEach(function(fr){
       if(S.role === 'instructor' && !(typeof pushLk !== 'undefined' && pushLk[fr.gist])) return;
+      if(!force && fr.auto && fr.data && Date.now() - (fr.last || 0) < 240000) return;
       chain = chain.then(function(){
         return frFetchShare(fr.gist).then(function(d){
           var prev = fr.data, nmF = fr.alias || d.name || 'Freund';
+          if(fr.auto) prev = null;
           if(prev && prev.stand !== undefined && d.stand !== undefined && d.stand > prev.stand && Date.now() - (fr.last || 0) < 900000){
             var dl = d.stand - prev.stand;
             frPop('fragen', '<b>' + esc(nmF) + '</b> hat ' + fmt(dl) + (dl === 1 ? ' Frage' : ' Fragen') + ' eingetragen' + (d.heute_d === iso(new Date()) && d.heute ? '<small>heute insgesamt ' + fmt(d.heute) + '</small>' : ''));
@@ -7674,7 +7683,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
               ids.forEach(function(id){
                 if(fr.bseen.indexOf(id) >= 0) return;
                 var bb = bdList().filter(function(b){ return b.id === id; })[0];
-                if(bb) frNewsAdd(fr.alias || d.name || 'Freund', bb);
+                if(bb && !fr.auto) frNewsAdd(fr.alias || d.name || 'Freund', bb);
               });
             }
             fr.bseen = ids;
@@ -7713,7 +7722,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     return el;
   }
   function frNewsDot(){
-    var b = $('frIcon'), n = frNewsLoad().length + (typeof pushInboxN === 'function' ? pushInboxN() : 0) + (typeof chtUnread === 'function' ? chtUnread() : 0);
+    var b = $('frIcon'), n = frNewsLoad().length + (typeof pushInboxN === 'function' ? pushInboxN() : 0) + (typeof chtUnread === 'function' ? chtUnread(true) : 0);
     if(!b) return;
     var dot = b.querySelector('.dotb');
     if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
@@ -7819,8 +7828,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     h += '<div class="row" style="margin-top:12px;align-items:center"><b style="flex:1">Deine Freunde</b><button type="button" class="ghost" data-fract="refresh" style="padding:7px 14px">' + (frBusy ? 'Lädt …' : 'Aktualisieren') + '</button></div>';
     if(!S.friends.length) h += '<div class="small" style="margin-top:6px">Noch niemand hinzugefügt.</div>';
     S.friends.forEach(function(fr, i){
-      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || 'Freund') + '</b><span class="small" title="Abgerufen ' + escA(frWhen(fr.last)) + '">' + (fr.data && fr.data.t ? 'zuletzt online ' + esc(frWhen(fr.data.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</span></div>' + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
-        '<div class="row" style="margin-top:8px">' + ((typeof chtBtn === 'function' && typeof pushLk !== 'undefined' && pushLk[fr.gist]) ? chtBtn(fr.gist) : '') + ((fr.data && Array.isArray(fr.data.fl) && S.share && S.share.gist && fr.data.fl.indexOf(rvH(S.share.gist)) >= 0 && S.role !== 'instructor') ? '<button type="button" data-chact="new" data-fri="' + i + '" style="padding:6px 12px">Herausfordern</button>' : '') + '<button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>' + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
+      h += '<div class="card frc"><div class="frh"><b>' + esc(fr.alias || (fr.data && fr.data.name) || fr.nm || 'Freund') + '</b><span class="small" title="Abgerufen ' + escA(frWhen(fr.last)) + '">' + (fr.data && fr.data.t ? 'zuletzt online ' + esc(frWhen(fr.data.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</span></div>' + ((fr.cs && fr.cs.length && typeof kuNames === 'function') ? '<div class="small" style="margin-top:2px">Kurs: ' + esc(kuNames(fr.cs)) + '</div>' : '') + frCompare(fr) + (typeof pushFrHtml === 'function' ? pushFrHtml(fr) : '') +
+        '<div class="row" style="margin-top:8px">' + ((typeof chtBtn === 'function' && typeof pushLk !== 'undefined' && pushLk[fr.gist]) ? chtBtn(fr.gist) : '') + ((fr.data && Array.isArray(fr.data.fl) && S.share && S.share.gist && fr.data.fl.indexOf(rvH(S.share.gist)) >= 0 && S.role !== 'instructor') ? '<button type="button" data-chact="new" data-fri="' + i + '" style="padding:6px 12px">Herausfordern</button>' : '') + (fr.auto ? '<span class="small" style="align-self:center">Über den Kurs verbunden</span>' : '<button type="button" class="ghost" data-fract="rm" data-fri="' + i + '" style="padding:6px 12px">Entfernen</button>') + (typeof pushBlkBtn === 'function' ? pushBlkBtn(fr) : '') + '</div></div>';
     });
     h += (typeof pushInsHtml === 'function' ? pushInsHtml() : '');
     h += (typeof pushBlkHtml === 'function' ? pushBlkHtml() : '');
@@ -7857,7 +7866,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!m){ frMsg('Das sieht nicht nach einem Freigabe-Code aus.'); return; }
     var gid = m[1].toLowerCase(), c = frCfg();
     if(c.gist === gid){ frMsg('Das ist dein eigener Code.'); return; }
-    if(S.friends.some(function(x){ return x.gist === gid; })){ frMsg('Diesen Freund hast du schon hinzugefügt.'); return; }
+    var ex = S.friends.filter(function(x){ return x.gist === gid; })[0];
+    if(ex && ex.auto){ delete ex.auto; ex.alias = frTxt(o.querySelector('#frAlias').value, 24) || ex.alias || ''; save(); frNote = 'Als Freund hinzugefügt, zusätzlich seid ihr im Kurs.'; frRender(); if(typeof pushReq === 'function') pushReq(gid).then(function(r){ if(r){ frNote = r.linked ? 'Verbunden: ' + (ex.alias || (ex.data && ex.data.name) || 'Freund') : 'Anfrage gesendet.'; frRender(); } }); var cd0 = o.querySelector('#frCode'); if(cd0) cd0.value = ''; return; }
+    if(ex){ frMsg('Diesen Freund hast du schon hinzugefügt.'); return; }
     frMsg('Lade …');
     frFetchShare(gid).then(function(d){
       S.friends.push({id:Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist:gid, alias:frTxt(o.querySelector('#frAlias').value, 24), data:d, last:Date.now(), bseen:d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
@@ -8270,7 +8281,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       var chain = Promise.resolve(), m = nbMeta(), mine = c.gist;
       if(!mine) return;
       (S.friends || []).forEach(function(fr){
+        if(fr.auto && !force && Date.now() - (fr.pkc || 0) < 60000) return;
         chain = chain.then(function(){
+          if(fr.auto) fr.pkc = Date.now();
           return pkReadOffers(fr).then(function(r){
             var subs = [];
             r.offers.forEach(function(of){
@@ -8315,10 +8328,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     function draw(){
       var c = frCfg(), rec = pkRec(p.id), fr = S.friends || [], hasTok = !!(syncCfg && syncCfg.token);
       var h = '<h3>Mit Freund teilen</h3>';
-      if(!fr.length) h += '<div class="small">Füge zuerst einen Freund hinzu (rundes Freunde-Symbol oben rechts).</div>';
+      if(!fr.some(function(f){ return !f.auto; })) h += '<div class="small">Füge zuerst einen Freund hinzu (rundes Freunde-Symbol oben rechts).</div>';
       else if(!hasTok || !c.gist) h += '<div class="small">Dafür brauchst du Cloud-Synchronisierung und deine Freigabe (Account oben rechts).</div>';
       else{
         fr.forEach(function(f, i){
+          if(f.auto) return;
           var pt = null; (rec && rec.fr || []).forEach(function(x){ if(x.gist === f.gist) pt = x; });
           var stT = pt ? (pt.dir === 'in' ? 'Von ' + esc(pkName(f)) + ' erhalten' : pt.mode === 'collab' ? 'Ihr arbeitet zusammen' : 'Geteilt (nur von dir)') : '';
           h += '<div class="pkfr"><b>' + esc(pkName(f)) + '</b><div class="row">' +
@@ -8329,6 +8343,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         h += '<div class="small" style="margin-top:8px"><b>Teilen:</b> Dein Freund bekommt das Paket und deine späteren Änderungen. <b>Zusammenarbeiten:</b> Änderungen gehen in beide Richtungen, auch Dokumente. Jede Änderung wird nur nach Rückfrage übernommen.</div>' +
           '<div class="small" style="margin-top:6px">Wichtig: Dein Freund muss dich auch als Freund hinzugefügt haben, sonst sieht er nichts. <button type="button" class="ghost" data-pkinv="1" style="padding:5px 10px;font-size:12px">Einladungslink kopieren</button></div>';
       }
+      if(typeof kuPackHtml === 'function') h += kuPackHtml(p.id);
       h += '<div class="small" id="pkShMsg" style="margin-top:6px">' + esc(box._msg || '') + '</div>';
       box.innerHTML = h;
     }
@@ -8337,6 +8352,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       var t = ev.target && ev.target.closest ? ev.target.closest('button') : null;
       if(!t) return;
       var c = frCfg();
+      if(t.hasAttribute('data-kups')){ kuPackAct(p.id, t.getAttribute('data-kups'), t.getAttribute('data-m'), say, function(){ draw(); }); return; }
       if(t.hasAttribute('data-pkinv')){ say(copyText(location.origin + location.pathname + '?friend=' + c.gist) ? 'Einladungslink kopiert. Schick ihn deinem Freund.' : 'Kopieren nicht möglich.'); return; }
       var rec = pkRec(p.id);
       if(t.hasAttribute('data-pksh')){
@@ -8417,7 +8433,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     (S.friends || []).forEach(function(fr){
       var d = fr.data;
       if(!d) return;
-      out.push({name:fr.alias || d.name || 'Freund', ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist});
+      out.push({name:fr.alias || d.name || fr.nm || 'Freund', cs:fr.cs, ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist});
     });
     return out;
   }
@@ -8452,31 +8468,47 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function fhRivalG(){ try{ var R = rvGet(); return (R.cur && R.cur.ok) ? R.cur.g : null; }catch(e){ return null; } }
   function fhRowAttr(e, rg){ return (e.me || !e.gist) ? '' : ' data-fhfr="' + escA(e.gist) + '" role="button" tabindex="0"'; }
   function fhRvTag(e, rg){ return (rg && e.gist === rg) ? '<span class="fhrv">' + fhFlame() + 'Rivale</span>' : ''; }
+  function fhSub(e){
+    if(e.me) return '';
+    var a = [];
+    if(e.cs && e.cs.length && typeof kuNames === 'function') a.push('Kurs: ' + kuNames(e.cs));
+    else if(e.seen) a.push('zuletzt online ' + frWhen(e.seen));
+    return a.length ? '<small class="fhseen">' + esc(a.join(' · ')) + '</small>' : '';
+  }
+  function fhTop(es, cfg){
+    if(es.length <= 8) return es;
+    var m = ['heute', 'woche', 'monat', 'stand', 'tempo'].indexOf(cfg.metric) >= 0 && cfg.mode === 'board' ? cfg.metric : 'stand', rg = fhRivalG();
+    var rest = es.filter(function(e){ return !e.me && e.gist !== rg; }).sort(function(a, b){ return (fhVal(b, m) || 0) - (fhVal(a, m) || 0); }).slice(0, rg ? 5 : 6);
+    return es.filter(function(e){ return e.me || e.gist === rg || rest.indexOf(e) >= 0; });
+  }
   function fhVal(e, m){ var v = e[m]; return (typeof v === 'number') ? v : null; }
   function fhHTML(){
-    var cfg = fhCfg(), es = fhEntries(), h = '<div class="fhh"><b>Freunde</b>' +
+    var cfg = fhCfg(), es = fhEntries(), kul = (typeof kuOk === 'function' && kuOk()) ? kuLoad().list : [], kuf = '';
+    if(cfg.fc && kul.some(function(c){ return c.id === cfg.fc; })){ kuf = cfg.fc; es = es.filter(function(e){ return e.me || (e.cs && e.cs.indexOf(kuf) >= 0); }); }
+    var h = '<div class="fhh"><b>Freunde</b>' +
       '<div class="seg" style="margin:0;flex:none" role="group" aria-label="Ansicht"><button type="button" data-fhmode="list" class="' + (cfg.mode === 'list' ? 'on' : '') + '">Liste</button><button type="button" data-fhmode="board" class="' + (cfg.mode === 'board' ? 'on' : '') + '">Rangliste</button></div>' +
       '<button type="button" class="ghost" data-fhset="1" aria-label="Einstellungen der Freunde-Karte">⚙</button></div>';
     h += rvCardHtml(true);
+    if(kul.length) h += '<div class="seg fhkc" style="margin:8px 0 2px;flex-wrap:wrap" role="group" aria-label="Kurs filtern"><button type="button" data-fhfc="" class="' + (kuf ? '' : 'on') + '">Alle</button>' + kul.map(function(c){ return '<button type="button" data-fhfc="' + c.id + '" class="' + (kuf === c.id ? 'on' : '') + '">' + esc(c.n) + '</button>'; }).join('') + '</div>';
     if(cfg.mode === 'board'){
       h += '<div class="seg" style="margin:8px 0 2px" role="group" aria-label="Sortierung">' + [['heute', 'Heute'], ['woche', 'Woche'], ['monat', 'Monat'], ['stand', 'Gesamt'], ['tempo', 'Tempo']].map(function(m){ return '<button type="button" data-fhmet="' + m[0] + '" class="' + (cfg.metric === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
       var rows = es.filter(function(e){ return fhVal(e, cfg.metric) !== null; }).sort(function(a, b){ return fhVal(b, cfg.metric) - fhVal(a, cfg.metric); }), mx = Math.max.apply(null, rows.map(function(e){ return fhVal(e, cfg.metric); }).concat([1]));
       var rg = fhRivalG();
       rows.forEach(function(e, i){
         var v = fhVal(e, cfg.metric);
-        h += '<div class="fhr' + (e.me ? ' me' : '') + ((rg && e.gist === rg) ? ' rv' : '') + '"' + fhRowAttr(e) + '><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + (v > 0 && rows.length > 1 && v === fhVal(rows[0], cfg.metric) ? fhCap() : '') + '</span><span class="nm">' + esc(e.name) + fhRvTag(e, rg) + (e.seen && !e.me ? '<small class="fhseen">zuletzt online ' + esc(frWhen(e.seen)) + '</small>' : '') + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + fmt(v) + '</b><small>' + ({tempo:'pro Tag', heute:'heute', woche:'diese Woche', monat:'diesen Monat'}[cfg.metric] || 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + ((rg && e.gist === rg) ? ' rv' : '') + '"' + fhRowAttr(e) + '><span class="rk r' + (i < 3 ? i + 1 : 0) + '">' + (i + 1) + (v > 0 && rows.length > 1 && v === fhVal(rows[0], cfg.metric) ? fhCap() : '') + '</span><span class="nm">' + esc(e.name) + fhRvTag(e, rg) + fhSub(e) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + fmt(v) + '</b><small>' + ({tempo:'pro Tag', heute:'heute', woche:'diese Woche', monat:'diesen Monat'}[cfg.metric] || 'Fragen') + '</small></span><span class="fhb"><i style="width:' + Math.max(2, Math.round(v / mx * 100)) + '%"></i></span></div>';
       });
     }else{
       var rg2 = fhRivalG();
       es.forEach(function(e){
-        h += '<div class="fhr' + (e.me ? ' me' : '') + ((rg2 && e.gist === rg2) ? ' rv' : '') + '"' + fhRowAttr(e) + '><span></span><span class="nm">' + esc(e.name) + fhRvTag(e, rg2) + (e.seen && !e.me ? '<small class="fhseen">zuletzt online ' + esc(frWhen(e.seen)) + '</small>' : '') + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
+        h += '<div class="fhr' + (e.me ? ' me' : '') + ((rg2 && e.gist === rg2) ? ' rv' : '') + '"' + fhRowAttr(e) + '><span></span><span class="nm">' + esc(e.name) + fhRvTag(e, rg2) + fhSub(e) + '</span>' + fhPapi(e.papi, e) + '<span class="v"><b>' + (e.stand !== undefined ? fmt(e.stand) : '–') + '</b><small>heute ' + fmt(e.heute || 0) + '</small></span></div>';
       });
     }
-    var g = cfg.g, fcols = fhCols(es);
-    if(g.heute) h += '<h3 class="sth">Heute geklickt</h3><div class="fhc">' + statChart(es.map(function(e){ return e.heute || 0; }), es.map(function(e){ return esc(String(e.name).slice(0, 6)); }), '', fcols) + '</div>';
-    if(g.tempo) h += '<h3 class="sth">Tempo pro Tag</h3><div class="fhc">' + statChart(es.map(function(e){ return e.tempo || 0; }), es.map(function(e){ return esc(String(e.name).slice(0, 6)); }), 'b2', fcols) + '</div>';
+    var g = cfg.g, ces = fhTop(es, cfg), fcols = fhCols(ces);
+    if(g.heute) h += '<h3 class="sth">Heute geklickt</h3><div class="fhc">' + statChart(ces.map(function(e){ return e.heute || 0; }), ces.map(function(e){ return esc(String(e.name).slice(0, 6)); }), '', fcols) + '</div>';
+    if(g.tempo) h += '<h3 class="sth">Tempo pro Tag</h3><div class="fhc">' + statChart(ces.map(function(e){ return e.tempo || 0; }), ces.map(function(e){ return esc(String(e.name).slice(0, 6)); }), 'b2', fcols) + '</div>';
     if(g.verlauf){
-      var withV = es.filter(function(e){ return e.verlauf && e.verlauf.length > 1; });
+      var withV = ces.filter(function(e){ return e.verlauf && e.verlauf.length > 1; });
       var nowD = new Date(), todayS = iso(nowD), PER = {heute:['letzte 7 Tage', iso(new Date(nowD.getFullYear(), nowD.getMonth(), nowD.getDate() - 6))], woche:['diese Woche', iso(new Date(nowD.getFullYear(), nowD.getMonth(), nowD.getDate() - ((nowD.getDay() + 6) % 7)))], monat:['dieser Monat', iso(new Date(nowD.getFullYear(), nowD.getMonth(), 1))]}[cfg.mode === 'board' ? cfg.metric : ''] || null;
       if(withV.length > 1){
         var series = withV.map(function(e){
@@ -8493,7 +8525,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         var all = [].concat.apply([], series.map(function(x){ return x.pts; })), t0 = PER ? parse(PER[1]) : parse(all.reduce(function(a, e){ return e.d < a ? e.d : a; }, all[0].d)), t1 = PER ? parse(todayS) : parse(all.reduce(function(a, e){ return e.d > a ? e.d : a; }, all[0].d));
         var span = Math.max(1, days(t0, t1)), ymax = Math.max.apply(null, all.map(function(e){ return e.n; })) || 1, W = 320, H = 110, leg = '';
         var lines = series.map(function(x){
-          var e = x.e, col = fcols[es.indexOf(e)], pp = x.pts.map(function(q){ return [days(t0, parse(q.d)) / span * W, H - q.n / ymax * (H - 6) - 3]; });
+          var e = x.e, col = fcols[ces.indexOf(e)], pp = x.pts.map(function(q){ return [days(t0, parse(q.d)) / span * W, H - q.n / ymax * (H - 6) - 3]; });
           leg += '<span><i style="background:' + col + '"></i>' + esc(e.name) + '</span>';
           var lp = pp[pp.length - 1];
           return '<polyline fill="none" stroke="' + col + '" stroke-width="2.2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + pp.map(function(q){ return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ') + '"/>' + (PER ? '<circle cx="' + Math.min(W - 3, lp[0]).toFixed(1) + '" cy="' + lp[1].toFixed(1) + '" r="3" fill="' + col + '"/>' : '');
@@ -8513,11 +8545,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var fi = -1, fr = null;
     (S.friends || []).forEach(function(f, i){ if(f.gist === gist){ fi = i; fr = f; } });
     if(!fr) return;
-    var d = fr.data || {}, nm = fr.alias || d.name || 'Freund', lk = (typeof pushLk !== 'undefined' && pushLk[gist]), me = frMine(true), today = iso(new Date());
+    var d = fr.data || {}, nm = fr.alias || d.name || fr.nm || 'Freund', lk = (typeof pushLk !== 'undefined' && pushLk[gist]), me = frMine(true), today = iso(new Date());
     var can = d && Array.isArray(d.fl) && S.share && S.share.gist && d.fl.indexOf(rvH(S.share.gist)) >= 0 && S.role !== 'instructor';
     var rg = fhRivalG();
     var h = '<div class="fhfs"><div class="shead"><h2>' + esc(nm) + (rg === gist ? ' ' + '<span class="fhrv">' + fhFlame() + 'Rivale</span>' : '') + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
-      '<div class="small">' + (d.t ? 'zuletzt online ' + esc(frWhen(d.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</div>' +
+      '<div class="small">' + (d.t ? 'zuletzt online ' + esc(frWhen(d.t)) : 'aktualisiert ' + esc(frWhen(fr.last))) + '</div>' + ((fr.cs && fr.cs.length && typeof kuNames === 'function') ? '<div class="small">Kurs: ' + esc(kuNames(fr.cs)) + '</div>' : '') +
       '<div class="fhq"><div><b>' + (typeof d.stand === 'number' ? fmt(d.stand) : '–') + '</b><span>Gesamt</span></div><div><b>' + fmt(d.heute_d === today ? (d.heute || 0) : 0) + '</b><span>heute</span></div><div><b>' + (typeof d.tempo === 'number' ? fmt(d.tempo) : '–') + '</b><span>pro Tag</span></div></div>' +
       '<div class="fhact">' + ((typeof chtBtn === 'function' && lk) ? chtBtn(gist, 'Nachricht schreiben') : '') + (can ? '<button type="button" data-chact="new" data-fri="' + fi + '">Herausfordern</button>' : '') + '</div>' +
       (!lk && typeof pushFrHtml === 'function' ? '' : '') +
@@ -8545,6 +8577,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         var cfg = fhCfg();
         if(t.hasAttribute('data-fhmode')) cfg.mode = t.getAttribute('data-fhmode');
         else if(t.hasAttribute('data-fhmet')) cfg.metric = t.getAttribute('data-fhmet');
+        else if(t.hasAttribute('data-fhfc')) cfg.fc = t.getAttribute('data-fhfc');
         else if(t.hasAttribute('data-fhset')) fhSettings = !fhSettings;
         else if(t.hasAttribute('data-fhoff')){ cfg.on = false; fhSettings = false; }
         else return;
@@ -9181,6 +9214,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function chtOk(){ return !!(typeof pushMe === 'function' && pushMe()); }
   function chtName(g){
     if(g === 'all') return 'Alle Schüler';
+    if(kuIsPeer(g)) return kuPeerName(g);
     var f = (S.friends || []).filter(function(x){ return x.gist === g; })[0];
     var n = f ? (f.alias || (f.data && f.data.name) || f.nm || '') : '';
     if(!n && typeof insNames === 'function') n = insNames()[g] || '';
@@ -9210,7 +9244,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var D = chtLoad(), rd = D.rd[peer] || 0;
     return (D.m[peer] || []).filter(function(x){ return !x.f && x.ts > rd; }).length;
   }
-  function chtUnread(){ var D = chtLoad(), n = 0; Object.keys(D.m).forEach(function(k){ n += chtUnreadOf(k); }); return n; }
+  function chtUnread(excl){ var D = chtLoad(), n = 0; Object.keys(D.m).forEach(function(k){ if(excl && kuIsPeer(k)) return; n += chtUnreadOf(k); }); return n; }
   function chtMarkRead(peer){
     var D = chtLoad(), th = D.m[peer] || [], last = th.length ? th[th.length - 1].ts : 0;
     if(last > (D.rd[peer] || 0)){ D.rd[peer] = last; chtSave(); chtRefreshUi(); }
@@ -9221,6 +9255,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function chtRefreshUi(){
     try{ if(typeof frNewsDot === 'function') frNewsDot(); }catch(e){}
+    try{ kuDot(); }catch(e){}
     try{ chtBubUpdate(); chtListDraw(); }catch(e){}
     try{ if(frView && frView.ov.parentNode && typeof frRender === 'function') frRender(); }catch(e){}
     try{ if(isIns()) insRender(); }catch(e){}
@@ -9230,7 +9265,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var m = pushMe(), D = chtLoad(), first = D.cur === 0; chtBusy = true;
     try{
       var r = await pushApi('/cp', {me: m.me, tok: m.tok, since: D.cur});
-      var fresh = chtIngest(r && r.items); chtSave();
+      var fresh = chtIngest(r && r.items);
+      var vp = chtView && chtView.peer && kuIsPeer(chtView.peer) ? chtView.peer : '', vn = vp ? (D.m[vp] || []).length : 0;
+      try{ fresh = fresh.concat(await kuPull()); }catch(e){}
+      if(vp && chtView && chtView.peer === vp && (D.m[vp] || []).length !== vn) chtDraw(true);
+      chtSave();
       if(fresh.length){
         if(chtView && chtView.peer && fresh.some(function(x){ return x.peer === chtView.peer; })) chtDraw(true);
         var other = fresh.filter(function(x){ return !(chtView && chtView.peer === x.peer && !document.hidden); });
@@ -9260,6 +9299,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function chtBubble(x, peer){
     var h = '<div class="cmsg ' + (x.f ? 'me' : 'th') + '">';
     if(!x.f && x.b) h += '<span class="ca">An alle</span>';
+    if(!x.f && x.a) h += '<span class="ca">' + esc(x.a) + '</span>';
     if(x.f && x.b && peer === 'all') h += '';
     if(x.im) h += chtImgs[x.im] ? '<img src="' + chtImgs[x.im] + '" data-chz="1" alt="Bild">' : '<span class="cimg" data-chim="' + x.im + '">Bild lädt …</span>';
     if(x.t) h += esc(x.t);
@@ -9270,7 +9310,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var L = v.ov.querySelector('.chtl'), D = chtLoad(), th = D.m[v.peer] || [];
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80;
     L.innerHTML = th.length ? th.map(function(x){ return chtBubble(x, v.peer); }).join('') :
-      '<div class="small" style="margin:auto;text-align:center;max-width:260px">' + (v.peer === 'all' ? 'Schreibe allen deinen Schülern gleichzeitig. Antworten kommen bei dir als Einzelchat an.' : 'Noch keine Nachrichten. Schreib die erste.') + '</div>';
+      '<div class="small" style="margin:auto;text-align:center;max-width:260px">' + (kuIsPeer(v.peer) ? 'Noch keine Nachrichten im Kurs. Schreib die erste, alle Kursmitglieder sehen sie.' : v.peer === 'all' ? 'Schreibe allen deinen Schülern gleichzeitig. Antworten kommen bei dir als Einzelchat an.' : 'Noch keine Nachrichten. Schreib die erste.') + '</div>';
     Array.prototype.forEach.call(L.querySelectorAll('[data-chim]'), function(el){
       var id = el.getAttribute('data-chim');
       chtImg(id).then(function(d){ if(!v.ov.parentNode) return; var im = document.createElement('img'); im.src = d; im.alt = 'Bild'; im.setAttribute('data-chz', '1'); if(el.parentNode){ el.parentNode.replaceChild(im, el); if(near || !keepScroll) L.scrollTop = L.scrollHeight; } },
@@ -9297,7 +9337,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   async function chtSend(peer, text, img){
     var m = pushMe(); if(!m) throw new Error('Der Chat braucht die Freigabe und die Verbindung zum Push-Dienst (Account).');
-    var r = await pushApi('/cs', {me: m.me, tok: m.tok, to: peer, t: text, img: img || '', n: pushName()});
+    var r = kuIsPeer(peer) ? await pushApi('/co/send', {me: m.me, tok: m.tok, cid: peer.slice(1), t: text, img: img || '', n: pushName(), un: pushName()}) : await pushApi('/cs', {me: m.me, tok: m.tok, to: peer, t: text, img: img || '', n: pushName()});
     var D = chtLoad(); if(r && r.im && img) chtImgs[r.im] = img;
     var e = {i: r.i, f: 1, t: String(text || '').slice(0, 600), im: r.im || '', ts: r.ts, b: peer === 'all' ? 1 : 0};
     var th = D.m[peer] || (D.m[peer] = []);
@@ -9306,7 +9346,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     chtSave(); return r;
   }
   function chtOpen(peer){
-    if(!/^([0-9a-f]{20,40}|all)$/.test(peer || '')) return;
+    if(!/^([0-9a-f]{20,40}|all)$/.test(peer || '') && !kuIsPeer(peer)) return;
     if(chtView && chtView.ov.parentNode) chtView.close();
     if(chtListV && chtListV.ov.parentNode) chtListV.close();
     var sh = openSheet('<div class="shead"><h2>' + esc(chtName(peer)) + '</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>' +
@@ -9397,7 +9437,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       ((typeof pushSt !== 'undefined' && pushSt && pushSt.ins) || []).forEach(function(g){ add(g); });
       (S.friends || []).forEach(function(f){ if(lk[f.gist]) add(f.gist); });
     }
-    Object.keys(D.m).forEach(function(g){ if(D.m[g].length) add(g); });
+    kuLoad().list.forEach(function(c){ add('k' + c.id, c.n); });
+    Object.keys(D.m).forEach(function(g){ if(D.m[g].length && (!kuIsPeer(g) || kuCourse(g.slice(1)))) add(g); });
     out.sort(function(a, b){ return (b.l ? b.l.ts : 0) - (a.l ? a.l.ts : 0); });
     return out;
   }
@@ -9445,6 +9486,282 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var n = chtUnread();
     return '<div class="card frc" style="margin-top:0"><div class="row" style="align-items:center"><b style="flex:1">Chats</b><button type="button" data-chtlist="1" style="padding:6px 12px">Alle Chats' + (n ? '<span class="chdot">' + n + '</span>' : '') + '</button></div></div>';
   }
+
+  /* ---------- Kurse: Mitglieder werden automatisch Freunde, eigener Chat, Pakete für den ganzen Kurs (nur GitHub-Version) ---------- */
+  var KU_KEY = KEY + '-course', kuD = null, kuView = null, kuBusy = false, kuLast = 0, kuExp = {}, kuMsgT = '', kuPrefill = '';
+  (function(){
+    var st = document.createElement('style');
+    st.textContent = 'body.instr #kuIcon{display:none}' +
+      '@media (max-width:560px){#kuIcon{order:9;margin-top:8px;border-radius:999px;padding:6px 12px 6px 10px;line-height:1;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}#kuIcon::after{content:"Kurs"}#kuIcon svg{width:17px;height:17px}}' +
+      '.kuc{margin-top:10px}.kuc .kuh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}.kuc .kuh b{font-size:16px}' +
+      '.kucode{font-family:var(--mono);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin:8px 0;word-break:break-all}' +
+      '.kum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--line)}.kum:first-child{border-top:0}.kum span.nm{flex:1;min-width:0;overflow-wrap:anywhere}' +
+      '.kum button{padding:5px 10px;font-size:12.5px}.kutag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:var(--accent);color:#0b0d14;margin-left:6px;vertical-align:middle}' +
+      '.kuact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.kuact button{padding:7px 12px;font-size:13px}.kun{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.kun h3{margin:0 0 6px;font-size:15px}';
+    document.head.appendChild(st);
+    var ai = document.getElementById('acIcon');
+    if(ai && ai.parentNode && !document.getElementById('kuIcon')){
+      var b = document.createElement('button');
+      b.className = 'iconbtn fi'; b.id = 'kuIcon'; b.type = 'button'; b.setAttribute('aria-label', 'Kurs'); b.title = 'Kurs';
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.8v4.2c0 1.4 2.5 2.8 5.5 2.8s5.500-1.400 5.500-2.800v-4.200"/><path d="M21.500 9.500v5"/></svg>';
+      ai.parentNode.insertBefore(b, ai.nextSibling);
+      b.addEventListener('click', kuOpen);
+    }
+  })();
+  function kuOk(){ return !!(typeof pushMe === 'function' && pushMe() && S.role !== 'instructor'); }
+  function kuLoad(){
+    var me = chtMe();
+    if(kuD && kuD.me === me) return kuD;
+    var o = null; try{ o = JSON.parse(localStorage.getItem(KU_KEY) || 'null'); }catch(e){}
+    if(!o || typeof o !== 'object' || o.me !== me) o = {me: me, list: []};
+    if(!Array.isArray(o.list)) o.list = [];
+    kuD = o; return o;
+  }
+  function kuSave(){ try{ localStorage.setItem(KU_KEY, JSON.stringify(kuLoad())); }catch(e){} }
+  function kuClean(c){
+    if(!c || typeof c !== 'object' || !/^[0-9a-f]{12}$/.test(String(c.id)) || !Array.isArray(c.m)) return null;
+    return {id: c.id, n: frTxt(c.n, 40) || 'Kurs', ad: /^[0-9a-f]{20,40}$/.test(String(c.ad)) ? c.ad : '', code: /^KU-[0-9a-f]{10}$/.test(String(c.code)) ? c.code : '', max: Math.min(200, +c.max || 50), mu: !!c.mu,
+      m: c.m.filter(function(x){ return x && /^[0-9a-f]{20,40}$/.test(String(x.g)); }).slice(0, 200).map(function(x){ return {g: x.g, n: frTxt(x.n, 24) || 'Pilot'}; })};
+  }
+  function kuCall(path, body){
+    var m = pushMe(); if(!m) return Promise.reject(new Error('Für Kurse brauchst du die Freigabe und den Push-Dienst (Account).'));
+    return pushApi('/co/' + path, Object.assign({me: m.me, tok: m.tok, un: pushName()}, body || {}));
+  }
+  function kuCourse(cid){ var r = null; kuLoad().list.forEach(function(c){ if(c.id === cid) r = c; }); return r; }
+  function kuIsPeer(p){ return /^k[0-9a-f]{12}$/.test(p || ''); }
+  function kuPeerName(p){ var c = kuCourse(String(p).slice(1)); return c ? c.n : 'Kurs'; }
+  function kuNames(ids){ return (ids || []).map(function(id){ var c = kuCourse(id); return c ? c.n : ''; }).filter(Boolean).join(', '); }
+  function kuAdmin(c){ return !!c && c.ad === chtMe(); }
+  function kuUnread(){ var D = chtLoad(), n = 0; kuLoad().list.forEach(function(c){ n += chtUnreadOf('k' + c.id); }); return n; }
+  function kuDot(){
+    var b = document.getElementById('kuIcon'); if(!b) return;
+    var n = kuUnread(), dot = b.querySelector('.dotb');
+    if(!n){ if(dot) dot.parentNode.removeChild(dot); return; }
+    if(!dot){ dot = document.createElement('span'); dot.className = 'dotb'; b.appendChild(dot); }
+    if(dot.textContent !== String(n)) dot.textContent = String(n);
+  }
+  /* Kursmitglieder sind automatisch Freunde (Markierung auto/cs); bestehende Freunde bekommen nur die Kurs-Markierung */
+  function kuApplyFriends(){
+    var D = kuLoad(), me = chtMe(), ch = false, want = {}, blocked = (typeof pushSt !== 'undefined' && pushSt && pushSt.blocked) || [];
+    D.list.forEach(function(c){ c.m.forEach(function(x){ if(x.g === me) return; var w = want[x.g] || (want[x.g] = {cs: [], nm: x.n}); w.cs.push(c.id); w.nm = x.n; }); });
+    if(!Array.isArray(S.friends)) S.friends = [];
+    S.friends.forEach(function(fr){
+      var w = want[fr.gist], cs = w ? w.cs : [];
+      if(JSON.stringify(fr.cs || []) !== JSON.stringify(cs)){ if(cs.length) fr.cs = cs.slice(); else delete fr.cs; ch = true; }
+      if(w && fr.auto && fr.nm !== w.nm){ fr.nm = w.nm; ch = true; }
+    });
+    Object.keys(want).forEach(function(g){
+      if(S.friends.some(function(f){ return f.gist === g; }) || blocked.indexOf(g) >= 0) return;
+      S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: g, alias: '', nm: want[g].nm, data: null, last: 0, auto: 1, cs: want[g].cs.slice()}); ch = true;
+    });
+    var n0 = S.friends.length;
+    S.friends = S.friends.filter(function(fr){ return !(fr.auto && !(fr.cs && fr.cs.length)); });
+    if(S.friends.length !== n0) ch = true;
+    return ch;
+  }
+  /* Pakete, die mit dem Kurs geteilt sind: neue Mitglieder bekommen sie, ausgetretene verlieren den Zugang */
+  function kuPackSync(){
+    var ch = false;
+    try{
+      var m = nbMeta(), D = kuLoad(), me = chtMe();
+      m.packs.forEach(function(rec){
+        if(!rec.cs) return;
+        var c = D.list.filter(function(x){ return x.id === rec.cs.cid; })[0], p = NB.packs[rec.id];
+        rec.fr = rec.fr || [];
+        if(!c){ rec.fr = rec.fr.filter(function(x){ return x.cs !== rec.cs.cid; }); rec.cs = null; ch = true; return; }
+        var gs = c.m.map(function(x){ return x.g; }).filter(function(g){ return g !== me; });
+        c.m.forEach(function(x){
+          if(x.g === me || rec.fr.some(function(y){ return y.gist === x.g; }) || !p) return;
+          rec.fr.push({gist: x.g, name: x.n, mode: rec.cs.mode, dir: rec.cs.mode === 'collab' ? 'both' : 'out', base: pkBase(p), seen: 0, cs: rec.cs.cid}); ch = true;
+        });
+        var n0 = rec.fr.length; rec.fr = rec.fr.filter(function(x){ return !(x.cs === rec.cs.cid && gs.indexOf(x.gist) < 0); });
+        if(rec.fr.length !== n0) ch = true;
+      });
+    }catch(e){}
+    if(ch){ save(); try{ pkNeedPush(); }catch(e){} }
+  }
+  function kuRefresh(force){
+    if(kuBusy || !kuOk()) return Promise.resolve();
+    if(!force && Date.now() - kuLast < 60000) return Promise.resolve();
+    kuBusy = true; kuLast = Date.now();
+    return kuCall('get').then(function(r){
+      var D = kuLoad(); D.list = ((r && r.courses) || []).map(kuClean).filter(Boolean); kuSave();
+      var ch = kuApplyFriends(); kuPackSync();
+      if(ch){ save(); try{ if(typeof frHomeRender === 'function') frHomeRender(); if(frView && frView.ov.parentNode) frRender(); }catch(e){} setTimeout(function(){ try{ frPull(true); }catch(e){} }, 400); }
+      else try{ if(typeof frHomeRender === 'function') frHomeRender(); }catch(e){}
+    }, function(){}).then(function(){ kuBusy = false; kuDraw(); kuDot(); try{ chtRefreshUi(); }catch(e){} });
+  }
+  /* Kurs-Chat: ein gemeinsamer Raum, die Nachrichten landen im selben Chatverlauf wie alle anderen */
+  async function kuPull(){
+    var fresh = [], D = chtLoad(), m = pushMe(); if(!m) return fresh;
+    if(!D.cc || typeof D.cc !== 'object') D.cc = {};
+    var list = kuLoad().list;
+    for(var i = 0; i < list.length; i++){
+      var c = list[i], peer = 'k' + c.id, first = !D.cc[c.id], r = null;
+      try{ r = await kuCall('pull', {cid: c.id, since: D.cc[c.id] || 0}); }catch(e){ continue; }
+      var th = D.m[peer] || (D.m[peer] = []), top = 0;
+      ((r && r.items) || []).forEach(function(x){
+        if(!x || typeof x.i !== 'string' || !/^[0-9a-f]{6,16}$/.test(x.i) || typeof x.ts !== 'number') return;
+        top = Math.max(top, x.ts);
+        if(th.some(function(y){ return y.i === x.i; })) return;
+        var e = {i: x.i, f: x.f === m.me ? 1 : 0, t: String(x.t || '').slice(0, 600), im: /^[0-9a-f]{16}$/.test(x.im || '') ? x.im : '', ts: x.ts, b: 0, a: x.f === m.me ? '' : frTxt(x.n, 24) || 'Kurs'};
+        th.push(e);
+        if(!e.f && !first) fresh.push({peer: peer, e: e});
+      });
+      th.sort(function(a, b){ return a.ts - b.ts; });
+      D.cc[c.id] = Math.max(D.cc[c.id] || 0, top, first ? 1 : 0);
+      if(first && th.length) D.rd[peer] = Math.max(D.rd[peer] || 0, th[th.length - 1].ts);
+    }
+    return fresh;
+  }
+  /* ---------- Kurs-Fenster ---------- */
+  function kuMembersHtml(c){
+    var me = chtMe(), ad = kuAdmin(c);
+    return c.m.slice().sort(function(a, b){ return (b.g === c.ad) - (a.g === c.ad) || a.n.localeCompare(b.n, 'de'); }).map(function(x){
+      return '<div class="kum"><span class="nm">' + esc(x.n) + (x.g === me ? ' (du)' : '') + (x.g === c.ad ? '<span class="kutag">Admin</span>' : '') + '</span>' +
+        (ad && x.g !== me ? '<button type="button" class="ghost" data-kua="adm" data-cid="' + c.id + '" data-g="' + escA(x.g) + '">Zum Admin machen</button><button type="button" class="ghost" data-kua="kick" data-cid="' + c.id + '" data-g="' + escA(x.g) + '">Entfernen</button>' : '') + '</div>';
+    }).join('');
+  }
+  function kuHtml(){
+    var h = '<div class="shead"><h2>Kurs</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>';
+    if(!kuOk()){
+      return h + '<div class="small" style="margin:8px 0">Für Kurse brauchst du die Freigabe und die Verbindung zum Push-Dienst. Beides richtest du im Account (Symbol oben rechts) ein, dort unter „Freunde und Freigabe“.</div>';
+    }
+    var D = kuLoad();
+    h += '<div class="small">In einem Kurs bist du automatisch mit allen Mitgliedern befreundet. Sie sehen deine Freigabe wie bei Freunden und erscheinen in der Rangliste. Dazu gibt es einen Kurs-Chat und Lernpakete für den ganzen Kurs.</div>';
+    if(!D.list.length) h += '<div class="small" style="margin-top:10px">Du bist noch in keinem Kurs. Erstelle einen oder tritt mit einem Kurscode bei.</div>';
+    D.list.forEach(function(c){
+      var ad = kuAdmin(c), adm = c.m.filter(function(x){ return x.g === c.ad; })[0], open = !!kuExp[c.id], u = chtUnreadOf('k' + c.id);
+      h += '<div class="card frc kuc"><div class="kuh"><b>' + esc(c.n) + '</b><span class="small">' + c.m.length + ' von ' + c.max + ' Plätzen</span></div>' +
+        '<div class="small">Admin: ' + esc(adm ? adm.n : '–') + (ad ? ' (du)' : '') + '</div>' +
+        '<div class="kuact"><button type="button" data-kua="chat" data-cid="' + c.id + '">Kurs-Chat' + (u ? '<span class="chdot">' + u + '</span>' : '') + '</button>' +
+        '<button type="button" class="ghost" data-kua="mem" data-cid="' + c.id + '">' + (open ? 'Mitglieder ausblenden' : 'Mitglieder (' + c.m.length + ')') + '</button></div>' +
+        (open ? '<div style="margin-top:8px">' + kuMembersHtml(c) + '</div>' : '') +
+        '<div class="small" style="margin-top:10px">Kurscode zum Einladen</div><div class="kucode">' + esc(c.code) + '</div>' +
+        '<div class="kuact"><button type="button" class="ghost" data-kua="copy" data-cid="' + c.id + '">Code kopieren</button><button type="button" class="ghost" data-kua="link" data-cid="' + c.id + '">Link kopieren</button>' + (ad ? '<button type="button" class="ghost" data-kua="renew" data-cid="' + c.id + '">Code erneuern</button><button type="button" class="ghost" data-kua="ren" data-cid="' + c.id + '">Umbenennen</button>' : '') + '</div>' +
+        '<label class="tg" style="margin-top:8px"><span>Push bei neuen Kurs-Nachrichten</span><input type="checkbox" class="sw" data-kumu="' + c.id + '"' + (c.mu ? '' : ' checked') + '></label>' +
+        '<div class="kuact"><button type="button" class="ghost" data-kua="leave" data-cid="' + c.id + '">Kurs verlassen</button></div>' +
+        (ad ? '<div class="small" style="margin-top:6px">Du bist Admin: Du kannst Mitglieder entfernen, den Code erneuern und den Admin-Status weitergeben. Bevor du den Kurs verlässt, gib ihn weiter.</div>' : '') + '</div>';
+    });
+    h += '<div class="kun"><h3>Kurs erstellen</h3><div class="row"><input type="text" id="kuName" maxlength="40" placeholder="Name, zum Beispiel eCAP07 Klasse A" autocomplete="off" style="flex:1;min-width:0"><button type="button" data-kua="new">Erstellen</button></div></div>' +
+      '<div class="kun"><h3>Kurs beitreten</h3><div class="row"><input type="text" id="kuCode" placeholder="KU-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:0" value="' + escA(kuPrefill) + '"><button type="button" data-kua="join">Beitreten</button></div></div>' +
+      '<div class="small msg" id="kuMsg" style="margin-top:10px">' + esc(kuMsgT) + '</div>';
+    return h;
+  }
+  function kuDraw(){
+    var v = kuView; if(!v || !v.ov.parentNode) return;
+    var sh = v.ov.querySelector('.sheet'); if(!sh) return;
+    var nm = sh.querySelector('#kuName'), cd = sh.querySelector('#kuCode'), a = nm ? nm.value : '', b = cd ? cd.value : '';
+    sh.innerHTML = kuHtml();
+    if(sh.querySelector('#kuName')) sh.querySelector('#kuName').value = a;
+    if(cd && sh.querySelector('#kuCode')) sh.querySelector('#kuCode').value = b;
+  }
+  function kuSay(t){ kuMsgT = t || ''; if(kuView && kuView.ov.parentNode){ var e = kuView.ov.querySelector('#kuMsg'); if(e) e.textContent = kuMsgT; } }
+  function kuAfter(ok){
+    return kuRefresh(true).then(function(){ if(ok) kuSay(ok); });
+  }
+  function kuOpen(code){
+    if(kuView && kuView.ov.parentNode){ kuDraw(); return; }
+    kuMsgT = '';
+    kuView = openSheet(kuHtml());
+    var ov = kuView.ov;
+    ov.addEventListener('click', function(ev){
+      var t = ev.target && ev.target.closest ? ev.target.closest('[data-kua]') : null; if(!t) return;
+      var a = t.getAttribute('data-kua'), cid = t.getAttribute('data-cid'), c = cid ? kuCourse(cid) : null;
+      function arm(label){
+        if(t.getAttribute('data-arm') !== '1'){ t.setAttribute('data-arm', '1'); t.textContent = 'Wirklich?'; setTimeout(function(){ if(t.parentNode){ t.removeAttribute('data-arm'); t.textContent = label; } }, 3000); return false; }
+        return true;
+      }
+      function fail(e){ kuSay((e && e.message) || 'Das hat nicht geklappt. Bist du online?'); }
+      if(a === 'new'){
+        var nm = (ov.querySelector('#kuName').value || '').trim();
+        if(nm.length < 2){ kuSay('Gib dem Kurs einen Namen (mindestens 2 Zeichen).'); return; }
+        kuSay('Erstelle …');
+        kuCall('new', {n: nm}).then(function(){ return kuAfter('Kurs erstellt. Gib den Kurscode an deine Kursmitglieder weiter.'); }, fail);
+      }else if(a === 'join'){
+        var cd = (ov.querySelector('#kuCode').value || '').trim();
+        if(!cd){ kuSay('Füge den Kurscode ein.'); return; }
+        kuSay('Trete bei …');
+        kuCall('join', {code: cd}).then(function(r){ kuPrefill = ''; return kuAfter('Beigetreten' + (r && r.course ? ': ' + r.course.n : '') + '. Die Mitglieder werden jetzt deine Freunde.'); }, fail);
+      }else if(a === 'mem' && c){ kuExp[cid] = !kuExp[cid]; kuDraw();
+      }else if(a === 'chat' && c){ chtOpen('k' + cid);
+      }else if(a === 'copy' && c){ kuSay(copyText(c.code) ? 'Kurscode kopiert.' : 'Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.');
+      }else if(a === 'link' && c){ kuSay(copyText(location.origin + location.pathname + '?course=' + c.code) ? 'Link kopiert. Wer ihn öffnet, kann dem Kurs beitreten.' : 'Kopieren nicht möglich.');
+      }else if(a === 'renew' && c){
+        if(!arm('Code erneuern')) return;
+        kuCall('code', {cid: cid}).then(function(){ return kuAfter('Neuer Code erstellt. Der alte Code ist ungültig, Mitglieder bleiben im Kurs.'); }, fail);
+      }else if(a === 'ren' && c){
+        var nn2 = prompt2('Neuer Kursname', c.n);
+        if(nn2 === null) return;
+        kuCall('rename', {cid: cid, n: nn2}).then(function(){ return kuAfter('Umbenannt.'); }, fail);
+      }else if(a === 'adm' && c){
+        if(!arm('Zum Admin machen')) return;
+        kuCall('admin', {cid: cid, to: t.getAttribute('data-g')}).then(function(){ return kuAfter('Admin-Status weitergegeben.'); }, fail);
+      }else if(a === 'kick' && c){
+        if(!arm('Entfernen')) return;
+        kuCall('kick', {cid: cid, g: t.getAttribute('data-g')}).then(function(){ return kuAfter('Mitglied entfernt.'); }, fail);
+      }else if(a === 'leave' && c){
+        if(!arm('Kurs verlassen')) return;
+        kuCall('leave', {cid: cid}).then(function(){
+          var D = chtLoad(); delete D.m['k' + cid]; if(D.cc) delete D.cc[cid]; chtSave();
+          return kuAfter('Du hast den Kurs verlassen.');
+        }, fail);
+      }
+    });
+    ov.addEventListener('change', function(ev){
+      var t = ev.target, cid = t && t.getAttribute && t.getAttribute('data-kumu'); if(!cid) return;
+      var c = kuCourse(cid); if(c) c.mu = !t.checked; kuSave();
+      kuCall('mute', {cid: cid, mu: !t.checked}).catch(function(){});
+    });
+    ov.addEventListener('click', function(e){ if(e.target === ov || (e.target.closest && e.target.closest('[data-sx]'))){ kuView = null; } });
+    if(code){ kuPrefill = code; kuDraw(); }
+    kuRefresh(true);
+  }
+  function prompt2(label, cur){
+    /* kein window.prompt: eigene kleine Abfrage per Browserfunktion, falls verfügbar, sonst unverändert */
+    try{ var v = window.prompt(label, cur); return v === null ? null : String(v).trim(); }catch(e){ return null; }
+  }
+  /* Pakete mit dem ganzen Kurs teilen (Teilen-Fenster im Lernzentrum) */
+  function kuPackHtml(pid){
+    var D = kuLoad(), rec = pkRec(pid);
+    if(!kuOk() || !D.list.length) return '';
+    var h = '<h3 style="margin-top:14px">Mit Kurs teilen</h3>';
+    D.list.forEach(function(c){
+      var on = rec && rec.cs && rec.cs.cid === c.id;
+      h += '<div class="pkfr"><b>' + esc(c.n) + '</b><div class="row">' + (on ? '<button type="button" class="ghost" data-kups="' + c.id + '" data-m="end">Beenden</button>' : '') +
+        '<button type="button" class="ghost" data-kups="' + c.id + '" data-m="share">Teilen</button><button type="button" data-kups="' + c.id + '" data-m="collab">Zusammenarbeiten</button></div>' +
+        (on ? '<div class="pkst">' + (rec.cs.mode === 'collab' ? 'Der ganze Kurs arbeitet mit' : 'Geteilt mit dem ganzen Kurs') + ' (' + (c.m.length - 1) + ' Mitglieder)</div>' : '') + '</div>';
+    });
+    return h + '<div class="small" style="margin-top:8px">Alle Kursmitglieder, auch später Beigetretene, bekommen das Paket zur Annahme angeboten. Bei „Zusammenarbeiten“ gehen Änderungen der Mitglieder an dich, du übernimmst sie nach Rückfrage, und sie landen von dir aus wieder beim ganzen Kurs.</div>';
+  }
+  function kuPackAct(pid, cid, mode, say, draw){
+    var rec = pkRec(pid), p = NB.packs[pid], c = kuCourse(cid); if(!rec || !p || !c) return;
+    rec.fr = (rec.fr || []).filter(function(x){ return x.cs !== cid; });
+    if(mode === 'end') rec.cs = null;
+    else{
+      rec.cs = {cid: cid, mode: mode};
+      var me = chtMe();
+      c.m.forEach(function(x){
+        if(x.g === me || rec.fr.some(function(y){ return y.gist === x.g; })) return;
+        rec.fr.push({gist: x.g, name: x.n, mode: mode, dir: mode === 'collab' ? 'both' : 'out', base: pkBase(p), seen: 0, cs: cid});
+      });
+    }
+    save(); say('Wird gesendet …');
+    pkPush(true).then(function(ok){
+      say(mode === 'end' ? 'Freigabe für den Kurs beendet.' : (ok ? (mode === 'collab' ? 'Zusammenarbeit mit dem Kurs angeboten.' : 'Paket mit dem Kurs geteilt.') + ' Die Mitglieder werden beim Öffnen des Lernzentrums gefragt.' : 'Senden nicht möglich. Es wird später erneut versucht.'));
+      draw();
+    });
+    draw();
+  }
+  /* Beitritt per Link (?course=KU-…) */
+  setTimeout(function(){
+    var id = null;
+    try{ id = new URLSearchParams(location.search).get('course'); }catch(e){}
+    if(id && /^KU-[0-9a-f]{10}$/i.test(id)){ try{ history.replaceState(null, '', location.pathname); }catch(e){} kuOpen(id); }
+  }, 3300);
+  setInterval(function(){ if(!document.hidden && kuOk()) kuRefresh(false); }, 5 * 60000);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && kuOk()) setTimeout(function(){ kuRefresh(false); }, 800); });
+  setTimeout(function(){ if(kuOk()) kuRefresh(true); }, 4200);
   /* ---------- Eigener Claude-API-Schlüssel (nur GitHub-Version) ---------- */
   var AIK_KEY = KEY + '-aik', AIK_MODEL = KEY + '-aimodel';
   var AIK_MODELS = [['claude-sonnet-5-5', 'Sonnet 5.5 (Standard)'], ['claude-haiku-5-5', 'Haiku 5.5 (günstiger, schneller)'], ['claude-opus-5-5', 'Opus 5.5 (stärker, teurer)']];

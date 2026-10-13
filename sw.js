@@ -36,6 +36,7 @@ function friendText(it, cfg){
   if(it.e === 's') return nm + ' ist wieder im Soll.';
   if(it.e === 'v') return it.x === 's' ? nm + ' und du seid jetzt Rivalen. Kopf an Kopf!' : (it.x === 'w' ? nm + ' hat dich abgehängt.' : (it.x === 'l' ? 'Du hast ' + nm + ' abgehängt!' : nm + ' hat dich eingeholt!'));
   if(it.e === 'h') return it.x === 'o' ? nm + ' fordert dich heraus!' : (it.x === 'a' ? nm + ' hat deine Challenge angenommen. Los geht\u2019s!' : (it.x === 'd' ? nm + ' hat deine Challenge abgelehnt.' : (it.x === 'w' ? nm + ' hat die Challenge gewonnen.' : (it.x === 'l' ? 'Du hast die Challenge gegen ' + nm + ' gewonnen!' : 'Unentschieden gegen ' + nm + '.'))));
+  if(it.e === 'c' && it.x === 'k') return 'Neue Nachrichten im Kurs ' + (it.cn || '') + ' (zuletzt von ' + nm + ').';
   if(it.e === 'c') return it.x === 'a' ? 'Nachricht an alle von ' + nm : (it.x === 'i' ? nm + ' hat dir ein Bild geschickt.' : 'Neue Nachricht von ' + nm + '.');
   if(it.e === 'p') return nm + ' hat das Paket „' + (it.x || '') + '“ aktualisiert.';
   return nm + ' war aktiv.';

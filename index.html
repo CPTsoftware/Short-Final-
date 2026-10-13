@@ -1396,6 +1396,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
               weights: d.weights ? JSON.parse(JSON.stringify(d.weights)) : (S.weights || {}),
               exam: d.exam || S.exam,
               examTime: d.examTime || S.examTime,
+              bdx: bdxMerge(S.bdx, d.bdx),
               ai: d.ai ? JSON.parse(JSON.stringify(d.ai)) : (S.ai || null),
               log: Array.isArray(d.log) ? JSON.parse(JSON.stringify(d.log)) : (S.log || []),
               open: Array.isArray(d.open) ? JSON.parse(JSON.stringify(d.open)) : (S.open || []),
@@ -1487,7 +1488,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       rival:(S.rival && typeof S.rival === 'object') ? S.rival : null,
       chal:(S.chal && typeof S.chal === 'object') ? S.chal : null,
       subjects:S.subjects || {}, weights:S.weights || {}, log:Array.isArray(S.log) ? S.log.slice(-400) : [],
-      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null, role:(S.role === 'instructor') ? 'instructor' : null,
+      nb:(S.nb && typeof S.nb === 'object') ? S.nb : null, uname:(typeof S.uname === 'string' && S.uname) ? S.uname : null, look:(S.look && typeof S.look === 'object') ? S.look : null, exam:S.exam, examTime:S.examTime, ai:S.ai || null, milestone:S.milestone, papi:S.papi || null, badges:(S.badges && typeof S.badges === 'object') ? S.badges : null, bdx:(S.bdx && typeof S.bdx === 'object') ? S.bdx : null, allGreen:(typeof S.allGreen === 'boolean') ? S.allGreen : null, role:(S.role === 'instructor') ? 'instructor' : null,
       share:(S.share && typeof S.share === 'object') ? {gist:S.share.gist || null, f:S.share.f || null, o:S.share.optout ? 1 : 0, v:S.share.sdv || 0} : null, friends:Array.isArray(S.friends) ? S.friends.map(function(x){ return {id:x.id, gist:x.gist, alias:x.alias || ''}; }) : null
     }));
   }
@@ -3626,6 +3627,12 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     n123:'<text x="12" y="17" text-anchor="middle" font-size="11" font-weight="800" font-family="Arial,sans-serif" fill="currentColor">123</text>',
     rocket:'<path fill="currentColor" d="M12 2c3 2.5 4.5 6 4.5 10l-2 3h-5l-2-3c0-4 1.5-7.5 4.5-10zM8 14l-3 4 4-1zM16 14l3 4-4-1z"/><circle cx="12" cy="9" r="1.7" fill="#141c33"/>',
     handshake:'<path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M3 10l4-3 4 1 3-1 5 3-3 4-3 3-2-1-2 2-3-3z"/>',
+    headset:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.6"/><rect x="17" y="14" width="4" height="6" rx="1.6"/><path d="M19 20c0 1.6-2.2 2.4-5 2.4"/></g>',
+    trophy:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/><path d="M12 14v4M8 20h8"/></g>',
+    hourglass:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/></g>',
+    bang:'<g fill="currentColor"><rect x="10.5" y="3" width="3" height="12" rx="1.5"/><circle cx="12" cy="19.5" r="2"/></g>',
+    camera:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></g>',
+    crane:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4h3M6 6h14M9 4l11 2M16 6v5"/><rect x="14.5" y="11" width="3" height="2.5"/><path d="M4 21h5"/></g>',
     people:'<circle cx="8.5" cy="8" r="3.2" fill="currentColor"/><circle cx="16.5" cy="9" r="2.6" fill="currentColor"/><path fill="currentColor" d="M2.5 19c0-3.4 2.7-5.5 6-5.5s6 2.1 6 5.5zM14.5 19c.1-2 .9-3.3 2-4 3 0 5 1.6 5 4z"/>'
   };
   var BADGES = [];
@@ -3673,6 +3680,25 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   bdDef('whang', 'w', 'Abgehängt', 'Einen Rivalen im Duell abgehängt (10 % vom Ziel Vorsprung)', 'target', 'b', function(c){ return !!c.fx.hang; }, null, true);
   bdDef('wpack', 'w', 'Rudelflug', 'Drei Freunde hinzugefügt', 'people', 's', function(c){ return c.friends >= 3; }, function(c){ return [c.friends, 3]; }, true);
   bdDef('wcol', 'w', 'Teamarbeit', 'Ein Lernpaket gemeinsam bearbeitet', 'handshake', 's', function(c){ return c.collab; }, null, true);
+  bdDef('wdecl', 'w', 'Stress mich nicht', 'Eine Challenge abgelehnt', 'bang', 'b', function(c){ return !!c.fx.dec; }, null, true);
+  bdDef('wtry', 'w', 'Try me!', 'Zum ersten Mal eine Challenge angenommen', 'bolt', 'b', function(c){ return !!c.fx.acc; }, null, true);
+  bdDef('wcoax', 'w', 'Gut zureden', 'Ein Freund nimmt deine Challenge erst beim vierten Versuch an, nach drei Absagen', 'handshake', 's', function(c){ return !!c.fx.coax; }, null, true);
+  bdDef('wabs', 'w', 'Oha, übertreib halt', 'Eine absurd schwere Challenge gestellt', 'flame', 's', function(c){ return !!c.fx.abs; }, null, true);
+  bdDef('wamb', 'w', 'Erstick an deinem Ehrgeiz', 'Eine absurd schwere Challenge geschafft', 'trophy', 'g', function(c){ return !!c.fx.amb; }, null, true);
+  bdDef('wwin', 'w', 'Hab ich doch gesagt', 'Eine Challenge gewonnen', 'trophy', 's', function(c){ return !!c.fx.win; }, null, true);
+  bdDef('wlose', 'w', 'Strafe muss sein', 'Eine Challenge verloren', 'flag', 'b', function(c){ return !!c.fx.lose; }, null, true);
+  bdDef('wfoto', 'w', 'Fotofinish', 'Eine Challenge mit weniger als 3 % Unterschied entschieden', 'check', 's', function(c){ return !!c.fx.foto; }, null, true);
+  bdDef('wserie', 'w', 'Serientäter', '5 Challenges beendet', 'target', 's', function(c){ return (c.fx.chN || 0) >= 5; }, function(c){ return [c.fx.chN || 0, 5]; }, true);
+  bdDef('wpay', 'w', 'Zahlmeister', 'Eine Challenge mit Strafe verloren', 'star', 'b', function(c){ return !!c.fx.pay; }, null, true);
+  bdDef('wmsg', 'w', 'Erster Funkspruch', 'Die erste Chat-Nachricht gesendet', 'headset', 'b', function(c){ return !!c.fx.msg; }, null, true);
+  bdDef('wimg', 'w', 'Bildbeweis', 'Das erste Bild im Chat gesendet', 'camera', 'b', function(c){ return !!c.fx.img; }, null, true);
+  bdDef('wchat', 'w', 'Quasselstrippe', '100 Chat-Nachrichten gesendet', 'headset', 's', function(c){ return (c.fx.msgN || 0) >= 100; }, function(c){ return [c.fx.msgN || 0, 100]; }, true);
+  bdDef('procr', 'u', 'Prokrastinierer', 'Einen angefangenen Test länger als eine Woche liegen lassen', 'hourglass', 'b', function(c){ return c.procr; });
+  bdDef('ber', 'u', 'BER-Baustelle', 'Sieben angefangene Tests gleichzeitig offen', 'crane', 's', function(c){ return c.openN >= 7; }, function(c){ return [c.openN, 7]; });
+  bdDef('openfin', 'u', 'Aufräumer', '5 angefangene Tests abgeschlossen', 'check', 's', function(c){ return (c.fx.openFin || 0) >= 5; }, function(c){ return [c.fx.openFin || 0, 5]; });
+  bdDef('fwech', 'u', 'Fachwechsler', '5 verschiedene Fächer an einem Tag geklickt', 'grid', 's', function(c){ return c.fwech >= 5; }, function(c){ return [c.fwech, 5]; });
+  bdDef('late', 'u', 'Kurz vor knapp', 'Das Tagespensum nach 22 Uhr erreicht', 'moon', 's', function(c){ return c.late; });
+  bdDef('hol', 'u', 'Feiertagspilot', 'An Heiligabend, Weihnachten, Silvester oder Neujahr Fragen geklickt', 'star', 's', function(c){ return c.hol; });
   var BD_CATS = [['q', 'Fragen'], ['s', 'Serie und Tempo'], ['g', 'Gleitpfad'], ['f', 'Fächer'], ['r', 'Berichte'], ['n', 'Lernzentrum'], ['u', 'Spaß und Challenges'], ['w', 'Mit Freunden'], ['x', 'Sonstiges']];
   /* Einmaliger Neustart der Abzeichen (Serie und Tempo, Fächer, Spaß und Challenges, Abgehängt): nur Fortschritt nach diesem Tag zählt */
   var BD_CUT = '2026-10-11', BD_CUT_W = '2026-10-12';
@@ -3709,6 +3735,26 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       (on ? '<circle cx="32" cy="32" r="23" fill="none" stroke="' + col + '" stroke-opacity=".35" stroke-width="1.5"/>' : '') +
       '<g transform="translate(16 16) scale(1.33)" style="color:' + col + '" opacity="' + (on ? 1 : 0.45) + '">' + BD_G[b.g] + '</g></svg>';
   }
+  function bdxMerge(a, b){
+    var out = {};
+    [a, b].forEach(function(o){
+      if(!o || typeof o !== 'object') return;
+      Object.keys(o).forEach(function(k){
+        if(!/^[a-zA-Z0-9]{1,10}$/.test(k)) return;
+        var v = o[k], cur = out[k];
+        if(typeof v === 'number' && isFinite(v)){ out[k] = (typeof cur === 'number') ? Math.max(cur, v) : v; }
+        else if(typeof v === 'string' && v.length <= 12){ out[k] = (typeof cur === 'string' && cur < v) ? cur : v; }
+        else if(v && typeof v === 'object' && !Array.isArray(v)){
+          var m = (cur && typeof cur === 'object') ? cur : {};
+          Object.keys(v).slice(0, 80).forEach(function(g){ if(/^[0-9a-f]{20,40}$/.test(g) && typeof v[g] === 'number') m[g] = Math.max(m[g] || 0, v[g]); });
+          out[k] = m;
+        }
+      });
+    });
+    return out;
+  }
+  function bdxSet(k){ if(!S) return; if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {}; if(!S.bdx[k]) S.bdx[k] = iso(new Date()); }
+  function bdxInc(k){ if(!S) return; if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {}; S.bdx[k] = (+S.bdx[k] || 0) + 1; }
   function bdCtx(){
     var es = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }), last = es[es.length - 1];
     var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -3749,6 +3795,25 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     c.fx = (S.bdx && typeof S.bdx === 'object') ? S.bdx : {};
     c.collab = false;
     try{ (S.nb.packs || []).forEach(function(r){ (r.fr || []).forEach(function(x){ if(x.mode === 'collab') c.collab = true; }); }); }catch(e){}
+    c.openN = Array.isArray(S.open) ? S.open.length : 0; c.procr = false;
+    (S.open || []).forEach(function(it){
+      var lastT = it && it.d ? parse(it.d).getTime() + 86400000 : 0;
+      (S.log || []).forEach(function(l){ if(l && l.ts && (l.ops || []).some(function(o){ return o && o.t === it.t && (o.k === 'open' || o.k === 'openx'); }) && l.ts > lastT) lastT = l.ts; });
+      if(lastT && Date.now() - lastT > 7 * 86400000) c.procr = true;
+    });
+    c.fwech = 0; c.late = false; c.hol = false;
+    var dayS = {};
+    (S.log || []).forEach(function(l){
+      if(!l || !l.ts || iso(new Date(l.ts)) <= cut) return;
+      var dk = iso(new Date(l.ts));
+      (l.ops || []).forEach(function(o){ if(o && o.k === 'sub' && o.dc > 0 && o.id){ if(!dayS[dk]) dayS[dk] = {}; dayS[dk][o.id] = 1; } });
+    });
+    Object.keys(dayS).forEach(function(k){ var n3 = Object.keys(dayS[k]).length; if(n3 > c.fwech) c.fwech = n3; });
+    try{
+      var lg = (S.log || []).filter(function(l){ return l && l.ts && (l.ops || []).some(function(o){ return o && (o.k === 'total' || o.k === 'entry'); }); }).slice(-1)[0];
+      if(lg && iso(new Date(lg.ts)) === iso(now) && new Date(lg.ts).getHours() >= 22 && now.getTime() - lg.ts < 3600000 && c.n.goal > 0 && c.n.needToday <= 0) c.late = true;
+    }catch(e){}
+    Object.keys(per).forEach(function(k){ if(per[k] > 0 && /-(12-24|12-25|12-31|01-01)$/.test(k.slice(4))) c.hol = true; });
     c.early = false; c.night = false;
     (S.log || []).forEach(function(l){
       if(!l || !l.ts || !(l.ops || []).some(function(o){ return o && (o.k === 'total' || o.k === 'entry'); })) return;
@@ -4696,6 +4761,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         ops.push({k:'rep', id:sj.id, kind:isL ? 'last' : it.cat, t:rec.t});
       }
       if(it.tot && rest > 0){ var tp = addToTotal(td, rest, td); if(tp) ops.push(tp); tt += ' · Gesamt +' + fmt(rest); }
+      bdxInc('openFin');
       logAdd(tt, ops);
       sh.close(); if(it.tot) queueGlideScene(); refreshAll(); haptic('ok'); toast('Test abgeschlossen');
     });
@@ -6533,6 +6599,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       {t:'Rivalen', x:'Liegst du mit einem Freund fast gleichauf, werdet ihr Rivalen: mit Kopf-an-Kopf-Animation und Push. Mindestens 3 Tage lang, dann gewinnt, wer 10 % vom Ziel Vorsprung hat. Die Abzeichen „Eingeholt“ und „Abgehängt“ gibt es nur noch im Rivalen-Duell und wurden für alle zurückgesetzt. Abschaltbar im Freunde-Fenster.', web:true, tab:'home', sel:'#frIcon'},
       {t:'Challenges', x:'Fordere jeden verbundenen Freund heraus: wer mehr klickt oder wer ein Ziel zuerst erreicht, nach Menge oder mit Quote, optional mit Strafe für den Verlierer. Der Freund nimmt an oder lehnt ab. Der Stand läuft automatisch mit und ist auf der Startseite und im Freunde-Fenster zu sehen.', web:true, tab:'home', sel:'#frIcon'},
       {t:'Chat', x:'Schreibe verbundenen Freunden und Instructors direkt in der App, auch mit Bildern. Über die Chat-Bubble unten rechts erreichst du alle Chats sofort, sie lässt sich dort abschalten. Neue Nachrichten melden sich per Push, ungelesene zeigt ein Zähler. Nachrichten liegen 14 Tage auf dem Server und sind nicht Ende-zu-Ende verschlüsselt.', web:true, tab:'home', sel:'#frIcon'},
+      {t:'Neue Abzeichen', x:'Abzeichen für Challenges und Chat („Stress mich nicht“, „Try me!“, „Hab ich doch gesagt“ und mehr) sowie für angefangene Tests („Prokrastinierer“, „BER-Baustelle“) und weitere Spaß-Abzeichen wie „Fachwechsler“ oder „Feiertagspilot“.', notour:true},
       {t:'KI-Analyse bleibt aktuell', x:'Eine neue Analyse wird jetzt mit der Cloud-Synchronisierung abgeglichen und von einem älteren Stand nicht mehr überschrieben.', web:true, notour:true}
     ]},
     {v:'2026.10.11-35', autotour:true, items:[
@@ -6816,7 +6883,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   var syncCfg = null, syncHash = '', syncBusy = false, syncTimer = null, syncApplying = false, syncReady = true;
   function syncLoad(){ try{ var r = localStorage.getItem(SYNC_LS); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
   function syncStore(){ try{ if(syncCfg) localStorage.setItem(SYNC_LS, JSON.stringify(syncCfg)); else localStorage.removeItem(SYNC_LS); }catch(e){} }
-  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.ai ? S.ai.ts : 0, S.open, S.rival, S.chal, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
+  function dataHash(){ return JSON.stringify([S.role, S.target, S.deadline, S.entries, S.subjects, S.weights, S.exam, S.examTime, S.log, S.nb, S.uname, S.look, S.badges, S.bdx, S.ai ? S.ai.ts : 0, S.open, S.rival, S.chal, S.share ? [S.share.gist, S.share.f, S.share.optout, S.share.sdv] : null, (S.friends || []).map(function(x){ return [x.gist, x.alias]; })]); }
   function syncTouch(){
     if(!syncCfg || syncApplying || !S || !syncReady) return;
     var h = dataHash();
@@ -6885,6 +6952,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(d.look && typeof d.look === 'object') S.look = cp(d.look);
       if(d.ai && typeof d.ai === 'object' && (!S.ai || (d.ai.ts || 0) >= (S.ai.ts || 0))) S.ai = cp(d.ai);
       S.badges = bdMerge(S.badges, d.badges);
+      S.bdx = bdxMerge(S.bdx, d.bdx);
       if(d.share && typeof d.share === 'object'){ S.share = {gist:d.share.gist || null, f:d.share.f ? cp(d.share.f) : null, h:(S.share && S.share.h) || '', optout:!!d.share.o, sdv:Math.max(d.share.v || 0, (S.share && S.share.sdv) || 0)}; }
       if(Array.isArray(d.friends)){ var oldF = {}; (S.friends || []).forEach(function(x){ oldF[x.gist] = x; }); S.friends = d.friends.filter(function(x){ return x && /^[0-9a-f]{20,40}$/i.test(String(x.gist)); }).map(function(x){ var o0 = oldF[x.gist] || {}; return {id:x.id || o0.id || String(Date.now()), gist:x.gist, alias:String(x.alias || '').slice(0, 24), data:o0.data || null, last:o0.last || 0, bseen:o0.bseen}; }); }
       S.milestone = Math.max(S.milestone || 0, typeof d.milestone === 'number' ? d.milestone : 0);
@@ -8502,6 +8570,16 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!Array.isArray(C.q)) C.q = [];
     return C;
   }
+  function chAbsurd(cfg, pace){
+    if(!cfg || cfg.k !== 'first' || !(cfg.goal > 0) || !(cfg.days > 0)) return false;
+    return cfg.goal / cfg.days >= Math.max(1000, 3 * (pace > 0 ? pace : 0));
+  }
+  function chDeclN(g){
+    if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {};
+    if(!S.bdx.dn || typeof S.bdx.dn !== 'object') S.bdx.dn = {};
+    S.bdx.dn[g] = (S.bdx.dn[g] || 0) + 1;
+  }
+  function chBd(){ try{ if(typeof bdSoon === 'function') bdSoon(); }catch(e){} }
   function chId(){ var s = '', i; for(i = 0; i < 12; i++) s += Math.floor(Math.random() * 16).toString(16); return s; }
   function chCfgClean(o){
     if(!o || typeof o !== 'object') return null;
@@ -8542,7 +8620,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         if(now >= chEnd(c)){ c.fin = {v: c.p || 0, t: chEnd(c)}; ch = true; return; }
         var v = chVal(c);
         if(v !== c.p){ c.p = v; ch = true; }
-        if(c.cfg.k === 'first' && v >= c.cfg.goal){ c.fin = {v: v, t: now, g: 1}; ch = true; }
+        if(c.cfg.k === 'first' && v >= c.cfg.goal){ c.fin = {v: v, t: now, g: 1}; ch = true; if(c.role === 'b' && c.abs){ bdxSet('amb'); chBd(); } }
       });
       return ch;
     }catch(e){ return false; }
@@ -8577,6 +8655,16 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function chFinish(c, res, F, d){
     c.st = 'done'; c.res = res; c.dt = Date.now();
     var pe = chPartnerEntry(c);
+    try{
+      if(res === 'w' || res === 'l' || res === 'd') bdxInc('chN');
+      if(res === 'w') bdxSet('win');
+      if(res === 'l'){ bdxSet('lose'); if(c.cfg && c.cfg.pun) bdxSet('pay'); }
+      if(res === 'w' || res === 'l'){
+        var ma = c.p || 0, mb = pe && typeof pe.p === 'number' ? pe.p : null;
+        if(mb !== null && Math.max(ma, mb) >= 10 && Math.abs(ma - mb) / Math.max(ma, mb) < 0.03) bdxSet('foto');
+      }
+      chBd();
+    }catch(e){}
     chQ({k: res === 'w' ? 'cwin' : (res === 'l' ? 'close' : (res === 'd' ? 'cdraw' : 'cvoid')), id: c.id, g: c.g, n: rvName(F), ac: d && d.ac, my: c.p || 0, th: pe && typeof pe.p === 'number' ? pe.p : 0, pun: c.cfg.pun, desc: chDesc(c.cfg)});
     if(res !== 'x') chNotify(c.g, res === 'w' ? 'w' : (res === 'l' ? 'l' : 'x'));
   }
@@ -8620,15 +8708,16 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
           if(c.role === 'a' && c.st === 'offer'){
             if(pe.a === 1 && pe.t0 && pe.t0 <= now + 600000){
               c.st = 'run'; c.t0 = Math.min(pe.t0, now); c.base = chBase(); c.p = 0; ch = true;
+              try{ var dn0 = (S.bdx && S.bdx.dn && S.bdx.dn[F.gist]) || 0; if(dn0 >= 3) bdxSet('coax'); if(dn0) S.bdx.dn[F.gist] = 0; chBd(); }catch(e){}
               chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
-            }else if(pe.a === 0){ c.st = 'dec'; c.dt = now; ch = true; chQ({k: 'cdec', id: c.id, g: c.g, n: rvName(F), ac: d.ac}); }
+            }else if(pe.a === 0){ c.st = 'dec'; c.dt = now; ch = true; chDeclN(F.gist); chQ({k: 'cdec', id: c.id, g: c.g, n: rvName(F), ac: d.ac}); }
           }else if(c.st === 'run'){
             if(chResolve(c, pe, F, d)) ch = true;
           }
         });
       });
       C.list.forEach(function(c){
-        if((c.st === 'offer' || c.st === 'in') && now - (c.ts || 0) > CH_TTL){ c.st = 'exp'; c.dt = now; ch = true; }
+        if((c.st === 'offer' || c.st === 'in') && now - (c.ts || 0) > CH_TTL){ if(c.role === 'a' && c.st === 'offer') chDeclN(c.g); c.st = 'exp'; c.dt = now; ch = true; }
         else if(c.st === 'run' && !chPartnerEntry(c) && now > chEnd(c) + CH_WAIT + CH_TTL){ chFinish(c, 'x', chFriend(c.g), null); ch = true; }
       });
       var n0 = C.list.length;
@@ -8642,13 +8731,15 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var F = chFriend(c.g), d = F && F.data;
     if(yes){
       c.st = 'run'; c.t0 = Date.now(); c.base = chBase(); c.p = 0; chNotify(c.g, 'a');
+      try{ var pc0 = homeNums(); c.abs = chAbsurd(c.cfg, pc0 && pc0.paceR) ? 1 : 0; bdxSet('acc'); chBd(); }catch(e){}
       chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d && d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
-    }else{ c.st = 'dec'; c.dt = Date.now(); chNotify(c.g, 'd'); }
+    }else{ c.st = 'dec'; c.dt = Date.now(); chNotify(c.g, 'd'); try{ bdxSet('dec'); chBd(); }catch(e){} }
     save(); frTouch(); chRefresh();
   }
   function chCreate(F, cfg){
     var C = chGet(), c = {id: chId(), role: 'a', g: F.gist, n: rvName(F), cfg: cfg, st: 'offer', ts: Date.now()};
-    C.list.push(c); save(); frTouch(); chNotify(F.gist, 'o'); chRefresh();
+    try{ if(chAbsurd(cfg, F.data && F.data.tempo)){ c.abs = 1; bdxSet('abs'); } }catch(e){}
+    C.list.push(c); save(); frTouch(); chNotify(F.gist, 'o'); chRefresh(); chBd();
   }
   function chRefresh(){
     try{ if(typeof frRender === 'function') frRender(); if(typeof frHomeRender === 'function') frHomeRender(); }catch(e){}
@@ -8943,6 +9034,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var e = {i: r.i, f: 1, t: String(text || '').slice(0, 600), im: r.im || '', ts: r.ts, b: peer === 'all' ? 1 : 0};
     var th = D.m[peer] || (D.m[peer] = []);
     if(!th.some(function(x){ return x.i === e.i; })){ th.push(e); th.sort(function(a, b){ return a.ts - b.ts; }); }
+    try{ bdxSet('msg'); bdxInc('msgN'); if(img) bdxSet('img'); save(); if(typeof bdSoon === 'function') bdSoon(); }catch(e){}
     chtSave(); return r;
   }
   function chtOpen(peer){

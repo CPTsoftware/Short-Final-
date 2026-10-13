@@ -122,8 +122,15 @@ label input,label select{display:block;width:100%;margin-top:4px}
 button{font:inherit;font-weight:700;border:1px solid var(--accent);border-radius:999px;padding:10px 18px;background:var(--accent);color:var(--on-accent);cursor:pointer}
 button:disabled{opacity:.55}
 button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);padding:4px 11px;font-weight:600}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px}
+.f2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.f3{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:8px}
+.f2>*,.f3>*{min-width:0}
+input[type=date],input[type=time],input[type=month]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;box-sizing:border-box;min-height:44px;line-height:1.2}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-width:0}
+.sheet{overflow-x:hidden}
+td.rpc{white-space:nowrap;line-height:1.25}.rdl{font-size:11px;font-family:var(--sans)}
+td.rbn .ghost{padding:5px 8px;min-width:0}
+@media (max-width:420px){table{font-size:13px}td,th{padding:8px 3px}td.r{font-size:12.5px}}
 .f3 input,.f3 select{padding:10px 6px}
 .addbtn{width:100%;margin-top:10px}
 .msg{min-height:0}
@@ -1842,19 +1849,18 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       var lab = r.kind === 'last' ? 'Last ' + r.e.x : CATSHORT[r.kind];
       h += '<tr' + ((r.e.c || ed) ? ' class="hasn"' : '') + '><td>' + fd(parse(r.e.d)) + '</td><td class="small">' + lab + '</td>' +
            '<td class="r">' + fmt(r.e.ok) + '/' + fmt(r.n) + '</td>' +
-           '<td class="r ' + cls(r.p) + '">' + Math.round(r.p) + ' %' + (r.kind === 'rep' ? '<div class="small" style="font-family:var(--sans)">(' + Math.round(r.raw) + ' %)</div>' : '') + '</td>' +
-           '<td class="r ' + (r.delta === null ? '' : (r.delta >= 0 ? 'good' : 'bad')) + '" style="font-size:12px">' +
-           (r.delta === null ? '' : (r.delta >= 0 ? '▲ +' : '▼ −') + Math.abs(r.delta).toFixed(0)) + '</td>' +
-           '<td class="r" style="white-space:nowrap"><button class="ghost" style="padding:5px 7px;font-size:12px" data-scadd="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Subchapter ergänzen" title="Subchapter ergänzen">＋Sub</button> <button class="ghost" data-edit="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Notiz">✎</button> ' +
+           '<td class="r rpc ' + cls(r.p) + '">' + Math.round(r.p) + ' %' + (r.kind === 'rep' ? '<div class="small" style="font-family:var(--sans)">(' + Math.round(r.raw) + ' %)</div>' : '') +
+           (r.delta === null ? '' : '<div class="rdl ' + (r.delta >= 0 ? 'good' : 'bad') + '">' + (r.delta >= 0 ? '▲ +' : '▼ −') + Math.abs(r.delta).toFixed(0) + '</div>') + '</td>' +
+           '<td class="r rbn" style="white-space:nowrap"><button class="ghost" style="padding:5px 7px;font-size:12px" data-scadd="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Subchapter ergänzen" title="Subchapter ergänzen">＋Sub</button> <button class="ghost" data-edit="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Notiz">✎</button> ' +
            '<button class="ghost" data-del="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Löschen">✕</button></td></tr>';
       var lnk = (s.sc || []).filter(function(x){ return x.r === r.e.t; });
-      if(lnk.length) h += '<tr class="nrow"><td colspan="6">' + lnk.map(function(x){ return '<span class="scchip">' + esc(x.c) + ' ' + (x.n ? Math.round(x.ok / x.n * 100) : 0) + ' % (' + fmt(x.ok) + '/' + fmt(x.n) + ')</span>'; }).join('') + '</td></tr>';
+      if(lnk.length) h += '<tr class="nrow"><td colspan="5">' + lnk.map(function(x){ return '<span class="scchip">' + esc(x.c) + ' ' + (x.n ? Math.round(x.ok / x.n * 100) : 0) + ' % (' + fmt(x.ok) + '/' + fmt(x.n) + ')</span>'; }).join('') + '</td></tr>';
       if(ed){
-        h += '<tr class="nrow"><td colspan="6"><div class="row" style="flex-wrap:nowrap"><input type="text" data-noteinput maxlength="300" placeholder="Notiz" value="' + escA(r.e.c || '') + '">' +
+        h += '<tr class="nrow"><td colspan="5"><div class="row" style="flex-wrap:nowrap"><input type="text" data-noteinput maxlength="300" placeholder="Notiz" value="' + escA(r.e.c || '') + '">' +
              '<button class="ghost" data-savenote="' + r.e.t + '" data-k="' + r.kind + '" data-s="' + i + '">OK</button>' +
              '<button class="ghost" data-cancelnote="1" data-k="' + r.kind + '" data-s="' + i + '" aria-label="Abbrechen">✕</button></div></td></tr>';
       }else if(r.e.c){
-        h += '<tr class="nrow"><td colspan="6">' + esc(r.e.c) + '</td></tr>';
+        h += '<tr class="nrow"><td colspan="5">' + esc(r.e.c) + '</td></tr>';
       }
     });
     return h + '</tbody></table>';
@@ -6797,6 +6803,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-40', items:[
+      {t:'Partnerkurse', x:'Der Admin eines Kurses kann ihn mit anderen Kursen verbinden (Kurscode des anderen Kurses, der dortige Admin nimmt an). Dann seht ihr gegenseitig die Mitglieder, könnt einzelnen Leuten eine Freundschaftsanfrage schicken und die Kurse unter „Kurse vergleichen“ als Ganzes gegenüberstellen. Der Push-Dienst muss dafür in der neuesten Version laufen.', notour:true},
+      {t:'Rivalen unter Freunden', x:'Sind zwei deiner Freunde untereinander Rivalen, tragen beide in der Rangliste dieselbe dezente Farbe und den Hinweis „Rivale von …“.', notour:true},
+      {t:'Anzeige verbessert', x:'Datumsfelder und die Berichtsliste werden auf schmalen Handys nicht mehr abgeschnitten.', notour:true}
+    ]},
     {v:'2026.10.13-39', items:[
       {t:'Kurse', x:'Oben neben Freunde und Account gibt es den Button „Kurs“. Erstelle einen Kurs und gib den Kurscode weiter: Wer beitritt, ist automatisch mit dem ganzen Kurs befreundet (bis 50 Personen). In der Rangliste steht der Kurs klein unter dem Namen, ein Filter zeigt nur einen Kurs. Dazu gibt es einen Kurs-Chat und im Lernzentrum bei „Teilen“ die Möglichkeit, ein Paket mit dem ganzen Kurs zu teilen oder gemeinsam zu bearbeiten. Der Ersteller ist Admin und kann die Rolle weitergeben. Der Push-Dienst muss dafür in der neuesten Version laufen.', tab:'home', sel:'#kuIcon', notour:true}
     ]},
@@ -8389,6 +8400,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       '.fhr.rv{background:linear-gradient(90deg,rgba(255,106,0,.18),rgba(255,40,60,.07) 60%,transparent);border-radius:12px;border-top-color:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,110,40,.6),0 0 14px rgba(255,90,20,.28);padding:8px;margin:3px -8px}.fhr.rv+.fhr{border-top-color:transparent}' +
       '.fhr.rv .rk{box-shadow:0 0 10px rgba(255,110,30,.75)}.fhr.rv .fhb i{background:linear-gradient(90deg,#ff3d4f,#ff9a1f)}' +
       '.fhrv{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 7px 1px 4px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(90deg,#ff3d4f,#ff9a1f);color:#fff;vertical-align:middle;line-height:1.5}' +
+      '.fhr[data-pc]{box-shadow:inset 3px 0 0 var(--pc)}.fhpr{display:inline-flex;align-items:center;gap:3px;margin-left:6px;font-size:10.5px;font-weight:700;color:var(--pc)}.fhpr svg{width:9px;height:11px}' +
       '.fhrv svg{width:11px;height:13px;transform-origin:50% 100%;animation:fhfl 1.1s ease-in-out infinite alternate}@keyframes fhfl{from{transform:scale(1,.9) rotate(-5deg)}to{transform:scale(1.1,1.12) rotate(5deg)}}@media (prefers-reduced-motion:reduce){.fhrv svg{animation:none}}' +
       '.fhfs .fhq{display:flex;gap:8px;margin:8px 0}.fhfs .fhq>div{flex:1;text-align:center;padding:8px 4px;border-radius:12px;background:var(--track)}.fhfs .fhq b{display:block;font-size:17px;font-variant-numeric:tabular-nums}.fhfs .fhq span{font-size:11px;color:var(--muted)}.fhfs .fhact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.fhfs .fhrvn{margin-top:6px}';
     document.head.appendChild(st);
@@ -8433,8 +8445,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     (S.friends || []).forEach(function(fr){
       var d = fr.data;
       if(!d) return;
-      out.push({name:fr.alias || d.name || fr.nm || 'Freund', cs:fr.cs, ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist});
+      out.push({name:fr.alias || d.name || fr.nm || 'Freund', cs:fr.cs, ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist, hh:rvH(fr.gist), rvg:(d.rv && d.rv.g) || null});
     });
+    fhPairs(out);
     return out;
   }
 
@@ -8466,8 +8479,30 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function fhFlame(){ return '<svg viewBox="0 0 12 16" aria-hidden="true"><path d="M6 .5C6.6 3 9.8 4.7 9.8 9a3.8 3.8 0 0 1-7.6 0c0-1.7.7-2.8 1.5-3.6.1 1 .6 1.6 1.2 1.8C4.6 4.6 5 2.4 6 .5z" fill="#fff"/><path d="M6 15a2 2 0 0 1-2-2c0-1.3 1.2-2 2-3.4C6.800 11 8 11.700 8 13a2 2 0 0 1-2 2z" fill="#ffd27a"/></svg>'; }
   function fhRivalG(){ try{ var R = rvGet(); return (R.cur && R.cur.ok) ? R.cur.g : null; }catch(e){ return null; } }
-  function fhRowAttr(e, rg){ return (e.me || !e.gist) ? '' : ' data-fhfr="' + escA(e.gist) + '" role="button" tabindex="0"'; }
-  function fhRvTag(e, rg){ return (rg && e.gist === rg) ? '<span class="fhrv">' + fhFlame() + 'Rivale</span>' : ''; }
+  /* Rivalen unter Freunden: jedes Paar bekommt eine eigene dezente Farbe */
+  var FH_PC = ['#ff8a3d', '#3ec1ff', '#b48cff', '#4fe38a', '#ffd23f', '#ff6fa8'];
+  function fhPairs(es){
+    var n = 0, done = {};
+    es.forEach(function(a){
+      if(a.me || !a.rvg || a.pc) return;
+      var b = es.filter(function(x){ return !x.me && x !== a && x.hh === a.rvg; })[0];
+      if(!b) return;
+      var c = FH_PC[n++ % FH_PC.length];
+      a.pc = c; a.pn = b.name; if(!b.pc){ b.pc = c; b.pn = a.name; }
+    });
+    es.forEach(function(a){
+      if(a.me || a.pc || !a.hh) return;
+      var b = es.filter(function(x){ return !x.me && x !== a && x.rvg === a.hh; })[0];
+      if(!b) return;
+      var c = b.pc || FH_PC[n++ % FH_PC.length];
+      a.pc = c; a.pn = b.name; if(!b.pc){ b.pc = c; b.pn = a.name; }
+    });
+  }
+  function fhRowAttr(e, rg){ return (e.me || !e.gist) ? '' : ' data-fhfr="' + escA(e.gist) + '" role="button" tabindex="0"' + (e.pc ? ' data-pc="1" style="--pc:' + e.pc + '"' : ''); }
+  function fhRvTag(e, rg){
+    if(rg && e.gist === rg) return '<span class="fhrv">' + fhFlame() + 'Rivale</span>';
+    return e.pc ? '<span class="fhpr" style="--pc:' + e.pc + '"><svg viewBox="0 0 12 16" aria-hidden="true"><path d="M6 .5C6.6 3 9.8 4.7 9.8 9a3.8 3.8 0 0 1-7.6 0c0-1.7.7-2.8 1.5-3.6.1 1 .6 1.6 1.2 1.8C4.6 4.6 5 2.4 6 .5z" fill="currentColor"/></svg>Rivale von ' + esc(e.pn) + '</span>' : '';
+  }
   function fhSub(e){
     if(e.me) return '';
     var a = [];
@@ -9521,7 +9556,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function kuClean(c){
     if(!c || typeof c !== 'object' || !/^[0-9a-f]{12}$/.test(String(c.id)) || !Array.isArray(c.m)) return null;
     return {id: c.id, n: frTxt(c.n, 40) || 'Kurs', ad: /^[0-9a-f]{20,40}$/.test(String(c.ad)) ? c.ad : '', code: /^KU-[0-9a-f]{10}$/.test(String(c.code)) ? c.code : '', max: Math.min(200, +c.max || 50), mu: !!c.mu,
-      m: c.m.filter(function(x){ return x && /^[0-9a-f]{20,40}$/.test(String(x.g)); }).slice(0, 200).map(function(x){ return {g: x.g, n: frTxt(x.n, 24) || 'Pilot'}; })};
+      m: c.m.filter(function(x){ return x && /^[0-9a-f]{20,40}$/.test(String(x.g)); }).slice(0, 200).map(function(x){ return {g: x.g, n: frTxt(x.n, 24) || 'Pilot'}; }),
+      al: (Array.isArray(c.al) ? c.al : []).filter(function(a){ return a && /^[0-9a-f]{12}$/.test(String(a.id)); }).slice(0, 5).map(function(a){ return {id: a.id, n: frTxt(a.n, 40) || 'Kurs', k: +a.k || 0, m: (Array.isArray(a.m) ? a.m : []).slice(0, 60).map(function(x){ return {i: +x.i || 0, n: frTxt(x.n, 24) || 'Pilot'}; })}; }),
+      rq: (Array.isArray(c.rq) ? c.rq : []).filter(function(a){ return a && /^[0-9a-f]{12}$/.test(String(a.id)); }).slice(0, 10).map(function(a){ return {id: a.id, n: frTxt(a.n, 40) || 'Kurs'}; }),
+      ro: (Array.isArray(c.ro) ? c.ro : []).filter(function(a){ return a && /^[0-9a-f]{12}$/.test(String(a.id)); }).slice(0, 10).map(function(a){ return {id: a.id, n: frTxt(a.n, 40) || 'Kurs'}; })};
   }
   function kuCall(path, body){
     var m = pushMe(); if(!m) return Promise.reject(new Error('Für Kurse brauchst du die Freigabe und den Push-Dienst (Account).'));
@@ -9586,7 +9624,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     kuBusy = true; kuLast = Date.now();
     return kuCall('get').then(function(r){
       var D = kuLoad(); D.list = ((r && r.courses) || []).map(kuClean).filter(Boolean); kuSave();
-      var ch = kuApplyFriends(); kuPackSync();
+      var ch = kuApplyFriends(); kuPackSync(); kuFq(); kuStat(false);
       if(ch){ save(); try{ if(typeof frHomeRender === 'function') frHomeRender(); if(frView && frView.ov.parentNode) frRender(); }catch(e){} setTimeout(function(){ try{ frPull(true); }catch(e){} }, 400); }
       else try{ if(typeof frHomeRender === 'function') frHomeRender(); }catch(e){}
     }, function(){}).then(function(){ kuBusy = false; kuDraw(); kuDot(); try{ chtRefreshUi(); }catch(e){} });
@@ -9622,6 +9660,24 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         (ad && x.g !== me ? '<button type="button" class="ghost" data-kua="adm" data-cid="' + c.id + '" data-g="' + escA(x.g) + '">Zum Admin machen</button><button type="button" class="ghost" data-kua="kick" data-cid="' + c.id + '" data-g="' + escA(x.g) + '">Entfernen</button>' : '') + '</div>';
     }).join('');
   }
+  function kuAllyHtml(c, ad){
+    var h = '<div class="kun" style="margin-top:12px"><h3>Partnerkurse</h3>';
+    if(!c.al.length && !c.rq.length && !c.ro.length) h += '<div class="small">' + (ad ? 'Verbinde deinen Kurs mit einem anderen Kurs: Ihr seht gegenseitig die Mitglieder, könnt Freundschaftsanfragen schicken und euch als Kurse vergleichen.' : 'Der Admin kann den Kurs mit anderen Kursen verbinden.') + '</div>';
+    c.al.forEach(function(a){
+      var open = !!kuExp['a' + c.id + a.id];
+      h += '<div class="kum" style="display:block"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="nm" style="flex:1;min-width:0"><b>' + esc(a.n) + '</b><span class="small"> · ' + a.k + ' Mitglieder</span></span>' +
+        '<button type="button" class="ghost" data-kua="amem" data-cid="' + c.id + '" data-o="' + a.id + '">' + (open ? 'Ausblenden' : 'Mitglieder') + '</button>' +
+        (ad ? '<button type="button" class="ghost" data-kua="aend" data-cid="' + c.id + '" data-o="' + a.id + '">Trennen</button>' : '') + '</div>' +
+        (open ? '<div style="margin-top:6px">' + a.m.map(function(x){ return '<div class="kum"><span class="nm">' + esc(x.n) + '</span><button type="button" class="ghost" data-kua="freq" data-cid="' + c.id + '" data-o="' + a.id + '" data-i="' + x.i + '" data-tn="' + escA(x.n) + '">Freundschaftsanfrage</button></div>'; }).join('') + '</div>' : '') + '</div>';
+    });
+    if(c.al.length) h += '<div class="kuact"><button type="button" data-kua="cmp" data-cid="' + c.id + '">Kurse vergleichen</button></div>';
+    if(ad){
+      c.rq.forEach(function(q){ h += '<div class="kum"><span class="nm"><b>' + esc(q.n) + '</b> möchte sich mit deinem Kurs verbinden</span><button type="button" data-kua="aok" data-cid="' + c.id + '" data-o="' + q.id + '">Annehmen</button><button type="button" class="ghost" data-kua="ano" data-cid="' + c.id + '" data-o="' + q.id + '">Ablehnen</button></div>'; });
+      c.ro.forEach(function(q){ h += '<div class="small" style="margin-top:6px">Anfrage an ' + esc(q.n) + ' gesendet. Der dortige Admin muss sie annehmen.</div>'; });
+      h += '<div class="row" style="margin-top:8px"><input type="text" data-kuali="' + c.id + '" placeholder="Kurscode des Partnerkurses" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"><button type="button" data-kua="ally" data-cid="' + c.id + '">Anfragen</button></div>';
+    }
+    return h + '</div>';
+  }
   function kuHtml(){
     var h = '<div class="shead"><h2>Kurs</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>';
     if(!kuOk()){
@@ -9639,6 +9695,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         (open ? '<div style="margin-top:8px">' + kuMembersHtml(c) + '</div>' : '') +
         '<div class="small" style="margin-top:10px">Kurscode zum Einladen</div><div class="kucode">' + esc(c.code) + '</div>' +
         '<div class="kuact"><button type="button" class="ghost" data-kua="copy" data-cid="' + c.id + '">Code kopieren</button><button type="button" class="ghost" data-kua="link" data-cid="' + c.id + '">Link kopieren</button>' + (ad ? '<button type="button" class="ghost" data-kua="renew" data-cid="' + c.id + '">Code erneuern</button><button type="button" class="ghost" data-kua="ren" data-cid="' + c.id + '">Umbenennen</button>' : '') + '</div>' +
+        kuAllyHtml(c, ad) +
         '<label class="tg" style="margin-top:8px"><span>Push bei neuen Kurs-Nachrichten</span><input type="checkbox" class="sw" data-kumu="' + c.id + '"' + (c.mu ? '' : ' checked') + '></label>' +
         '<div class="kuact"><button type="button" class="ghost" data-kua="leave" data-cid="' + c.id + '">Kurs verlassen</button></div>' +
         (ad ? '<div class="small" style="margin-top:6px">Du bist Admin: Du kannst Mitglieder entfernen, den Code erneuern und den Admin-Status weitergeben. Bevor du den Kurs verlässt, gib ihn weiter.</div>' : '') + '</div>';
@@ -9651,8 +9708,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function kuDraw(){
     var v = kuView; if(!v || !v.ov.parentNode) return;
     var sh = v.ov.querySelector('.sheet'); if(!sh) return;
-    var nm = sh.querySelector('#kuName'), cd = sh.querySelector('#kuCode'), a = nm ? nm.value : '', b = cd ? cd.value : '';
+    var nm = sh.querySelector('#kuName'), cd = sh.querySelector('#kuCode'), a = nm ? nm.value : '', b = cd ? cd.value : '', al = {};
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-kuali]'), function(e){ al[e.getAttribute('data-kuali')] = e.value; });
     sh.innerHTML = kuHtml();
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-kuali]'), function(e){ var v = al[e.getAttribute('data-kuali')]; if(v) e.value = v; });
     if(sh.querySelector('#kuName')) sh.querySelector('#kuName').value = a;
     if(cd && sh.querySelector('#kuCode')) sh.querySelector('#kuCode').value = b;
   }
@@ -9700,6 +9759,24 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       }else if(a === 'kick' && c){
         if(!arm('Entfernen')) return;
         kuCall('kick', {cid: cid, g: t.getAttribute('data-g')}).then(function(){ return kuAfter('Mitglied entfernt.'); }, fail);
+      }else if(a === 'amem' && c){ var ko = 'a' + cid + t.getAttribute('data-o'); kuExp[ko] = !kuExp[ko]; kuDraw();
+      }else if(a === 'ally' && c){
+        var ai = ov.querySelector('[data-kuali="' + cid + '"]'), ac = ai ? (ai.value || '').trim() : '';
+        if(!ac){ kuSay('Füge den Kurscode des anderen Kurses ein.'); return; }
+        kuSay('Sende Anfrage …');
+        kuCall('ally', {cid: cid, code: ac}).then(function(rs){ if(ai) ai.value = ''; return kuAfter(rs && rs.linked ? 'Die Kurse sind jetzt verbunden.' : 'Anfrage an ' + ((rs && rs.n) || 'den Kurs') + ' gesendet. Der dortige Admin muss sie annehmen.'); }, fail);
+      }else if(a === 'aok' && c){ kuCall('allyok', {cid: cid, from: t.getAttribute('data-o')}).then(function(){ return kuAfter('Die Kurse sind jetzt verbunden.'); }, fail);
+      }else if(a === 'ano' && c){ kuCall('allyno', {cid: cid, from: t.getAttribute('data-o')}).then(function(){ return kuAfter('Anfrage abgelehnt.'); }, fail);
+      }else if(a === 'aend' && c){
+        if(!arm('Trennen')) return;
+        kuCall('allyend', {cid: cid, other: t.getAttribute('data-o')}).then(function(){ return kuAfter('Die Verbindung zum Partnerkurs ist beendet.'); }, fail);
+      }else if(a === 'freq' && c){
+        var tn = t.getAttribute('data-tn');
+        kuCall('freq', {cid: cid, ally: t.getAttribute('data-o'), i: +t.getAttribute('data-i'), tn: tn}).then(function(rs){
+          var D2 = kuLoad(); D2.fq = (D2.fq || []).filter(function(x){ return x.tn !== tn; }); D2.fq.push({tn: tn, t: Date.now()}); kuSave();
+          kuSay(rs && rs.linked ? 'Ihr seid jetzt verbunden.' : 'Freundschaftsanfrage an ' + tn + ' gesendet. Nach der Annahme erscheint er bei deinen Freunden.');
+        }, fail);
+      }else if(a === 'cmp' && c){ kuCmpOpen(cid);
       }else if(a === 'leave' && c){
         if(!arm('Kurs verlassen')) return;
         kuCall('leave', {cid: cid}).then(function(){
@@ -9762,6 +9839,70 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   setInterval(function(){ if(!document.hidden && kuOk()) kuRefresh(false); }, 5 * 60000);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && kuOk()) setTimeout(function(){ kuRefresh(false); }, 800); });
   setTimeout(function(){ if(kuOk()) kuRefresh(true); }, 4200);
+
+  /* Kursstatistik: nur wenn Stand freigegeben ist; der Server rechnet Durchschnitte, ohne einzelne Werte zu zeigen */
+  function kuStat(force){
+    try{
+      var D = kuLoad(), c0 = frCfg(); if(!D.list.length || !kuOk()) return;
+      if(c0.optout || !c0.gist || !c0.f || !c0.f.stand) return;
+      if(!force && Date.now() - (D.sp || 0) < 90 * 60000) return;
+      var me = fhEntries()[0]; if(!me || typeof me.stand !== 'number') return;
+      var key = JSON.stringify([me.stand, me.tempo, me.heute, me.woche, me.monat]);
+      if(!force && D.sk === key && Date.now() - (D.sp || 0) < 5 * 3600000) return;
+      D.sp = Date.now(); D.sk = key; kuSave();
+      D.list.forEach(function(c){ kuCall('stat', {cid: c.id, st: me.stand, tp: me.tempo || 0, he: me.heute || 0, wo: me.woche || 0, mo: me.monat || 0, hd: iso(new Date())}).catch(function(){}); });
+    }catch(e){}
+  }
+  /* Freundschaftsanfragen an Mitglieder von Partnerkursen: nach der Annahme erscheint die Person bei den Freunden */
+  function kuFq(){
+    try{
+      var D = kuLoad(); if(!D.fq || !D.fq.length || typeof pushLk === 'undefined') return;
+      D.fq = D.fq.filter(function(x){ return Date.now() - x.t < 30 * 86400000; });
+      var blocked = (pushSt && pushSt.blocked) || [];
+      Object.keys(pushLk).forEach(function(g){
+        if(!pushLk[g] || blocked.indexOf(g) >= 0 || (S.friends || []).some(function(f){ return f.gist === g; }) || !D.fq.length) return;
+        frFetchShare(g).then(function(d){
+          var i = -1; D.fq.forEach(function(x, k){ if(i < 0 && String(d.name || '').toLowerCase() === x.tn.toLowerCase()) i = k; });
+          if(i < 0 || (S.friends || []).some(function(f){ return f.gist === g; })) return;
+          D.fq.splice(i, 1); kuSave();
+          S.friends.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gist: g, alias: '', data: d, last: Date.now(), bseen: d.badges ? d.badges.map(function(x){ return x.id; }) : undefined});
+          save(); try{ frHomeRender(); if(frView && frView.ov.parentNode) frRender(); }catch(e){}
+        }, function(){});
+      });
+      kuSave();
+    }catch(e){}
+  }
+  /* Kursvergleich */
+  var kuCmpV = null, kuCmpM = 'st', kuCmpD = null, kuCmpC = '';
+  var KU_MET = [['st', 'Gesamt'], ['tp', 'Tempo'], ['he', 'Heute'], ['wo', 'Woche'], ['mo', 'Monat']];
+  function kuCmpHtml(){
+    var h = '<div class="shead"><h2>Kurse vergleichen</h2><button class="ghost" data-sx="1" aria-label="Schließen">✕</button></div>';
+    h += '<div class="seg" style="margin:6px 0" role="group" aria-label="Wertung">' + KU_MET.map(function(m){ return '<button type="button" data-kcm="' + m[0] + '" class="' + (kuCmpM === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
+    if(!kuCmpD) return h + '<div class="small" style="margin:10px 0">Lade …</div>';
+    if(kuCmpD === 'err') return h + '<div class="small" style="margin:10px 0">Das hat nicht geklappt. Bist du online?</div>';
+    var rows = kuCmpD.map(function(c){ return {c: c, v: c.a ? c[kuCmpM] / c.a : null}; });
+    var ok = rows.filter(function(x){ return x.v !== null; }).sort(function(a, b){ return b.v - a.v; }), none = rows.filter(function(x){ return x.v === null; });
+    var mx = Math.max.apply(null, ok.map(function(x){ return x.v; }).concat([1])), unit = {st: 'Fragen im Schnitt', tp: 'pro Tag im Schnitt', he: 'heute im Schnitt', wo: 'diese Woche im Schnitt', mo: 'diesen Monat im Schnitt'}[kuCmpM];
+    ok.concat(none).forEach(function(x, i){
+      var c = x.c, me = c.id === kuCmpC;
+      h += '<div class="fhr' + (me ? ' me' : '') + '"><span class="rk r' + (x.v !== null && i < 3 ? i + 1 : 0) + '">' + (x.v !== null ? i + 1 : '–') + '</span><span class="nm">' + esc(c.n) + (me ? ' (dein Kurs)' : '') + '<small class="fhseen">' + c.a + ' von ' + c.k + ' Mitgliedern aktiv · Summe ' + fmt(Math.round(c[kuCmpM])) + '</small></span><span class="v"><b>' + (x.v !== null ? fmt(Math.round(x.v)) : '–') + '</b><small>' + unit + '</small></span>' +
+        (x.v !== null ? '<span class="fhb"><i style="width:' + Math.max(2, Math.round(x.v / mx * 100)) + '%"></i></span>' : '') + '</div>';
+    });
+    return h + '<div class="small" style="margin-top:12px">Gewertet wird der Durchschnitt pro aktivem Mitglied, damit große und kleine Kurse fair verglichen werden. Es zählt, wer seinen Stand freigibt und in den letzten 14 Tagen die App geöffnet hat. Die Werte werden alle paar Stunden aktualisiert.</div>';
+  }
+  function kuCmpDraw(){ if(kuCmpV && kuCmpV.ov.parentNode){ var sh = kuCmpV.ov.querySelector('.sheet'); if(sh) sh.innerHTML = kuCmpHtml(); } }
+  function kuCmpOpen(cid){
+    kuCmpC = cid; kuCmpD = null; kuCmpM = 'st';
+    kuStat(true);
+    kuCmpV = openSheet(kuCmpHtml());
+    kuCmpV.ov.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('[data-kcm]') : null;
+      if(b){ kuCmpM = b.getAttribute('data-kcm'); kuCmpDraw(); }
+    });
+    setTimeout(function(){
+      kuCall('cmp', {cid: cid, td: iso(new Date())}).then(function(r){ kuCmpD = (r && r.courses) || []; kuCmpDraw(); }, function(){ kuCmpD = 'err'; kuCmpDraw(); });
+    }, 700);
+  }
   /* ---------- Eigener Claude-API-Schlüssel (nur GitHub-Version) ---------- */
   var AIK_KEY = KEY + '-aik', AIK_MODEL = KEY + '-aimodel';
   var AIK_MODELS = [['claude-sonnet-5-5', 'Sonnet 5.5 (Standard)'], ['claude-haiku-5-5', 'Haiku 5.5 (günstiger, schneller)'], ['claude-opus-5-5', 'Opus 5.5 (stärker, teurer)']];

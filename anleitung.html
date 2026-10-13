@@ -161,7 +161,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <li>Tippe oben auf <b>Freunde</b> und aktiviere deine <b>Freigabe</b>. Du bekommst einen Code, der mit <code>SF-</code> beginnt.</li>
 <li>Wähle, was Freunde sehen dürfen: Gesamtstand, Tempo, Score, Fächer, Verlauf, Abzeichen, PAPI.</li>
 <li>Schick deinen Code an Freunde. Trag den Code eines Freundes bei dir ein.</li>
-<li>Es gibt zwei Ansichten: die <b>Liste</b> mit Detailvergleich und die <b>Rangliste</b> (Heute, Woche, Monat, Gesamt, Tempo). Das Liniendiagramm darunter folgt dem Filter: bei „Heute“ siehst du die letzten 7 Tage, bei „Woche“ und „Monat“ den jeweiligen Zeitraum.</li><li>Tippst du in der Rangliste auf einen Freund, öffnet sich sein Menü: <b>herausfordern</b>, <b>Nachricht schreiben</b> oder die <b>Benachrichtigungen</b> für genau diesen Freund einstellen. Dein Rivale ist in der Liste mit Feuer hervorgehoben.</li>
+<li>Es gibt zwei Ansichten: die <b>Liste</b> mit Detailvergleich und die <b>Rangliste</b> (Heute, Woche, Monat, Gesamt, Tempo). Das Liniendiagramm darunter folgt dem Filter: bei „Heute“ siehst du die letzten 7 Tage, bei „Woche“ und „Monat“ den jeweiligen Zeitraum.</li><li>Tippst du in der Rangliste auf einen Freund, öffnet sich sein Menü: <b>herausfordern</b>, <b>Nachricht schreiben</b> oder die <b>Benachrichtigungen</b> für genau diesen Freund einstellen. Dein Rivale ist in der Liste mit Feuer hervorgehoben. Sind zwei deiner Freunde untereinander Rivalen, haben beide denselben dezenten Farbbalken und den Hinweis „Rivale von …“, jedes Paar in einer eigenen Farbe.</li>
 <li>Für <b>Push-Meldungen</b> unter Freunden (zum Beispiel „Max hat dich überholt“) tippst du bei einem Freund auf <b>Anfrage senden</b>. Er muss sie annehmen.</li>
 </ol>
 <div class="note"><b>Zuletzt online</b>Bei jedem Freund steht, wann er die App zuletzt geöffnet hat. Das PAPI wird tagesaktuell berechnet: Wer heute noch nicht geklickt hat, zeigt rot, auch wenn er die App nicht geöffnet hat.</div>
@@ -224,6 +224,20 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <li><b>Beenden:</b> Der Kurs bekommt keine Updates mehr. Bereits angenommene Kopien bleiben bei den Mitgliedern.</li>
 </ul>
 <p>Mitglieder, die später beitreten, bekommen das Paket ebenfalls angeboten. Wer den Kurs verlässt, bekommt keine Updates mehr. Jeder Teilnehmer wird beim Öffnen des Lernzentrums gefragt, ob er das Paket annehmen möchte.</p>
+<h3>Partnerkurse und Kursvergleich</h3>
+<p>Der Admin kann seinen Kurs mit anderen Kursen verbinden, zum Beispiel mit dem Parallelkurs.</p>
+<ol class="steps">
+<li>Im Kursfenster findest du beim Kurs den Abschnitt <b>Partnerkurse</b>. Trag den <b>Kurscode des anderen Kurses</b> ein und tippe auf <b>Anfragen</b>.</li>
+<li>Der Admin des anderen Kurses sieht die Anfrage in seinem Kursfenster und tippt auf <b>Annehmen</b> (oder <b>Ablehnen</b>). Fragen beide Admins gleichzeitig an, sind die Kurse sofort verbunden.</li>
+<li>Ab jetzt sehen alle Mitglieder beider Kurse die <b>Namen</b> des Partnerkurses (Tippe auf <b>Mitglieder</b>). Bei einzelnen Leuten schickst du eine <b>Freundschaftsanfrage</b>. Nimmt die Person an, erscheint sie bei deinen Freunden.</li>
+<li>Mit <b>Kurse vergleichen</b> stellst du die Kurse als Ganzes gegenüber: <b>Gesamt</b>, <b>Tempo</b>, <b>Heute</b>, <b>Woche</b> und <b>Monat</b>, jeweils als Durchschnitt pro aktivem Mitglied, damit große und kleine Kurse fair verglichen werden.</li>
+<li>Der Admin kann die Verbindung jederzeit mit <b>Trennen</b> beenden. Das geht auch vom Partnerkurs aus.</li>
+</ol>
+<ul>
+<li>Partnerkurse sehen <b>keine Freundescodes und keine Daten</b> einzelner Mitglieder. Für den Vergleich schickt deine App nur Zahlen (Stand, Tempo, Heute, Woche, Monat), und der Server rechnet Durchschnitte. Das geschieht nur, wenn du deinen Stand freigibst.</li>
+<li>Es zählen Mitglieder, die in den letzten 14 Tagen die App geöffnet haben. Die Werte werden alle paar Stunden aktualisiert.</li>
+<li>Ein Kurs kann mit bis zu 5 Kursen verbunden sein.</li>
+</ul>
 <h3>Admin und Verwaltung</h3>
 <ul>
 <li>Wer den Kurs erstellt, ist <b>Admin</b>. Im Kursfenster (<b>Mitglieder</b>) kannst du jedem anderen mit <b>Zum Admin machen</b> die Rolle weitergeben. Es gibt immer genau einen Admin.</li>
@@ -359,6 +373,8 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <tr><td>Freund erscheint „Nicht verbunden“</td><td>Das betrifft nur Push. Tippe auf <b>Anfrage senden</b>, der Freund muss annehmen.</td></tr>
 <tr><td>Das Kursfenster verlangt Freigabe und Push-Dienst</td><td>Kurse brauchen die Freigabe (Freunde) und die Verbindung zum Push-Dienst. Beides im Account einrichten, Push-Dienst in der neuesten Version.</td></tr>
 <tr><td>Kurs erstellen oder beitreten klappt nicht</td><td>Prüfe die Verbindung. Der Kurscode muss vollständig sein (<code>KU-</code> und zehn Zeichen). Ist der Kurs voll (50) oder hast du schon 3 Kurse, steht das als Meldung im Kursfenster. Bitte den Admin um einen neuen Code.</td></tr>
+<tr><td>Partnerkurs-Anfrage kommt nicht an</td><td>Nur der Admin kann anfragen und annehmen. Der Kurscode muss der aktuelle des anderen Kurses sein (der Admin kann ihn erneuern). Öffne nach dem Senden das Kursfenster, dann wird aktualisiert.</td></tr>
+<tr><td>Im Kursvergleich fehlen Mitglieder</td><td>Es zählen nur Mitglieder, die ihren Stand freigeben (Account, Freunde und Freigabe) und in den letzten 14 Tagen die App geöffnet haben.</td></tr>
 <tr><td>Neues Kursmitglied fehlt in der Rangliste</td><td>Die Kursliste wird alle paar Minuten abgeglichen. Öffne das Kursfenster, dann wird sofort aktualisiert.</td></tr>
 <tr><td>Kurspaket erscheint nicht</td><td>Öffne das Lernzentrum, die Frage zur Annahme kommt dort. Der Besitzer muss die Freigabe aktiv haben (Account) und das Paket mit dem Kurs teilen.</td></tr>
 <tr><td>KI antwortet nicht</td><td>Schlüssel unter „KI-Anbindung“ mit <b>Testen</b> prüfen. Häufige Ursachen: Guthaben leer oder Ausgabenlimit erreicht.</td></tr>

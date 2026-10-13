@@ -1576,7 +1576,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     }
     if(!Array.isArray(s.gen)) s.gen = [];
     if(!Array.isArray(s.sc)) s.sc = [];
+    if(!Array.isArray(s.cl)) s.cl = [];
     if(!Array.isArray(s.chap)) s.chap = [];
+    scSeed(id, s);
     if(!Array.isArray(s.sim)){
       var so = s.sim, sa = [];
       if(so && typeof so === 'object' && nn(so.n) !== null && so.n > 0 && nn(so.ok) !== null) sa.push({d:today, t:newT(), n:so.n, ok:so.ok});
@@ -1730,6 +1732,15 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function arrOf(s, k){ return k === 'rep' ? s.rep : (k === 'last' ? s.last : (k === 'gen' ? s.gen : s.sim)); }
   /* ---------- Subchapter: Anzahl und Ergebnis je Fach ---------- */
   function scKey(n){ return String(n || '').trim().toLowerCase(); }
+  /* Standard-Subchapter je Fach (EASA 2020); jeder kann eigene dazu anlegen oder Standardnamen löschen */
+  var SC_DEF = {"airlaw": ["010-01 - International Law", "010-02 - Airworthiness and Registration", "010-04 - Personnel Licensing", "010-05 - Rules of the Air", "010-06 - Aircraft Operations", "010-07 - Air Traffic Services (ATS/ATM)", "010-08 - Aeronautical Information (AIS)", "010-09 - Aerodromes", "010-10 - Facilitation (ICAO Annex 9)", "010-11 - Search and Rescue (SAR)", "010-12 - Security", "010-13 - Accident/Incident Investigation"], "airframe": ["021-01 - System Design, Loads, Stresses", "021-02 - Airframe", "021-03 - Hydraulics", "021-04 - Landing Gear, Tyres, Brakes", "021-05 - Flight Controls", "021-06 - Pneumatics, Pressurisation, A/C", "021-07 - Anti-icing and De-icing", "021-08 - Fuel System", "021-09 - Electrics", "021-10 - Piston Engines", "021-11 - Turbine Engines", "021-12 - Protection and Detection", "021-13 - Oxygen Systems"], "instr": ["022-01 - Sensors and Instruments", "022-02 - Air Data Parameters", "022-03 - Magnetism, Compass, Flux Valve", "022-04 - Gyroscopic Instruments", "022-05 - Inertial Navigation", "022-06 - Automatic Flight Control", "022-08 - Trims, Yaw Damper, Protection", "022-09 - Autothrust", "022-10 - Communication Systems", "022-11 - FMS/FMGS", "022-12 - Alerting, Proximity Systems", "022-13 - Integrated Instr., Displays", "022-14 - Maintenance, Recording", "022-15 - Digital Circuits, Computers"], "mb": ["031-01 - Purpose of Mass and Balance", "031-02 - Loading", "031-04 - Mass and Balance Details", "031-05 - Determination of CG Position", "031-06 - Cargo Handling"], "perf": ["032-01 - General", "032-02 - CS-23 Class B (1)", "032-03 - CS-23 Class B (2)", "032-04 - CS-25 Class A (1)", "032-05 - CS-25 Class A (2)"], "fpm": ["033-01 - Flight Planning VFR", "033-02 - Flight Planning IFR", "033-03 - Fuel Planning", "033-04 - Pre-Flight Preparation", "033-05 - ICAO Flight Plan (FPL)", "033-06 - Monitoring and Re-planning"], "hpl": ["040-01 - Human Factors: Basic Concepts", "040-02 - Aviation Physiology and Health", "040-03 - Basic Aviation Psychology"], "met": ["050-01 - The Atmosphere", "050-02 - Wind", "050-03 - Thermodynamics", "050-04 - Clouds and Fog", "050-05 - Precipitation", "050-06 - Air Masses and Fronts", "050-07 - Pressure Systems", "050-08 - Climatology", "050-09 - Flight Hazards", "050-10 - Meteorological Information"], "gnav": ["061-01 - Basics of Navigation", "061-02 - VFR Navigation", "061-03 - Great Circles and Rhumb Lines", "061-04 - Charts", "061-05 - Time"], "rnav": ["062-01 - Radio Propagation Theory", "062-02 - Radio Aids", "062-03 - Radar", "062-06 - GNSS", "062-07 - Performance Based Navigation"], "opproc": ["071-01 - General Requirements", "071-02 - Special Operational Procedures", "071-04 - Specialised Operations"], "pof": ["081-01 - Subsonic Aerodynamics", "081-02 - High Speed Aerodynamics", "081-03 - Stall, Mach Tuck, Upset", "081-04 - Stability", "081-05 - Control", "081-06 - Limitations", "081-07 - Propellers", "081-08 - Flight Mechanics"], "comm": ["090-01 - Concepts", "090-02 - General Operating Procedures", "090-03 - Relevant Weather Information", "090-04 - Voice Communication Failure", "090-05 - Distress and Urgency Procedures", "090-06 - VHF Propagation, Frequencies", "090-07 - Other Communications"]};
+  function scSeed(id, s){
+    if(s.chapV === 1) return;
+    s.chapV = 1;
+    var have = {}, cd = function(n){ var m = /^\s*(\d{3}-\d{2})/.exec(String(n || '')); return m ? m[1] : ''; };
+    (s.chap || []).concat((s.sc || []).map(function(e){ return e.c; })).forEach(function(n){ var c = cd(n); if(c) have[c] = 1; });
+    (SC_DEF[id] || []).forEach(function(n){ if(!have[cd(n)] && !(s.chap || []).some(function(c){ return scKey(c) === scKey(n); })) s.chap.push(n); });
+  }
   function scAgg(s){
     var m = {}, out = [];
     (s.sc || []).forEach(function(e){
@@ -1844,7 +1855,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       rows.forEach(function(x){ seen[scKey(x.name)] = 1; });
       scNames(s).forEach(function(nm){ if(!seen[scKey(nm)]){ seen[scKey(nm)] = 1; rows.push({name:nm, n:0, ok:0, p:null}); } });
       tot += rows.length;
-      var open = smg.open[i] !== undefined ? smg.open[i] : rows.length > 0;
+      var open = smg.open[i] !== undefined ? smg.open[i] : agg.length > 0;
       h += '<details class="card smg" data-smd="' + i + '"' + (open ? ' open' : '') + '><summary><span>' + esc(sj.name) + '</span><small>' + (rows.length ? rows.length + ' Subchapter' : 'keine') + '</small></summary><div style="margin-top:6px">';
       rows.forEach(function(x){
         var ed = smg.edit && smg.edit.i === i && smg.edit.k === scKey(x.name);
@@ -1922,10 +1933,12 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function reportsHTML(i, s){
     var all = [];
     ['rep', 'last', 'sim', 'gen'].forEach(function(kind){ arrOf(s, kind).forEach(function(e){ all.push({kind:kind, e:e}); }); });
+    (s.cl || []).forEach(function(e){ all.push({kind:'click', e:e}); });
     all.sort(function(a, b){ return cmpE(a.e, b.e); });
     var prev = {}, rows = [];
     all.forEach(function(x){
       var e = x.e, kind = x.kind, n = kind === 'last' ? e.x : e.n;
+      if(kind === 'click'){ rows.push({kind:'click', e:e, n:n, p:(e.ok === undefined || !(n > 0)) ? null : e.ok / n * 100, raw:0, delta:null}); return; }
       var p = n > 0 ? e.ok / n * 100 : 0, raw = p;
       if(kind === 'rep') p = repBoost(raw);
       var key = kind === 'last' ? 'l' + e.x : kind;
@@ -1933,13 +1946,17 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       prev[key] = p;
       rows.push({kind:kind, e:e, n:n, p:p, raw:raw, delta:delta});
     });
-    rows.reverse();
+    rows.sort(function(a, b){ return cmpE(b.e, a.e); });
     if(!rows.length) return '<div class="small">Noch keine Berichte.</div>';
     var rx = rlx[i] || (rlx[i] = {all:false, open:{}}), hidN = 0;
     if(!rx.all && rows.length > RL_SHOW){ hidN = rows.length - RL_SHOW; rows = rows.slice(0, RL_SHOW); }
     var h = '<table><tbody>';
     rows.forEach(function(r){
       var ed = !!(editNote && editNote.i === i && editNote.k === r.kind && editNote.t === r.e.t);
+      if(r.kind === 'click'){
+        h += '<tr><td>' + fd(parse(r.e.d)) + '</td><td class="small">Neu geklickt</td><td class="r">' + (r.e.ok === undefined ? fmt(r.n) + ' Fr.' : fmt(r.e.ok) + '/' + fmt(r.n)) + '</td><td class="r rpc ' + (r.p === null ? 'small' : cls(r.p)) + '">' + (r.p === null ? '–' : Math.round(r.p) + ' %') + '</td><td class="r rbn small" title="Zählt zur Durchgeklickt-Quote, nicht als Bericht">Quote</td></tr>';
+        return;
+      }
       var lab = r.kind === 'last' ? 'Last ' + r.e.x : CATSHORT[r.kind];
       h += '<tr' + ((r.e.c || ed) ? ' class="hasn"' : '') + '><td>' + fd(parse(r.e.d)) + '</td><td class="small">' + lab + '</td>' +
            '<td class="r">' + fmt(r.e.ok) + '/' + fmt(r.n) + '</td>' +
@@ -4801,6 +4818,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         if(nn(q.clicked) !== null){ q.clicked = Math.max(0, q.clicked - op.dc); if(op.nullC && q.clicked <= 0) q.clicked = null; }
         if(op.dw && nn(q.wrong) !== null){ q.wrong = Math.max(0, q.wrong - op.dw); if(op.nullW && q.wrong <= 0) q.wrong = null; }
         if(op.dt && nn(q.todo) !== null) q.todo += op.dt;
+        if(op.cl) q.cl = (q.cl || []).filter(function(x){ return x.t !== op.cl; });
       }
     });
   }
@@ -4894,7 +4912,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       Array.prototype.forEach.call(g('aqCats').children, function(x){ x.classList.toggle('on', x.getAttribute('data-aqcat') === cat); });
       if(isLast){ nEl.value = cat.slice(1); nEl.disabled = true; }
       else{ if(nEl.disabled) nEl.value = ''; nEl.disabled = false; }
-      var hint = cat === 'click' ? 'Fragen, die du zum ersten Mal geklickt hast: Die Anzahl wird bei „Noch offen“ des Fachs abgezogen und zu „Geklickt“ (und bei Ergebnis zu „Falsch“) addiert.' : (CATHINT[cat] || ('Die letzten ' + cat.slice(1) + ' Prüfungsfragen des Fachs. Je größer der Umfang, desto höher das Gewicht.'));
+      var hint = cat === 'click' ? 'Fragen, die du zum ersten Mal geklickt hast: Die Anzahl wird bei „Noch offen“ des Fachs abgezogen und zu „Geklickt“ (und bei Ergebnis zu „Falsch“) addiert. Das Ergebnis fließt in die Durchgeklickt-Quote ein und erscheint als Zeile in der Berichtsliste, zählt aber nicht als Bericht für die Gewichtung.' : (CATHINT[cat] || ('Die letzten ' + cat.slice(1) + ' Prüfungsfragen des Fachs. Je größer der Umfang, desto höher das Gewicht.'));
       g('aqCatHint').textContent = hint;
       g('aqQl').textContent = cat === 'click' ? 'Wie viele davon richtig? (optional)' : 'Ergebnis (Pflicht für Berichte)';
       g('aqT').checked = (cat === 'click') || st === 'open';
@@ -4982,7 +5000,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         if(rs){ dw = rs.wrong; s.wrong = (pw || 0) + dw; }
         var dt = 0;
         if(pt !== null){ dt = Math.min(pt, n); s.todo = pt - dt; }
-        ops.push({k:'sub', id:sj.id, dc:n, dw:dw, dt:dt, nullC:pc === null, nullW:pw === null});
+        var clRec = {d:d, t:newT(), n:n}; if(rs) clRec.ok = rs.ok;
+        s.cl.push(clRec);
+        ops.push({k:'sub', id:sj.id, dc:n, dw:dw, dt:dt, nullC:pc === null, nullW:pw === null, cl:clRec.t});
         title += sj.name + ' +' + fmt(n) + (rs ? ' (' + Math.round(rs.ok / n * 100) + ' % richtig)' : '');
       }else{
         title += 'ohne Fach +' + fmt(n);
@@ -6912,6 +6932,12 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-44', items:[
+      {t:'Standard-Subchapter', x:'Alle Fächer haben jetzt die Subchapter des EASA-Lehrplans schon eingetragen (zum Beispiel „010-05 - Rules of the Air“). Du siehst sie im Reiter „Subchapter“ und als Auswahl beim Eintragen. Eigene kannst du jederzeit ergänzen, Standardnamen lassen sich umbenennen oder löschen. Bereits vorhandene eigene Subchapter mit gleicher Nummer bleiben unverändert.', notour:true}
+    ]},
+    {v:'2026.10.13-43', items:[
+      {t:'Neu geklickt in der Berichtsliste', x:'Jede Runde „Neue Fragen geklickt“ erscheint jetzt mit Datum, Anzahl und Ergebnis als Zeile in der Berichtsliste des Fachs. Der Score ändert sich dadurch nicht, das Ergebnis zählt weiter zur Durchgeklickt-Quote.', notour:true}
+    ]},
     {v:'2026.10.13-42', items:[
       {t:'Subchapter auswählen', x:'Beim Eintragen siehst du deine vorhandenen Subchapter des Fachs als Knöpfe. Antippen genügt, dann nur noch Anzahl und Ergebnis eintragen.', notour:true},
       {t:'Berichtsliste übersichtlicher', x:'Pro Fach zeigt die Liste die neuesten 5 Berichte, ältere lassen sich einblenden. Die Subchapter eines Berichts sind eingeklappt (mit den schwächsten in der Zeile), lange Notizen auf zwei Zeilen gekürzt und per Antippen komplett lesbar.', notour:true}

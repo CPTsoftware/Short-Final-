@@ -56,7 +56,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <a class="cta" href="https://cptsoftware.github.io/Short-Final-/">App öffnen →</a>
 </header>
 <nav class="toc" aria-label="Inhalt">
-<a href="#schnell">Schnellstart</a><a href="#start">Überblick</a><a href="#install">Installieren</a><a href="#ziel">Ziel</a><a href="#sync">Sync</a><a href="#freunde">Freunde &amp; Chat</a><a href="#push">Push</a><a href="#ki">KI</a><a href="#lernen">Lernzentrum</a><a href="#look">Design</a><a href="#instr">Instructor</a><a href="#hilfe">Hilfe</a><a href="#host">Eigenes Hosting</a>
+<a href="#schnell">Schnellstart</a><a href="#start">Überblick</a><a href="#install">Installieren</a><a href="#ziel">Ziel</a><a href="#sync">Sync</a><a href="#freunde">Freunde &amp; Chat</a><a href="#push">Push</a><a href="#ki">KI</a><a href="#lernen">Lernzentrum</a><a href="#look">Design</a><a href="#instr">Instructor</a><a href="#hilfe">Hilfe</a>
 </nav>
 
 <section id="schnell">
@@ -259,18 +259,6 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <tr><td>Stand auf zweitem Gerät fehlt</td><td>Beide Geräte brauchen <b>denselben GitHub-Token</b>. Öffne die App und warte kurz auf den Abgleich.</td></tr>
 <tr><td>Neue Version wird nicht angezeigt</td><td>App vom Home-Bildschirm einmal ganz schließen und neu öffnen. Notfalls die Seite im Browser neu laden.</td></tr>
 </tbody></table></div>
-</section>
-
-<section id="host">
-<h2><span class="n">12</span>Eigenes Hosting <span class="badge opt">für Betreiber</span></h2>
-<p class="sub">Nur nötig, wenn du die App samt Push-Server selbst betreiben willst. Als normaler Nutzer kannst du diesen Abschnitt überspringen.</p>
-<details><summary>App auf GitHub Pages veröffentlichen</summary>
-<ol class="steps"><li>Neues öffentliches Repository anlegen.</li><li>Die Dateien <code>index.html</code>, <code>sw.js</code>, <code>push-config.json</code> und das Icon hochladen.</li><li>Unter Settings → Pages den Branch <code>main</code> als Quelle wählen. Nach kurzer Zeit ist die App unter <code>https://DEIN-NAME.github.io/REPO/</code> erreichbar.</li><li>Updates: nur die Datei <code>index.html</code> ersetzen.</li></ol></details>
-<details><summary>Push-Server bei Cloudflare (Worker)</summary>
-<ol class="steps"><li>Kostenloses Cloudflare-Konto, dort einen <b>Worker</b> anlegen und den Inhalt von <code>worker.js</code> einfügen.</li><li>Einen <b>KV-Namespace</b> anlegen und ihn mit dem Namen <code>SUBS</code> an den Worker binden.</li><li>Die Seite <code>/setup</code> des Workers erzeugt die Schlüssel (VAPID). Öffentlichen Schlüssel als Variable und privaten als Secret eintragen. Zusätzlich <code>ALLOWED_ORIGIN</code> (deine App-Adresse), <code>CONTACT</code> und <code>ADMIN_KEY</code> setzen.</li><li>Unter <b>Trigger</b> einen Cron-Trigger anlegen, der <b>jede Minute</b> läuft (<code>* * * * *</code>), damit Erinnerungen und Briefings pünktlich kommen. Alte Trigger entfernen.</li><li>In <code>push-config.json</code> die Worker-Adresse und den öffentlichen Schlüssel eintragen und hochladen.</li></ol>
-<p class="small">Die Startseite des Workers zeigt zur Kontrolle seine Version an.</p>
-<p>Bei jedem Update die Dateien <code>worker.js</code> (in Cloudflare einfügen und bereitstellen) und <code>sw.js</code> (auf GitHub ersetzen) mit aktualisieren. Für den Chat muss die Startseite des Workers „Worker 9“ oder neuer melden.</p>
-<div class="note"><b>Kosten beim Chat</b>Jede Nachricht braucht zwei bis drei Schreibzugriffe im KV-Speicher. Das kostenlose Cloudflare-Konto erlaubt etwa 1.000 Schreibzugriffe pro Tag. Bei vielen Nutzern mit viel Chat reicht das nicht, dann ist der bezahlte Tarif nötig.</div></details>
 </section>
 
 <footer>

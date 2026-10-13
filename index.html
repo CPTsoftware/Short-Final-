@@ -9355,7 +9355,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         window.caches.open('sf-priv').then(function(ca){ return ca.put('cfg', new Response(cfg, {headers: {'content-type': 'application/json'}})); }).catch(function(){});
       }
       var fh = pushFhash(c);
-      if(pushFh && fh !== pushFh){ pushFh = fh; pushSync().catch(function(){}); } else if(!pushFh) pushFh = fh;
+      var fhS = ''; try{ fhS = localStorage.getItem(KEY + '-pushfh') || ''; }catch(e){}
+      var fhL = pushFh || fhS;
+      if(fh !== fhL){ pushFh = fh; pushSync().then(function(){ try{ localStorage.setItem(KEY + '-pushfh', fh); }catch(e){} }).catch(function(){ pushFh = ''; }); }
+      else if(!pushFh) pushFh = fh;
     }catch(e){}
   }
   async function pushSub(){
@@ -9741,7 +9744,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         if(sub){ try{ await pushApi('/unsubscribe', {endpoint: sub.endpoint}); }catch(e){} await sub.unsubscribe(); }
       }catch(e){}
       try{ if(window.caches){ window.caches.open('sf-priv').then(function(ca){ return ca.delete('cfg'); }).catch(function(){}); } }catch(e){}
-      var c = pushGet(); c.on = false; pushPut(c); pushLast = ''; pushFh = ''; paint();
+      var c = pushGet(); c.on = false; pushPut(c); pushLast = ''; pushFh = ''; try{ localStorage.removeItem(KEY + '-pushfh'); }catch(e){} paint();
       msg.textContent = 'Ausgeschaltet. Dein Gerät ist beim Server abgemeldet. Deine Freundschaften bleiben bestehen.';
     });
     $('pushTest').addEventListener('click', async function(){

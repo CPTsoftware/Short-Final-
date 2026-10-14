@@ -2203,7 +2203,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       arrOf(s, isLast ? 'last' : cat).push(rec);
       var rops = [{k:'rep', id:SUBJECTS[i].id, kind:isLast ? 'last' : cat, t:rec.t}];
       var st1 = q('s'); if(st1 && st1 > d0) st1 = d0;
-      if(addTot){ var top = addToTotal(d0, n0, st1); if(top) rops.push(top); }
+      if(addTot){ var top = addToTotal(d0, n0, st1); if(top) rops.push(top); rops.push({k:'led', ts:[ledAdd(n0, ok0, 1, '')]}); }
       var catName = (CATS.filter(function(c){ return c[0] === cat; })[0] || [0, cat])[1];
       logAdd('Bericht ' + catName + ': ' + SUBJECTS[i].name + ' ' + ok0 + '/' + n0 + ' (' + Math.round(ok0 / n0 * 100) + ' %)' + (addTot ? ' · Gesamt +' + fmt(n0) : ''), rops);
       var keepTot = repForm.tot;
@@ -4742,6 +4742,18 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   /* Gesamtzahl erhöhen: gleicher Tag wie der letzte Stand erhöht ihn, sonst neuer Eintrag */
   /* Test ueber mehrere Tage: die Fragen werden gleichmaessig auf die Tage von startISO bis dateISO verteilt */
+  /* Ergebnis-Protokoll für Challenges: n Fragen, davon ok richtig (null = Ergebnis unbekannt), a = zählt zur Gesamtzahl, s = Fach bei neu geklickten Fragen */
+  function ledAdd(n, ok, a, s, ts){
+    if(!S.chal || typeof S.chal !== 'object') S.chal = {};
+    if(!Array.isArray(S.chal.led)) S.chal.led = [];
+    var ev = {i:newT(), ts:ts || Date.now(), n:n, a:a ? 1 : 0};
+    if(ok !== null && ok !== undefined) ev.ok = ok;
+    if(s) ev.s = s;
+    S.chal.led.push(ev);
+    if(S.chal.led.length > 800) S.chal.led = S.chal.led.slice(-800);
+    S.chal.t = Date.now();
+    return ev.i;
+  }
   function addToTotalSpread(sISO, eISO, n){
     var es0 = S.entries.slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; });
     var s = sISO < es0[0].d ? es0[0].d : sISO, e = eISO;
@@ -4807,10 +4819,12 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         S.open = (S.open || []).filter(function(x){ return x.t !== op.t; });
       }else if(op.k === 'openx'){
         var oi = (S.open || []).filter(function(x){ return x.t === op.t; })[0];
-        if(oi) oi.x = Math.max(0, oi.x - op.dx);
+        if(oi){ oi.x = Math.max(0, oi.x - op.dx); if(Array.isArray(oi.ev) && oi.ev.length) oi.ev.pop(); }
       }else if(op.k === 'openrm'){
         if(!Array.isArray(S.open)) S.open = [];
         if(!S.open.some(function(x){ return x.t === op.item.t; })) S.open.push(op.item);
+      }else if(op.k === 'led'){
+        if(S.chal && Array.isArray(S.chal.led)){ S.chal.led = S.chal.led.filter(function(x){ return op.ts.indexOf(x.i) < 0; }); S.chal.t = Date.now(); }
       }else if(op.k === 'sc'){
         var qs = getSub(op.id); qs.sc = qs.sc.filter(function(x){ return op.ts.indexOf(x.t) < 0; });
       }else if(op.k === 'sub'){
@@ -4967,6 +4981,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         if(!yL || yL < 2){ msg.textContent = 'Wie viele Fragen hat der Test insgesamt?'; return; }
         if(n >= yL){ msg.textContent = 'Dann ist der Test fertig: Wähle „Abgeschlossen“ und trage das Ergebnis ein.'; return; }
         var sjO = SUBJECTS[+si], itO = {t:newT(), id:sjO.id, cat:cat, x:n, y:yL, d:d, tot:!!tot}, opsO = [{k:'open', t:itO.t}];
+        if(tot || cat === 'click') itO.ev = [{ts:Date.now(), n:n, a:tot ? 1 : 0, s:cat === 'click' ? sjO.id : ''}];
         if(!Array.isArray(S.open)) S.open = [];
         S.open.push(itO);
         if(cat === 'click') opsO.push(subClickOp(sjO, n));
@@ -4983,7 +4998,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(si === '' && !tot){ msg.textContent = 'Wähle ein Fach oder schalte „Zur Gesamtzahl addieren“ ein.'; return; }
       var scR = (si !== '' && scRoot && scRoot.box && !g('aqScW').hidden) ? scRoot.box._scRead() : {rows:[], err:''}, scRecT = null;
       if(scR.err){ msg.textContent = scR.err; return; }
-      var ops = [], title = 'Fragen hinzufügen: ';
+      var ops = [], title = 'Fragen hinzufügen: ', ledOk = null;
       if(si !== '' && cat !== 'click'){
         var isL = /^l\d+$/.test(cat), rs2 = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
         if(!rs2){ msg.textContent = 'Für einen Bericht brauche ich das Ergebnis (Richtig, Falsch oder Prozent).'; return; }
@@ -4991,13 +5006,14 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         var rec = isL ? {d:d, t:newT(), x:n, ok:rs2.ok} : {d:d, t:newT(), n:n, ok:rs2.ok};
         arrOf(s2, isL ? 'last' : cat).push(rec); scRecT = rec.t;
         ops.push({k:'rep', id:sj2.id, kind:isL ? 'last' : cat, t:rec.t});
+        ledOk = rs2.ok;
         title = 'Bericht ' + catLabel(cat) + ': ' + sj2.name + ' ' + rs2.ok + '/' + n + ' (' + Math.round(rs2.ok / n * 100) + ' %)';
       }else if(si !== ''){
         var sj = SUBJECTS[+si], s = getSub(sj.id), pc = nn(s.clicked), pw = nn(s.wrong), pt = nn(s.todo);
         var rs = g('aqV').value !== '' ? resultOf(mode, g('aqV').value, n) : null;
         s.clicked = (pc || 0) + n;
         var dw = 0;
-        if(rs){ dw = rs.wrong; s.wrong = (pw || 0) + dw; }
+        if(rs){ dw = rs.wrong; s.wrong = (pw || 0) + dw; ledOk = rs.ok; }
         var dt = 0;
         if(pt !== null){ dt = Math.min(pt, n); s.todo = pt - dt; }
         var clRec = {d:d, t:newT(), n:n}; if(rs) clRec.ok = rs.ok;
@@ -5007,6 +5023,8 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       }else{
         title += 'ohne Fach +' + fmt(n);
       }
+      var evSub = (si !== '' && cat === 'click') ? SUBJECTS[+si].id : '';
+      if(tot || evSub) ops.push({k:'led', ts:[ledAdd(n, ledOk, tot ? 1 : 0, evSub)]});
       if(scR.rows.length){ var scOp = scStore(SUBJECTS[+si], scR.rows, d, scRecT); if(scOp){ ops.push(scOp); title += ' · ' + scR.rows.length + ' Subchapter'; } }
       var st0 = g('aqS').value; if(st0 && st0 > d) st0 = d;
       if(tot){ var top = addToTotal(d, n, st0); if(top){ ops.push(top); if(top.sp) title += ' · verteilt ab ' + fd(parse(top.sp.s)); } title += ' · Gesamt +' + fmt(n); }
@@ -5057,6 +5075,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(v >= it.y){ m.textContent = 'Alle Fragen beantwortet? Dann tippe auf „Abschließen“.'; return; }
       var dl = v - it.x, td = iso(new Date()), ops = [{k:'openx', t:it.t, dx:dl}];
       it.x = v;
+      if(it.tot || it.cat === 'click'){ if(!Array.isArray(it.ev)) it.ev = []; it.ev.push({ts:Date.now(), n:dl, a:it.tot ? 1 : 0, s:it.cat === 'click' ? sj.id : ''}); }
       if(it.cat === 'click') ops.push(subClickOp(sj, dl));
       var tt = 'Test fortgesetzt: ' + catLbl(it.cat) + ' ' + sj.name + ' ' + fmt(v) + ' von ' + fmt(it.y) + ' (+' + fmt(dl) + ')';
       if(it.tot){ var tp = addToTotal(td, dl, td); if(tp) ops.push(tp); tt += ' · Gesamt +' + fmt(dl); }
@@ -5099,6 +5118,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
         ops.push({k:'rep', id:sj.id, kind:isL ? 'last' : it.cat, t:rec.t});
       }
       if(it.tot && rest > 0){ var tp = addToTotal(td, rest, td); if(tp) ops.push(tp); tt += ' · Gesamt +' + fmt(rest); }
+      var ratio = rs ? rs.ok / it.y : null, sumOk = 0, lt = [];
+      (it.ev || []).forEach(function(e){ var oo = ratio === null ? null : Math.round(e.n * ratio); if(oo !== null) sumOk += oo; lt.push(ledAdd(e.n, oo, e.a, e.s, e.ts)); });
+      if(rest > 0 && (it.tot || isClick)) lt.push(ledAdd(rest, rs ? Math.max(0, rs.ok - sumOk) : null, it.tot ? 1 : 0, isClick ? sj.id : ''));
+      if(lt.length) ops.push({k:'led', ts:lt});
       bdxInc('openFin');
       logAdd(tt, ops);
       sh.close(); if(it.tot) queueGlideScene(); refreshAll(); haptic('ok'); toast('Test abgeschlossen');
@@ -6932,6 +6955,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-45', items:[
+      {t:'Challenges zählen genauer', x:'Bei „richtig beantwortete Fragen“ zählen nur noch Fragen, deren Ergebnis du eingetragen hast. Fragen aus angefangenen Tests und ohne Ergebnis zählen erst, wenn du den Test mit Ergebnis abschließt. Berichte zählen mit ihren richtigen Fragen. Bei schon laufenden Challenges wurde der Stand einmalig bereinigt.', notour:true},
+      {t:'Duelle beenden nicht mehr so schnell', x:'Zeigt dein Rivale kurz nicht mehr auf dich, läuft das Duell noch 24 Stunden weiter, bevor es beendet wird. Wurde ein Duell ohne Ergebnis beendet, steht in den Rivalen-Einstellungen der Grund.', notour:true}
+    ]},
     {v:'2026.10.13-44', items:[
       {t:'Standard-Subchapter', x:'Alle Fächer haben jetzt die Subchapter des EASA-Lehrplans schon eingetragen (zum Beispiel „010-05 - Rules of the Air“). Du siehst sie im Reiter „Subchapter“ und als Auswahl beim Eintragen. Eigene kannst du jederzeit ergänzen, Standardnamen lassen sich umbenennen oder löschen. Bereits vorhandene eigene Subchapter mit gleicher Nummer bleiben unverändert.', notour:true}
     ]},
@@ -8829,7 +8856,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   setTimeout(function(){ frHomeRender(); sdMaybe(); }, 3200);
   /* ---------- Rivalen: Duelle mit genau einem gegenseitig hinzugefügten Freund (nur GitHub-Version) ---------- */
-  var RV_TOL = 0.08, RV_WIN = 0.10, RV_MIN = 3, RV_CLAIM = 3 * 86400000, RV_COOL = 7 * 86400000, RV_END_SHOW = 14 * 86400000, rvOv = null;
+  var RV_TOL = 0.08, RV_WIN = 0.10, RV_MIN = 3, RV_CLAIM = 3 * 86400000, RV_COOL = 7 * 86400000, RV_END_SHOW = 14 * 86400000, RV_GRACE = 24 * 3600000, rvOv = null;
   (function(){
     var st = document.createElement('style');
     st.textContent = '.rvc{margin:0 0 12px;border:1px solid var(--accent);border-radius:16px;padding:12px 14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--card)),var(--card))}' +
@@ -8882,10 +8909,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function rvNotify(g, code){
     try{ if(typeof pushSend === 'function' && typeof pushLk !== 'undefined' && pushLk[g]) pushSend('v', code, {to: [g]}); }catch(e){}
   }
-  function rvEnd(res, F, d){
+  function rvEnd(res, F, d, why){
     var R = rvGet(), cur = R.cur; if(!cur) return;
     var today = iso(new Date()), me = rvStand(), their = d && typeof d.stand === 'number' ? d.stand : null;
-    R.hist.push({g: cur.g, n: rvName(F).slice(0, 24), s: cur.s, e: today, r: res, my: me, th: their});
+    R.hist.push({g: cur.g, n: rvName(F).slice(0, 24), s: cur.s, e: today, r: res, my: me, th: their, y: why || ''});
     if(R.hist.length > 30) R.hist = R.hist.slice(-30);
     R.last = {id: cur.id, r: res, d: today, ts: Date.now()};
     R.cool[cur.g] = Date.now() + RV_COOL;
@@ -8900,20 +8927,23 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       var R = rvGet(), c = frCfg(), me = rvStand();
       if(!c.gist || me === null) return;
       var meH = rvH(c.gist), now = Date.now(), today = iso(new Date()), tgt = S.target || 35000, ch = false, cur = R.cur;
-      if(R.off){ if(cur){ rvEnd('x', rvFriend(cur.g), (rvFriend(cur.g) || {}).data); ch = true; } if(ch){ save(); frTouch(); } return; }
+      if(R.off){ if(cur){ rvEnd('x', rvFriend(cur.g), (rvFriend(cur.g) || {}).data, 'off'); ch = true; } if(ch){ save(); frTouch(); } return; }
       if(cur){
         var F = rvFriend(cur.g);
-        if(!F){ rvEnd('x', null, null); ch = true; }
+        if(!F){ rvEnd('x', null, null, 'rm'); ch = true; }
         else if(F.data && typeof F.data.stand === 'number'){
           var d = F.data, prv = d.rv || {}, atMe = prv.g === meH, pend = prv.e && prv.e.id === cur.id;
           if(!cur.ok){
             if(atMe){ cur.ok = true; cur.okT = now; if(prv.s && prv.s < cur.s) cur.s = prv.s; cur.rel = me > d.stand ? 'a' : (me === d.stand ? 'e' : 'b'); R.t = now; rvQ({k: 'start', g: cur.g, n: rvName(F), ac: d.ac, my: me, th: d.stand, s: cur.s}); ch = true; }
             else if((prv.g && prv.g !== meH) || pend || now - cur.since > RV_CLAIM){ R.cool[cur.g] = now + (pend ? RV_COOL : 2 * 86400000); R.cur = null; R.t = now; ch = true; }
           }else if(pend){
-            rvEnd(prv.e.r === 'w' ? 'l' : (prv.e.r === 'l' ? 'w' : 'x'), F, d); ch = true;
+            rvEnd(prv.e.r === 'w' ? 'l' : (prv.e.r === 'l' ? 'w' : 'x'), F, d, 'p'); ch = true;
           }else if(!atMe && d.t && d.t > (cur.okT || 0) + 3600000){
-            rvEnd('x', F, d); ch = true;
+            /* Der Freund zeigt nicht mehr auf mich: erst nach einer Karenzzeit beenden, vielleicht ist es nur ein kurzer Zwischenstand */
+            if(!cur.mt){ cur.mt = now; ch = true; }
+            else if(now - cur.mt > RV_GRACE){ rvEnd('x', F, d, 'f'); ch = true; }
           }else{
+            if(cur.mt){ delete cur.mt; ch = true; }
             var diff = me - d.stand, rel = diff > 0 ? 'a' : (diff === 0 ? 'e' : 'b');
             if(cur.rel === 'b' && rel !== 'b'){
               if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {};
@@ -8964,7 +8994,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(compact) return '';
       var h = '<div class="card frc" style="margin-top:0"><div class="frh"><b>Rivale</b><label class="small" style="display:flex;align-items:center;gap:6px">Duelle<input type="checkbox" class="sw" data-rvact="toggle"' + (R.off ? '' : ' checked') + '></label></div>' +
         '<div class="small" style="margin-top:6px">' + (R.off ? 'Rivalen sind aus.' : 'Sobald du und ein Freund euch gegenseitig hinzugefügt habt und im Gesamtstand nah beieinander liegt, werdet ihr automatisch Rivalen. Ein Rivale bleibt mindestens ' + RV_MIN + ' Tage. Wer ' + Math.round(RV_WIN * 100) + ' % vom Ziel Vorsprung hat, hängt den anderen ab.') + '</div>' +
-        (R.hist.length ? '<div class="small" style="margin-top:6px">Bisher: ' + R.hist.filter(function(x){ return x.r === 'w'; }).length + ' abgehängt, ' + R.hist.filter(function(x){ return x.r === 'l'; }).length + ' verloren.</div>' : '') + '</div>';
+        (function(){ var lh = R.hist[R.hist.length - 1]; if(!lh || lh.r !== 'x' || !lh.y || !lh.e) return ''; var wy = {f: esc(lh.n) + ' hat das Duell nicht mehr erwidert', p: esc(lh.n) + ' hat das Duell beendet', off: 'du hast Duelle ausgeschaltet', rm: 'der Freund wurde entfernt'}[lh.y]; return wy ? '<div class="small" style="margin-top:6px">Letztes Duell beendet am ' + fd(parse(lh.e)) + ': ' + wy + '.</div>' : ''; })() + (R.hist.length ? '<div class="small" style="margin-top:6px">Bisher: ' + R.hist.filter(function(x){ return x.r === 'w'; }).length + ' abgehängt, ' + R.hist.filter(function(x){ return x.r === 'l'; }).length + ' verloren.</div>' : '') + '</div>';
       return h;
     }
     var F = rvFriend(cur.g), d = F && F.data, nm = rvName(F);
@@ -9079,7 +9109,36 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     SUBJECTS.forEach(function(sj){ var s = getSub(sj.id); b.s[sj.id] = [nn(s.clicked) || 0, nn(s.wrong) || 0]; });
     return b;
   }
+  /* „Richtig beantwortet“ zählt nur Fragen mit bekanntem Ergebnis (Protokoll S.chal.led); angefangene Tests zählen erst nach dem Abschließen */
+  function chValQ(c){
+    var led = (S.chal && Array.isArray(S.chal.led)) ? S.chal.led : [], sub = c.cfg.subj, sum = c.carry || 0;
+    led.forEach(function(e){ if(e && e.ts >= (c.t0 || 0) && typeof e.ok === 'number' && (sub === 'all' ? e.a === 1 : e.s === sub)) sum += e.ok; });
+    return Math.max(0, sum);
+  }
+  /* Einmalig für schon laufende Challenges: bisherigen Wert um Fragen mit unbekanntem Ergebnis bereinigen */
+  function chOver(c){
+    var all = c.cfg.subj === 'all', sub = c.cfg.subj, over = 0, started = {};
+    (S.log || []).forEach(function(l){
+      if(!l || !l.ts || l.ts < (c.t0 || 0)) return;
+      var tot = 0, rep = null, sb = null, opn = null, fin = null, ttl = String(l.title || '');
+      (l.ops || []).forEach(function(o){ if(!o) return; if(o.k === 'total') tot += o.n || 0; else if(o.k === 'rep') rep = o; else if(o.k === 'sub') sb = o; else if(o.k === 'open') opn = o; else if(o.k === 'openrm') fin = o; });
+      if(opn) started[opn.t] = 1;
+      if(fin && fin.item){ if(started[fin.item.t]) over -= all ? (fin.item.tot ? fin.item.x : 0) : ((fin.item.cat === 'click' && fin.item.id === sub) ? fin.item.x : 0); return; }
+      var isOpen = /^Test (angefangen|fortgesetzt)/.test(ttl);
+      if(rep){
+        if(all && tot){ var sj = getSub(rep.id), arr = rep.kind === 'last' ? sj.last : sj[rep.kind], rec = (arr || []).filter(function(x){ return x.t === rep.t; })[0]; if(rec) over += Math.max(0, tot - rec.ok); }
+        return;
+      }
+      if(sb){
+        if(isOpen || !/\d+ % richtig/.test(ttl)){ if(all){ if(tot) over += tot; } else if(sb.id === sub) over += sb.dc || 0; }
+        return;
+      }
+      if(tot && all && (isOpen || /ohne Fach/.test(ttl))) over += tot;
+    });
+    return over;
+  }
   function chVal(c){
+    if(c.cfg.q && c.lm) return chValQ(c);
     var b = c.base; if(!b) return 0;
     var sub = c.cfg.subj, dW = 0, dC = 0;
     SUBJECTS.forEach(function(sj){
@@ -9094,6 +9153,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function chUpdate(){
     try{
       var C = chGet(), now = Date.now(), ch = false;
+      C.list.forEach(function(c){
+        if(c.lm || c.st !== 'run' || !c.cfg) return;
+        if(c.cfg.q){ var old = chVal(c); c.carry = Math.max(0, old - chOver(c)); }
+        c.lm = 1; ch = true;
+      });
       C.list.forEach(function(c){
         if(c.st !== 'run' || c.fin) return;
         if(now >= chEnd(c)){ c.fin = {v: c.p || 0, t: chEnd(c)}; ch = true; return; }
@@ -9186,7 +9250,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
           }
           if(c.role === 'a' && c.st === 'offer'){
             if(pe.a === 1 && pe.t0 && pe.t0 <= now + 600000){
-              c.st = 'run'; c.t0 = Math.min(pe.t0, now); c.base = chBase(); c.p = 0; ch = true;
+              c.st = 'run'; c.t0 = Math.min(pe.t0, now); c.base = chBase(); c.lm = 1; c.p = 0; ch = true;
               try{ var dn0 = (S.bdx && S.bdx.dn && S.bdx.dn[F.gist]) || 0; if(dn0 >= 3) bdxSet('coax'); if(dn0) S.bdx.dn[F.gist] = 0; chBd(); }catch(e){}
               chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
             }else if(pe.a === 0){ c.st = 'dec'; c.dt = now; ch = true; chDeclN(F.gist); chQ({k: 'cdec', id: c.id, g: c.g, n: rvName(F), ac: d.ac}); }
@@ -9209,7 +9273,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     var C = chGet(), c = C.list.filter(function(x){ return x.id === id && x.st === 'in'; })[0]; if(!c) return;
     var F = chFriend(c.g), d = F && F.data;
     if(yes){
-      c.st = 'run'; c.t0 = Date.now(); c.base = chBase(); c.p = 0; chNotify(c.g, 'a');
+      c.st = 'run'; c.t0 = Date.now(); c.base = chBase(); c.lm = 1; c.p = 0; chNotify(c.g, 'a');
       try{ var pc0 = homeNums(); c.abs = chAbsurd(c.cfg, pc0 && pc0.paceR) ? 1 : 0; bdxSet('acc'); chBd(); }catch(e){}
       chQ({k: 'cacc', id: c.id, g: c.g, n: rvName(F), ac: d && d.ac, my: 0, th: 0, desc: chDesc(c.cfg), pun: c.cfg.pun});
     }else{ c.st = 'dec'; c.dt = Date.now(); chNotify(c.g, 'd'); try{ bdxSet('dec'); chBd(); }catch(e){} }

@@ -6955,6 +6955,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-47', items:[
+      {t:'Rivalität bleibt beim Gerätewechsel', x:'Loggst du dich auf einem neuen Gerät ein, wird ein laufendes Duell nicht mehr sofort beendet, nur weil der Rivale (ein Kursmitglied) noch nicht geladen ist. Es wird erst nach 24 Stunden beendet, falls er dann immer noch fehlt.', notour:true}
+    ]},
     {v:'2026.10.13-46', items:[
       {t:'Partnerkurs als Filter', x:'In der Rangliste kannst du jetzt auch den Partnerkurs als Filter wählen („Kursname · Partner“). Es erscheinen deine Freunde, die in diesem Partnerkurs sind, erkannt am Namen. Bei ihnen steht der Kurs auch unter dem Namen.', notour:true}
     ]},
@@ -8935,7 +8938,11 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       if(R.off){ if(cur){ rvEnd('x', rvFriend(cur.g), (rvFriend(cur.g) || {}).data, 'off'); ch = true; } if(ch){ save(); frTouch(); } return; }
       if(cur){
         var F = rvFriend(cur.g);
-        if(!F){ rvEnd('x', null, null, 'rm'); ch = true; }
+        if(!F){
+          /* Neues Gerät: Kurs-Freunde sind erst nach dem Laden der Kurse da, daher mit Karenz (nur mit Konto) */
+          if(typeof kuOk === 'function' && kuOk()){ if(!cur.mt){ cur.mt = now; ch = true; } else if(now - cur.mt > RV_GRACE){ rvEnd('x', null, null, 'rm'); ch = true; } }
+          else{ rvEnd('x', null, null, 'rm'); ch = true; }
+        }
         else if(F.data && typeof F.data.stand === 'number'){
           var d = F.data, prv = d.rv || {}, atMe = prv.g === meH, pend = prv.e && prv.e.id === cur.id;
           if(!cur.ok){

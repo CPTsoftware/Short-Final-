@@ -6955,6 +6955,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-46', items:[
+      {t:'Partnerkurs als Filter', x:'In der Rangliste kannst du jetzt auch den Partnerkurs als Filter wählen („Kursname · Partner“). Es erscheinen deine Freunde, die in diesem Partnerkurs sind, erkannt am Namen. Bei ihnen steht der Kurs auch unter dem Namen.', notour:true}
+    ]},
     {v:'2026.10.13-45', items:[
       {t:'Challenges zählen genauer', x:'Bei „richtig beantwortete Fragen“ zählen nur noch Fragen, deren Ergebnis du eingetragen hast. Fragen aus angefangenen Tests und ohne Ergebnis zählen erst, wenn du den Test mit Ergebnis abschließt. Berichte zählen mit ihren richtigen Fragen. Bei schon laufenden Challenges wurde der Stand einmalig bereinigt.', notour:true},
       {t:'Duelle beenden nicht mehr so schnell', x:'Zeigt dein Rivale kurz nicht mehr auf dich, läuft das Duell noch 24 Stunden weiter, bevor es beendet wird. Wurde ein Duell ohne Ergebnis beendet, steht in den Rivalen-Einstellungen der Grund.', notour:true}
@@ -8615,7 +8618,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     (S.friends || []).forEach(function(fr){
       var d = fr.data;
       if(!d) return;
-      out.push({name:fr.alias || d.name || fr.nm || 'Freund', cs:fr.cs, ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist, hh:rvH(fr.gist), rvg:(d.rv && d.rv.g) || null});
+      var cs2 = (fr.cs || []).slice();
+      if(typeof kuAllyOf === 'function') kuAllyOf(d.name || fr.nm || fr.alias).forEach(function(x){ if(cs2.indexOf(x) < 0) cs2.push(x); });
+      out.push({name:fr.alias || d.name || fr.nm || 'Freund', cs:cs2.length ? cs2 : undefined, ac:d.ac, pst:d.pst, stand:d.stand, heute:d.heute_d === today ? (d.heute || 0) : 0, tempo:d.tempo, woche:fhPer(d.verlauf, wk), monat:fhPer(d.verlauf, mo), papi:frPapi(d), seen:d.t, verlauf:d.verlauf, gist:fr.gist, hh:rvH(fr.gist), rvg:(d.rv && d.rv.g) || null});
     });
     fhPairs(out);
     return out;
@@ -8688,13 +8693,13 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   function fhVal(e, m){ var v = e[m]; return (typeof v === 'number') ? v : null; }
   function fhHTML(){
-    var cfg = fhCfg(), es = fhEntries(), kul = (typeof kuOk === 'function' && kuOk()) ? kuLoad().list : [], kuf = '';
+    var cfg = fhCfg(), es = fhEntries(), kul = (typeof kuOk === 'function' && kuOk()) ? kuLoad().list.concat(kuAllies().map(function(a){ return {id: a.id, n: a.n, pt: 1}; })) : [], kuf = '';
     if(cfg.fc && kul.some(function(c){ return c.id === cfg.fc; })){ kuf = cfg.fc; es = es.filter(function(e){ return e.me || (e.cs && e.cs.indexOf(kuf) >= 0); }); }
     var h = '<div class="fhh"><b>Freunde</b>' +
       '<div class="seg" style="margin:0;flex:none" role="group" aria-label="Ansicht"><button type="button" data-fhmode="list" class="' + (cfg.mode === 'list' ? 'on' : '') + '">Liste</button><button type="button" data-fhmode="board" class="' + (cfg.mode === 'board' ? 'on' : '') + '">Rangliste</button></div>' +
       '<button type="button" class="ghost" data-fhset="1" aria-label="Einstellungen der Freunde-Karte">⚙</button></div>';
     h += rvCardHtml(true);
-    if(kul.length) h += '<div class="seg fhkc" style="margin:8px 0 2px;flex-wrap:wrap" role="group" aria-label="Kurs filtern"><button type="button" data-fhfc="" class="' + (kuf ? '' : 'on') + '">Alle</button>' + kul.map(function(c){ return '<button type="button" data-fhfc="' + c.id + '" class="' + (kuf === c.id ? 'on' : '') + '">' + esc(c.n) + '</button>'; }).join('') + '</div>';
+    if(kul.length) h += '<div class="seg fhkc" style="margin:8px 0 2px;flex-wrap:wrap" role="group" aria-label="Kurs filtern"><button type="button" data-fhfc="" class="' + (kuf ? '' : 'on') + '">Alle</button>' + kul.map(function(c){ return '<button type="button" data-fhfc="' + c.id + '" class="' + (kuf === c.id ? 'on' : '') + '">' + esc(c.n) + (c.pt ? ' · Partner' : '') + '</button>'; }).join('') + '</div>';
     if(cfg.mode === 'board'){
       h += '<div class="seg" style="margin:8px 0 2px" role="group" aria-label="Sortierung">' + [['heute', 'Heute'], ['woche', 'Woche'], ['monat', 'Monat'], ['stand', 'Gesamt'], ['tempo', 'Tempo']].map(function(m){ return '<button type="button" data-fhmet="' + m[0] + '" class="' + (cfg.metric === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
       var rows = es.filter(function(e){ return fhVal(e, cfg.metric) !== null; }).sort(function(a, b){ return fhVal(b, cfg.metric) - fhVal(a, cfg.metric); }), mx = Math.max.apply(null, rows.map(function(e){ return fhVal(e, cfg.metric); }).concat([1]));
@@ -9775,7 +9780,10 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function kuCourse(cid){ var r = null; kuLoad().list.forEach(function(c){ if(c.id === cid) r = c; }); return r; }
   function kuIsPeer(p){ return /^k[0-9a-f]{12}$/.test(p || ''); }
   function kuPeerName(p){ var c = kuCourse(String(p).slice(1)); return c ? c.n : 'Kurs'; }
-  function kuNames(ids){ return (ids || []).map(function(id){ var c = kuCourse(id); return c ? c.n : ''; }).filter(Boolean).join(', '); }
+  function kuAllies(){ var seen = {}, r = []; kuLoad().list.forEach(function(c){ c.al.forEach(function(a){ if(!seen[a.id] && !kuCourse(a.id)){ seen[a.id] = 1; r.push(a); } }); }); return r; }
+  function kuAllyOf(nm){ var k = String(nm || '').trim().toLowerCase(), r = []; if(!k) return r; kuAllies().forEach(function(a){ if(a.m.some(function(x){ return String(x.n).trim().toLowerCase() === k; })) r.push(a.id); }); return r; }
+  function kuAllyName(id){ var r = ''; kuAllies().forEach(function(a){ if(a.id === id) r = a.n; }); return r; }
+  function kuNames(ids){ return (ids || []).map(function(id){ var c = kuCourse(id); return c ? c.n : kuAllyName(id); }).filter(Boolean).join(', '); }
   function kuAdmin(c){ return !!c && c.ad === chtMe(); }
   function kuUnread(){ var D = chtLoad(), n = 0; kuLoad().list.forEach(function(c){ n += chtUnreadOf('k' + c.id); }); return n; }
   function kuDot(){

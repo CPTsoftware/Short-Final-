@@ -6955,6 +6955,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-48', items:[
+      {t:'Keine Sperre mehr nach abgebrochenem Duell', x:'Endet ein Duell ohne Ergebnis (zum Beispiel weil der Rivale nicht mehr erwidert), gibt es keine 7 Tage Sperre mehr. Nur nach einem Sieg oder einer Niederlage gilt sie weiter. Alle bisherigen Sperren wurden einmalig aufgehoben.', notour:true}
+    ]},
     {v:'2026.10.13-47', items:[
       {t:'Rivalität bleibt beim Gerätewechsel', x:'Loggst du dich auf einem neuen Gerät ein, wird ein laufendes Duell nicht mehr sofort beendet, nur weil der Rivale (ein Kursmitglied) noch nicht geladen ist. Es wird erst nach 24 Stunden beendet, falls er dann immer noch fehlt.', notour:true}
     ]},
@@ -8923,7 +8926,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     R.hist.push({g: cur.g, n: rvName(F).slice(0, 24), s: cur.s, e: today, r: res, my: me, th: their, y: why || ''});
     if(R.hist.length > 30) R.hist = R.hist.slice(-30);
     R.last = {id: cur.id, r: res, d: today, ts: Date.now()};
-    R.cool[cur.g] = Date.now() + RV_COOL;
+    if(res !== 'x') R.cool[cur.g] = Date.now() + RV_COOL;
     R.cur = null; R.t = Date.now();
     if(res === 'w'){ if(!S.bdx || typeof S.bdx !== 'object') S.bdx = {}; S.bdx.hang = today; }
     rvQ({k: res === 'w' ? 'win' : (res === 'l' ? 'lose' : 'void'), g: cur.g, n: rvName(F), ac: d && d.ac, my: me, th: their, d: today, s: cur.s});
@@ -8935,6 +8938,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       var R = rvGet(), c = frCfg(), me = rvStand();
       if(!c.gist || me === null) return;
       var meH = rvH(c.gist), now = Date.now(), today = iso(new Date()), tgt = S.target || 35000, ch = false, cur = R.cur;
+      if(!R.cz){ R.cz = 1; R.cool = {}; R.t = now; ch = true; }
       if(R.off){ if(cur){ rvEnd('x', rvFriend(cur.g), (rvFriend(cur.g) || {}).data, 'off'); ch = true; } if(ch){ save(); frTouch(); } return; }
       if(cur){
         var F = rvFriend(cur.g);

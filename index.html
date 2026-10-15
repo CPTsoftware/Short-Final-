@@ -6955,6 +6955,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-49', items:[
+      {t:'KI-Wochenplan versteht deine Wünsche', x:'Das Wunschfeld fasst jetzt 2000 Zeichen. Du kannst Fächer priorisieren, die KI stellt bei Bedarf bis zu drei Rückfragen, und deine Wünsche merkt sich die App als „Gemerkte Vorgaben“. Bei der täglichen Aktualisierung bleiben sie erhalten: Ein freier Dienstag bleibt frei.', notour:true}
+    ]},
     {v:'2026.10.13-48', items:[
       {t:'Keine Sperre mehr nach abgebrochenem Duell', x:'Endet ein Duell ohne Ergebnis (zum Beispiel weil der Rivale nicht mehr erwidert), gibt es keine 7 Tage Sperre mehr. Nur nach einem Sieg oder einer Niederlage gilt sie weiter. Alle bisherigen Sperren wurden einmalig aufgehoben.', notour:true}
     ]},
@@ -11116,24 +11119,49 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   function lzStandAt(d){ var v = 0; (S.entries || []).forEach(function(e){ if(e && typeof e.d === 'string' && typeof e.n === 'number' && e.d <= d && e.n > v) v = e.n; }); return v; }
   function lzDayAct(d){ var p = new Date(d + 'T12:00:00'); p.setDate(p.getDate() - 1); return Math.max(0, lzStandAt(d) - lzStandAt(iso(p))); }
   var LZ_WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-  function lzPlanGen(wish, onProg){
+  /* Wünsche, Prioritäten, gemerkte Vorgaben und Antworten auf Rückfragen bleiben bei jeder täglichen Aktualisierung erhalten */
+  var LZ_PS = KEY + '-planset';
+  function lzPsGet(){
+    var o = null; try{ o = JSON.parse(localStorage.getItem(LZ_PS) || 'null'); }catch(e){}
+    if(!o || typeof o !== 'object'){ var op = lzPlanGet(); o = {wish: (op && op.wish) || '', prio: [], rules: [], qa: []}; }
+    o.wish = String(o.wish || '').slice(0, 2000);
+    o.prio = (Array.isArray(o.prio) ? o.prio : []).filter(function(x){ return SUBJECTS.some(function(s){ return s.name === x; }); }).slice(0, 6);
+    o.rules = (Array.isArray(o.rules) ? o.rules : []).map(function(x){ return String(x).slice(0, 140); }).filter(Boolean).slice(0, 16);
+    o.qa = (Array.isArray(o.qa) ? o.qa : []).filter(function(x){ return x && x.q; }).map(function(x){ return {q: String(x.q).slice(0, 200), a: String(x.a || '').slice(0, 300)}; }).slice(-10);
+    return o;
+  }
+  function lzPsSet(o){ try{ localStorage.setItem(LZ_PS, JSON.stringify(o)); }catch(e){} }
+  function lzPlanGen(o){
+    o = o || {};
+    var ps = lzPsGet();
+    if(typeof o.wish === 'string') ps.wish = o.wish.slice(0, 2000);
+    if(Array.isArray(o.prio)) ps.prio = o.prio.slice(0, 6);
+    if(Array.isArray(o.qa)) ps.qa = ps.qa.concat(o.qa).slice(-10);
+    lzPsSet(ps);
     var snap = {}; try{ snap = pushSnap(homeNums()); }catch(e){}
     try{ var ex = examDate(); snap.pruefung_in_tagen = Math.max(0, Math.ceil((ex - new Date()) / 86400000)); }catch(e){}
-    var days = [], t0 = new Date();
-    for(var i = 0; i < 7; i++){ var dd = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + i, 12); days.push(iso(dd) + ' (' + LZ_WD[dd.getDay()] + ')'); }
-    var pr = 'Erstelle einen konkreten Lernplan für diese 7 Tage: ' + days.join(', ') + '. Pro Tag eine Zielzahl Fragen und 1 bis 2 Fächer mit kurzem Grund. Die Summe soll zum nötigen Tempo passen (Felder "tempo_pro_tag", "heute_noch_offen", "diff_zum_plan"). Schwache oder lange nicht geübte Fächer ("faecher", "tage_seit_test") bekommen Vorrang. ' + (wish ? 'Wunsch: ' + wish + '. ' : '') +
-      'Nutze für "faecher" nur Fachnamen aus den Daten. Antworte NUR mit JSON: {"tage":[{"datum":"JJJJ-MM-TT","fragen":300,"faecher":["Meteorologie"],"grund":"<höchstens 70 Zeichen>"}],"tipp":"<ein Satz>"} mit genau 7 Einträgen in der Reihenfolge oben. Daten: ' + JSON.stringify(snap);
+    var days = [], t0 = new Date(), oldP = lzPlanGet(), oldBy = {};
+    if(oldP) oldP.days.forEach(function(x){ oldBy[x.d] = x; });
+    var prev = [];
+    for(var i = 0; i < 7; i++){ var dd = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + i, 12); var di = iso(dd); days.push(di + ' (' + LZ_WD[dd.getDay()] + ')'); if(oldBy[di]) prev.push({datum: di, fragen: oldBy[di].n, faecher: oldBy[di].f}); }
+    var vor = {gemerkte_vorgaben: ps.rules, wunsch_des_nutzers: ps.wish, prioritaet_faecher: ps.prio, antworten_auf_rueckfragen: ps.qa, bisheriger_plan_fuer_diese_tage: prev};
+    var pr = 'Erstelle einen konkreten Lernplan für diese 7 Tage: ' + days.join(', ') + '. Pro Tag eine Zielzahl Fragen und 1 bis 2 Fächer mit kurzem Grund. Die Summe soll zum nötigen Tempo passen (Felder "tempo_pro_tag", "heute_noch_offen", "diff_zum_plan"). Schwache oder lange nicht geübte Fächer ("faecher", "tage_seit_test") bekommen Vorrang, außer der Nutzer wünscht etwas anderes. ' +
+      'VERBINDLICHE VORGABEN DES NUTZERS (in "vorgaben" unten) gelten für jeden Plan, auch bei der täglichen Aktualisierung, und haben Vorrang vor allem anderen: Ein freier Tag bleibt frei (fragen 0, faecher leer) und wird nie "aufgeholt". Wochentage, Zeitgrenzen und Obergrenzen einhalten. Fächer in "prioritaet_faecher" und Fächer, die der Nutzer klicken will, bekommen an den meisten Lerntagen den größten Anteil. Behalte den bisherigen Plan für diese Tage bei und ändere nur, was durch den neuen Stand wirklich nötig ist. Passt die Summe nicht zum nötigen Tempo, sag das im "tipp" ehrlich, brich aber keine Vorgabe. ' +
+      (o.ask ? 'Wenn dir für einen guten Plan etwas Wesentliches fehlt (zum Beispiel an welchen Tagen er Zeit hat, wie viele Fragen er maximal schafft, welches Fach zuerst), stell höchstens 3 kurze Rückfragen und antworte dann NUR mit {"rueckfragen":["..."]}. Frag nichts, was schon in den Vorgaben, im Wunsch oder in den Antworten steht. ' : 'Stell keine Rückfragen, plane mit sinnvollen Annahmen. ') +
+      'Nutze für "faecher" nur Fachnamen aus den Daten. Fasse alle verbindlichen Vorgaben (alte und neue, ohne Widersprüche, neueste Aussage gilt) als kurze Sätze in "vorgaben" zusammen, zum Beispiel "Dienstag frei" oder "Priorität: Meteorologie". Antworte NUR mit JSON: {"tage":[{"datum":"JJJJ-MM-TT","fragen":300,"faecher":["Meteorologie"],"grund":"<höchstens 70 Zeichen>"}],"tipp":"<ein bis zwei Sätze>","vorgaben":["..."]} mit genau 7 Einträgen in der Reihenfolge oben. Vorgaben: ' + JSON.stringify(vor) + ' Daten: ' + JSON.stringify(snap);
     lzCtl = typeof AbortController === 'function' ? new AbortController() : null;
-    return aikCall([{role: 'user', content: pr}], {system: LZ_SYS, maxTokens: 6000, signal: lzCtl ? lzCtl.signal : undefined}).then(function(r){
+    return aikCall([{role: 'user', content: pr}], {system: LZ_SYS, maxTokens: 8000, signal: lzCtl ? lzCtl.signal : undefined}).then(function(r){
       var j = aikJson(r.text), a = Array.isArray(j.tage) ? j.tage : [];
+      if(o.ask && !a.length && Array.isArray(j.rueckfragen) && j.rueckfragen.length) return {ask: j.rueckfragen.slice(0, 3).map(function(x){ return String(x).slice(0, 200); })};
       if(!a.length) throw aikErr('api', 'Die KI hat keinen Plan geliefert. Bitte noch einmal versuchen.');
       var out = a.slice(0, 7).map(function(x, k){
         var dd = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + k, 12);
         return {d: iso(dd), n: Math.max(0, Math.min(5000, Math.round(Number(x.fragen) || 0))), f: (Array.isArray(x.faecher) ? x.faecher : []).slice(0, 2).map(function(f){ return String(f).slice(0, 40); }), g: String(x.grund || '').slice(0, 90)};
       });
       var old = lzPlanGet();
-      var plan = {made: iso(new Date()), days: out, tip: String(j.tipp || '').slice(0, 200), home: old ? !!old.home : false, wish: wish || (old && old.wish) || ''};
+      var plan = {made: iso(new Date()), days: out, tip: String(j.tipp || '').slice(0, 300), home: old ? !!old.home : false, wish: ps.wish};
       lzPlanSet(plan);
+      if(Array.isArray(j.vorgaben)){ ps.rules = j.vorgaben.map(function(x){ return String(x).slice(0, 140); }).filter(Boolean).slice(0, 16); lzPsSet(ps); }
       return plan;
     });
   }
@@ -11155,7 +11183,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
     if(!force && p.made === today) return;
     if(!force && p.tried && Date.now() - p.tried < 3600000) return;
     lzPlanBusy = true;
-    try{ p.tried = Date.now(); lzPlanSet(p); await lzPlanGen(p.wish || ''); }catch(e){}
+    try{ p.tried = Date.now(); lzPlanSet(p); await lzPlanGen({}); }catch(e){}
     lzPlanBusy = false;
     try{ lzHomeCard(); lzInject(); }catch(e){}
   }
@@ -11258,21 +11286,38 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
       });
     }
     function drawPlan(){
-      var plan = lzPlanGet();
+      var plan = lzPlanGet(), ps = lzPsGet();
       body.innerHTML = '<div class="small">Die KI plant die nächsten sieben Tage aus Stand, Ziel, Prüfungstermin und deinen Fächern. Der Plan aktualisiert sich automatisch einmal am Tag beim ersten Öffnen.</div>' +
         '<div id="lzCalBox">' + (plan ? lzPlanHtml(plan, false) + (plan.tip ? '<div class="nbnote" style="margin-top:10px">' + esc(plan.tip) + '</div>' : '') + '<div class="small" style="margin-top:6px">Erstellt am ' + plan.made.slice(8, 10) + '.' + plan.made.slice(5, 7) + '.</div>' : '') + '</div>' +
         (plan ? '<label class="pchk lzchk"><input type="checkbox" id="lzHomeOn"' + (plan.home ? ' checked' : '') + '> <span>Heutigen Plan auf dem Startbildschirm anzeigen</span></label>' : '') +
-        '<label class="lzl">Besonderheiten (optional)<input type="text" id="lzWish" maxlength="200" value="' + escA(plan ? plan.wish || '' : '') + '" placeholder="z. B. Mittwoch keine Zeit, Fokus auf Meteorologie"></label>' +
+        '<label class="lzl">Deine Wünsche (optional, bleiben bei jeder Aktualisierung erhalten)<textarea id="lzWish" rows="4" maxlength="2000" placeholder="z. B. Dienstag und Samstag frei, mittwochs höchstens 100 Fragen, ich will diese Woche vor allem Meteorologie klicken">' + esc(ps.wish) + '</textarea></label>' +
+        '<div class="small" style="margin-top:10px">Diese Fächer zuerst (Priorität)</div><div class="lzchips" id="lzPrio">' + SUBJECTS.map(function(sb){ return '<button type="button" class="ghost' + (ps.prio.indexOf(sb.name) >= 0 ? ' on' : '') + '" data-lzpr="' + escA(sb.name) + '" aria-pressed="' + (ps.prio.indexOf(sb.name) >= 0) + '">' + esc(sb.name) + '</button>'; }).join('') + '</div>' +
+        (ps.rules.length ? '<div class="small" style="margin-top:8px">Gemerkte Vorgaben (gelten bei jedem neuen Plan)</div><div class="lzchips" id="lzRules">' + ps.rules.map(function(r, i){ return '<button type="button" class="ghost" data-lzrd="' + i + '" aria-label="Vorgabe entfernen: ' + escA(r) + '">' + esc(r) + ' ✕</button>'; }).join('') + '</div>' : '') +
+        '<div id="lzAskBox"></div>' +
         '<div class="row" style="margin-top:12px"><button type="button" id="lzGo3" style="flex:1">' + (plan ? 'Neu berechnen' : 'Plan erstellen') + '</button><button type="button" class="ghost" id="lzStop3" hidden>Abbrechen</button></div><div class="small" id="lzMsg3" style="margin-top:8px"></div>';
       var msg = body.querySelector('#lzMsg3'), go = body.querySelector('#lzGo3'), stop = body.querySelector('#lzStop3'), hm = body.querySelector('#lzHomeOn');
       if(hm) hm.addEventListener('change', function(){ var p = lzPlanGet(); if(p){ p.home = hm.checked; lzPlanSet(p); lzHomeCard(); } });
       stop.addEventListener('click', function(){ if(lzCtl) lzCtl.abort(); });
-      go.addEventListener('click', async function(){
+      var prioSel = ps.prio.slice();
+      body.querySelector('#lzPrio').addEventListener('click', function(ev){ var b = ev.target.closest('[data-lzpr]'); if(!b) return; var n = b.getAttribute('data-lzpr'), i = prioSel.indexOf(n); if(i >= 0) prioSel.splice(i, 1); else if(prioSel.length < 6) prioSel.push(n); b.classList.toggle('on', i < 0); b.setAttribute('aria-pressed', String(i < 0)); var q = lzPsGet(); q.prio = prioSel.slice(); lzPsSet(q); });
+      var rl = body.querySelector('#lzRules');
+      if(rl) rl.addEventListener('click', function(ev){ var b = ev.target.closest('[data-lzrd]'); if(!b) return; var q = lzPsGet(); q.rules.splice(+b.getAttribute('data-lzrd'), 1); lzPsSet(q); drawPlan(); });
+      async function run(qa){
         go.disabled = true; stop.hidden = false; msg.textContent = 'KI plant …';
-        try{ await lzPlanGen(body.querySelector('#lzWish').value.trim()); lzHomeCard(); lzInject(); drawPlan(); return; }
-        catch(e){ fail(msg, e); }
+        try{
+          var r = await lzPlanGen({wish: body.querySelector('#lzWish').value.trim(), prio: prioSel, ask: !qa, qa: qa || []});
+          if(r && r.ask){
+            var box = body.querySelector('#lzAskBox');
+            box.innerHTML = '<div class="nbnote" style="margin-top:10px"><b>Rückfragen der KI</b>' + r.ask.map(function(q, i){ return '<label class="lzl">' + esc(q) + '<input type="text" maxlength="300" data-lzqa="' + i + '" autocomplete="off"></label>'; }).join('') + '<button type="button" id="lzAnsGo" style="margin-top:10px;width:100%">Antworten und planen</button></div>';
+            msg.textContent = '';
+            box.querySelector('#lzAnsGo').addEventListener('click', function(){ var qa2 = r.ask.map(function(q, i){ return {q: q, a: box.querySelector('[data-lzqa="' + i + '"]').value.trim() || 'keine Angabe'}; }); run(qa2); });
+            go.disabled = false; stop.hidden = true; return;
+          }
+          lzHomeCard(); lzInject(); drawPlan(); return;
+        }catch(e){ fail(msg, e); }
         go.disabled = false; stop.hidden = true;
-      });
+      }
+      go.addEventListener('click', function(){ run(null); });
     }
     function draw(){ seg(); (tab === 'expl' ? drawExpl : tab === 'plan' ? drawPlan : drawPack)(); }
     sh.ov.addEventListener('click', function(ev){ var b = ev.target.closest && ev.target.closest('[data-lzt]'); if(b){ tab = b.getAttribute('data-lzt'); draw(); } });
@@ -11338,7 +11383,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   }
   (function lzInit(){
     var st = document.createElement('style');
-    st.textContent = '.lzhub{width:100%;margin:2px 0 10px}.lzcalw{margin:0 0 10px;cursor:pointer}.lzcalt{margin-bottom:4px}.lzcal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.lzcalw .lzcal{grid-template-columns:repeat(7,minmax(0,1fr))}.lzday{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 4px;text-align:center;min-width:0;overflow:hidden}.lzday.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.lzday.past{opacity:.6}.lzday.done{background:color-mix(in srgb,var(--good,#2a9d5c) 18%,var(--card))}.lzdh{font-size:11px;display:flex;flex-direction:column;align-items:center;line-height:1.2}.lzdn{font-weight:750;font-size:14px;margin:2px 0}.lzck{color:var(--good,#2a9d5c);font-weight:800}.lzg{font-style:italic}.lzhome{cursor:pointer;margin-top:0}.lzhn{font-size:15px;margin:2px 0}#lzBody .lzcal{display:flex;flex-direction:column}#lzBody .lzday{text-align:left;padding:8px 12px}#lzBody .lzdh{display:inline-flex;flex-direction:row;gap:6px;align-items:baseline}#lzBody .lzdn{display:inline-block;margin:0 0 0 12px}.lzl{display:block;margin-top:10px;font-size:13px}.lzl input,.lzl select,.lzl textarea{width:100%;margin-top:4px}.lzrow{gap:10px}.lzchk{display:flex;align-items:center;gap:8px;margin-top:10px}.lzprev{border-top:1px solid var(--line);padding:8px 0}.lzcard{margin-top:10px}.lzplan{white-space:normal;font-size:14px;line-height:1.5}.lzseg{display:flex}.lzseg button{flex:1}.lzchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.lzlog{max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:8px}.lzb{padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.45;max-width:92%}.lzb.me{align-self:flex-end;background:var(--accent);color:#fff}.lzb.ai{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}';
+    st.textContent = '.lzhub{width:100%;margin:2px 0 10px}.lzcalw{margin:0 0 10px;cursor:pointer}.lzcalt{margin-bottom:4px}.lzcal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.lzcalw .lzcal{grid-template-columns:repeat(7,minmax(0,1fr))}.lzday{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 4px;text-align:center;min-width:0;overflow:hidden}.lzday.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.lzday.past{opacity:.6}.lzday.done{background:color-mix(in srgb,var(--good,#2a9d5c) 18%,var(--card))}.lzdh{font-size:11px;display:flex;flex-direction:column;align-items:center;line-height:1.2}.lzdn{font-weight:750;font-size:14px;margin:2px 0}.lzck{color:var(--good,#2a9d5c);font-weight:800}.lzg{font-style:italic}.lzhome{cursor:pointer;margin-top:0}.lzhn{font-size:15px;margin:2px 0}#lzBody .lzcal{display:flex;flex-direction:column}#lzBody .lzday{text-align:left;padding:8px 12px}#lzBody .lzdh{display:inline-flex;flex-direction:row;gap:6px;align-items:baseline}#lzBody .lzdn{display:inline-block;margin:0 0 0 12px}.lzl{display:block;margin-top:10px;font-size:13px}.lzl input,.lzl select,.lzl textarea{width:100%;margin-top:4px}.lzrow{gap:10px}.lzchk{display:flex;align-items:center;gap:8px;margin-top:10px}.lzprev{border-top:1px solid var(--line);padding:8px 0}.lzcard{margin-top:10px}.lzplan{white-space:normal;font-size:14px;line-height:1.5}.lzseg{display:flex}.lzseg button{flex:1}.lzchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.lzchips button{padding:6px 10px;font-size:13px;border-radius:14px}.lzchips button.on{background:var(--accent);color:#fff;border-color:var(--accent)}.lzlog{max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:8px}.lzb{padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.45;max-width:92%}.lzb.me{align-self:flex-end;background:var(--accent);color:#fff}.lzb.ai{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}';
     document.head.appendChild(st);
     setTimeout(function(){ try{ lzHomeCard(); lzPlanAuto(false); }catch(e){} }, 3500);
     document.addEventListener('visibilitychange', function(){ if(!document.hidden){ try{ lzHomeCard(); lzPlanAuto(false); }catch(e){} } });

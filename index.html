@@ -6955,6 +6955,9 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
 
   /* ---------- Update-Popup (einmal nach jedem Update) ---------- */
   var RELEASES = [
+    {v:'2026.10.13-51', items:[
+      {t:'KI-Tagesübersicht wird nicht mehr abgeschnitten', x:'Bei „Neu analysieren“ mit eigenem Schlüssel durfte die Antwort der KI nur kurz sein. War sie länger, wurde sie abgeschnitten, die App konnte sie nicht lesen und zeigte weiter die alte Analyse. Das Limit ist jetzt dreimal so hoch.', notour:true}
+    ]},
     {v:'2026.10.13-50', items:[
       {t:'Angefangene Tests mit Last 100/200/300/500', x:'Bei „Angefangen“ kannst du jetzt auch bei Last 100, 200, 300 und 500 eintragen, wie viele Fragen du schon beantwortet hast. Vorher war das Feld gesperrt und zeigte die volle Zahl.', notour:true}
     ]},
@@ -10205,7 +10208,7 @@ html.has2 .nbbar i{background:linear-gradient(90deg,var(--accent),var(--s2))}
   async function aikSample(){
     if(!aikOn()) return null;
     var fn = function(turns, opts){ if(typeof turns === 'string') turns = [{role: 'user', content: turns}]; return aikCall(turns, opts); };
-    fn.json = async function(prompt, opts){ var r = await aikCall([{role: 'user', content: prompt}], {signal: opts && opts.signal, maxTokens: 2048}); return aikJson(r.text); };
+    fn.json = async function(prompt, opts){ var r = await aikCall([{role: 'user', content: prompt}], {signal: opts && opts.signal, maxTokens: 6000}); return aikJson(r.text); };
     return fn;
   }
   (function aikUI(){
